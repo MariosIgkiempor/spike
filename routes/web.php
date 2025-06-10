@@ -6,7 +6,7 @@ use App\Http\Controllers\GameController;
 use App\Http\Controllers\UserController;
 
 Route::get('/', function () {
-    return Inertia::render('dashboard');
+    return Inertia::render('welcome');
 })->name('home');
 
 Route::middleware(['auth', 'verified'])->group(function () {
