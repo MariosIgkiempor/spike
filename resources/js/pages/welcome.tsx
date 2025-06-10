@@ -1,5 +1,9 @@
+import { Card, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { type SharedData } from '@/types';
 import { Head, Link, usePage } from '@inertiajs/react';
+import { Badge, BarChart3, Download, Github, Play, Star, Target, Trophy, Users, Zap } from 'lucide-react';
 
 export default function Welcome() {
     const { auth } = usePage<SharedData>().props;
@@ -10,38 +14,361 @@ export default function Welcome() {
                 <link rel="preconnect" href="https://fonts.bunny.net" />
                 <link href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600" rel="stylesheet" />
             </Head>
-            <div className="flex min-h-screen flex-col items-center bg-[#FDFDFC] p-6 text-[#1b1b18] lg:justify-center lg:p-8 dark:bg-[#0a0a0a]">
-                <header className="mb-6 w-full max-w-[335px] text-sm not-has-[nav]:hidden lg:max-w-4xl">
-                    <nav className="flex items-center justify-end gap-4">
+            <div className="flex flex-col min-h-screen bg-gradient-to-br from-orange-50 to-yellow-50">
+                {/* Header */}
+                <header className="px-4 lg:px-6 h-16 flex items-center border-b bg-white/80 backdrop-blur-sm sticky top-0 z-50">
+                    <Link href="/" className="flex items-center justify-center">
+                        <div className="w-8 h-8 bg-gradient-to-br from-orange-500 to-yellow-500 rounded-full flex items-center justify-center">
+                            <Target className="h-5 w-5 text-white" />
+                        </div>
+                        <span className="ml-2 text-xl font-bold bg-gradient-to-r from-orange-600 to-yellow-600 bg-clip-text text-transparent">
+                            SpikeTracker
+                        </span>
+                    </Link>
+                    <nav className="ml-auto flex gap-4 sm:gap-6">
                         {auth.user ? (
-                            <Link
-                                href={route('dashboard')}
-                                className="inline-block rounded-sm border border-[#19140035] px-5 py-1.5 text-sm leading-normal text-[#1b1b18] hover:border-[#1915014a] dark:border-[#3E3E3A] dark:text-[#EDEDEC] dark:hover:border-[#62605b]"
-                            >
-                                Dashboard
-                            </Link>
-                        ) : (
-                            <>
-                                <Link
-                                    href={route('login')}
-                                    className="inline-block rounded-sm border border-transparent px-5 py-1.5 text-sm leading-normal text-[#1b1b18] hover:border-[#19140035] dark:text-[#EDEDEC] dark:hover:border-[#3E3E3A]"
-                                >
-                                    Log in
-                                </Link>
-                                <Link
-                                    href={route('register')}
-                                    className="inline-block rounded-sm border border-[#19140035] px-5 py-1.5 text-sm leading-normal text-[#1b1b18] hover:border-[#1915014a] dark:border-[#3E3E3A] dark:text-[#EDEDEC] dark:hover:border-[#62605b]"
-                                >
-                                    Register
-                                </Link>
-                            </>
+                        <Link href={route('dashboard')} className="text-sm font-medium hover:text-orange-600 transition-colors">
+                            Dashboard
+                        </Link>): (
+                        <>
+                        <Link href={route('login')} className="text-sm font-medium hover:text-orange-600 transition-colors">
+                            Login
+                        </Link>
+                        <Link href={route('register')} className="text-sm font-medium hover:text-orange-600 transition-colors">
+                            Register
+                        </Link>
+                        </>
                         )}
                     </nav>
                 </header>
-                <div className="flex w-full items-center justify-center opacity-100 transition-opacity duration-750 lg:grow starting:opacity-0">
-                    <main className="flex w-full max-w-[335px] flex-col-reverse lg:max-w-4xl lg:flex-row">Spike</main>
-                </div>
-                <div className="hidden h-14.5 lg:block"></div>
+
+                <main className="flex-1">
+                    {/* Hero Section */}
+                    <section className="w-full py-12 md:py-24 lg:py-32">
+                        <div className="container px-4 md:px-6">
+                            <div className="grid gap-6 lg:grid-cols-[1fr_400px] lg:gap-12 xl:grid-cols-[1fr_600px]">
+                                <div className="flex flex-col justify-center space-y-4">
+                                    <div className="space-y-2">
+                                        <Badge className="bg-orange-100 text-orange-800 hover:bg-orange-200">
+                                            🏆 #1 Spike Ball Tracking App
+                                        </Badge>
+                                        <h1 className="text-3xl font-bold tracking-tighter sm:text-5xl xl:text-6xl/none">
+                                            Track Every{" "}
+                                            <span className="bg-gradient-to-r from-orange-600 to-yellow-600 bg-clip-text text-transparent">
+                                                Spike
+                                            </span>
+                                            <br></br>Master Every Game
+                                        </h1>
+                                        <p className="max-w-[600px] text-gray-600 md:text-xl">
+                                            The ultimate spike ball tracking companion, definitely not generated by AI...
+                                        </p>
+                                    </div>
+                                    <div className="flex flex-col gap-2 min-[400px]:flex-row">
+                                        <Button
+                                            size="lg"
+                                            className="bg-gradient-to-r from-orange-500 to-yellow-500 hover:from-orange-600 hover:to-yellow-600"
+                                        >
+                                            <Play className="mr-2 h-4 w-4" />
+                                            Start Tracking
+                                        </Button>
+                                        <Button variant="outline" size="lg" className="border-orange-200 hover:bg-orange-50">
+                                            <Github className="mr-2 h-4 w-4" />
+                                            View Demo
+                                        </Button>
+                                    </div>
+                                    <div className="flex items-center gap-4 text-sm text-gray-600">
+                                        <div className="flex items-center gap-1">
+                                            <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                                            <span className="font-medium">4.9/5</span>
+                                        </div>
+                                        <div className="flex items-center gap-1">
+                                            <Download className="h-4 w-4" />
+                                            <span>10K+ downloads</span>
+                                        </div>
+                                        <div className="flex items-center gap-1">
+                                            <Users className="h-4 w-4" />
+                                            <span>5K+ active players</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className="flex items-center justify-center">
+                                    <div className="relative">
+                                        <div className="absolute inset-0 bg-gradient-to-r from-orange-400 to-yellow-400 rounded-3xl blur-3xl opacity-20"></div>
+                                        <img
+                                            src="/placeholder.svg?height=400&width=300"
+                                            width="300"
+                                            height="400"
+                                            alt="SpikeTracker App Screenshot"
+                                            className="relative rounded-3xl shadow-2xl border-8 border-white"
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    {/* Features Section */}
+                    <section id="features" className="w-full py-12 md:py-24 lg:py-32 bg-white">
+                        <div className="container px-4 md:px-6">
+                            <div className="flex flex-col items-center justify-center space-y-4 text-center">
+                                <div className="space-y-2">
+                                    <Badge className="bg-orange-100 text-orange-800">Features</Badge>
+                                    <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl">Everything You Need to Dominate</h2>
+                                    <p className="max-w-[900px] text-gray-600 md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed">
+                                        From real-time game tracking to advanced analytics, SpikeTracker has all the tools to elevate your
+                                        spike ball game.
+                                    </p>
+                                </div>
+                            </div>
+                            <div className="mx-auto grid max-w-5xl items-center gap-6 py-12 lg:grid-cols-3 lg:gap-12">
+                                <Card className="border-orange-100 hover:shadow-lg transition-shadow">
+                                    <CardContent className="flex flex-col items-center space-y-4 p-6">
+                                        <div className="w-12 h-12 bg-gradient-to-br from-orange-500 to-yellow-500 rounded-full flex items-center justify-center">
+                                            <BarChart3 className="h-6 w-6 text-white" />
+                                        </div>
+                                        <h3 className="text-xl font-bold">Real-Time Stats</h3>
+                                        <p className="text-center text-gray-600">
+                                            Track points, serves, and rallies in real-time. Get instant feedback on your performance.
+                                        </p>
+                                    </CardContent>
+                                </Card>
+                                <Card className="border-orange-100 hover:shadow-lg transition-shadow">
+                                    <CardContent className="flex flex-col items-center space-y-4 p-6">
+                                        <div className="w-12 h-12 bg-gradient-to-br from-orange-500 to-yellow-500 rounded-full flex items-center justify-center">
+                                            <Trophy className="h-6 w-6 text-white" />
+                                        </div>
+                                        <h3 className="text-xl font-bold">Tournament Mode</h3>
+                                        <p className="text-center text-gray-600">
+                                            Organize tournaments, track brackets, and compete with players worldwide.
+                                        </p>
+                                    </CardContent>
+                                </Card>
+                                <Card className="border-orange-100 hover:shadow-lg transition-shadow">
+                                    <CardContent className="flex flex-col items-center space-y-4 p-6">
+                                        <div className="w-12 h-12 bg-gradient-to-br from-orange-500 to-yellow-500 rounded-full flex items-center justify-center">
+                                            <Users className="h-6 w-6 text-white" />
+                                        </div>
+                                        <h3 className="text-xl font-bold">Team Analytics</h3>
+                                        <p className="text-center text-gray-600">
+                                            Analyze team performance, identify strengths, and improve coordination.
+                                        </p>
+                                    </CardContent>
+                                </Card>
+                                <Card className="border-orange-100 hover:shadow-lg transition-shadow">
+                                    <CardContent className="flex flex-col items-center space-y-4 p-6">
+                                        <div className="w-12 h-12 bg-gradient-to-br from-orange-500 to-yellow-500 rounded-full flex items-center justify-center">
+                                            <Target className="h-6 w-6 text-white" />
+                                        </div>
+                                        <h3 className="text-xl font-bold">Precision Tracking</h3>
+                                        <p className="text-center text-gray-600">
+                                            Advanced algorithms track ball trajectory and player positioning with 99% accuracy.
+                                        </p>
+                                    </CardContent>
+                                </Card>
+                                <Card className="border-orange-100 hover:shadow-lg transition-shadow">
+                                    <CardContent className="flex flex-col items-center space-y-4 p-6">
+                                        <div className="w-12 h-12 bg-gradient-to-br from-orange-500 to-yellow-500 rounded-full flex items-center justify-center">
+                                            <Zap className="h-6 w-6 text-white" />
+                                        </div>
+                                        <h3 className="text-xl font-bold">Instant Replay</h3>
+                                        <p className="text-center text-gray-600">
+                                            Review key moments with slow-motion replay and detailed analysis.
+                                        </p>
+                                    </CardContent>
+                                </Card>
+                                <Card className="border-orange-100 hover:shadow-lg transition-shadow">
+                                    <CardContent className="flex flex-col items-center space-y-4 p-6">
+                                        <div className="w-12 h-12 bg-gradient-to-br from-orange-500 to-yellow-500 rounded-full flex items-center justify-center">
+                                            <Star className="h-6 w-6 text-white" />
+                                        </div>
+                                        <h3 className="text-xl font-bold">Skill Rating</h3>
+                                        <p className="text-center text-gray-600">
+                                            Dynamic skill rating system that adapts to your improving game.
+                                        </p>
+                                    </CardContent>
+                                </Card>
+                            </div>
+                        </div>
+                    </section>
+
+                    {/* Stats Section */}
+                    <section id="stats" className="w-full py-12 md:py-24 lg:py-32 bg-gradient-to-r from-orange-500 to-yellow-500">
+                        <div className="container px-4 md:px-6">
+                            <div className="grid gap-6 lg:grid-cols-[1fr_400px] lg:gap-12 xl:grid-cols-[1fr_600px]">
+                                <div className="flex flex-col justify-center space-y-4 text-white">
+                                    <div className="space-y-2">
+                                        <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl">The Numbers Don't Lie</h2>
+                                        <p className="max-w-[600px] text-orange-100 md:text-xl">
+                                            Join thousands of players who have already improved their game with SpikeTracker.
+                                        </p>
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div className="space-y-2">
+                                            <div className="text-3xl font-bold">10K+</div>
+                                            <div className="text-orange-100">Games Tracked</div>
+                                        </div>
+                                        <div className="space-y-2">
+                                            <div className="text-3xl font-bold">5K+</div>
+                                            <div className="text-orange-100">Active Players</div>
+                                        </div>
+                                        <div className="space-y-2">
+                                            <div className="text-3xl font-bold">98%</div>
+                                            <div className="text-orange-100">Accuracy Rate</div>
+                                        </div>
+                                        <div className="space-y-2">
+                                            <div className="text-3xl font-bold">24/7</div>
+                                            <div className="text-orange-100">Support</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className="flex items-center justify-center">
+                                    <img
+                                        src="/placeholder.svg?height=400&width=400"
+                                        width="400"
+                                        height="400"
+                                        alt="Game Statistics Dashboard"
+                                        className="rounded-2xl shadow-2xl border-4 border-white/20"
+                                    />
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    {/* Testimonials */}
+                    <section className="w-full py-12 md:py-24 lg:py-32 bg-white">
+                        <div className="container px-4 md:px-6">
+                            <div className="flex flex-col items-center justify-center space-y-4 text-center">
+                                <div className="space-y-2">
+                                    <Badge className="bg-orange-100 text-orange-800">Testimonials</Badge>
+                                    <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl">What Players Are Saying</h2>
+                                </div>
+                            </div>
+                            <div className="mx-auto grid max-w-5xl items-center gap-6 py-12 lg:grid-cols-3 lg:gap-12">
+                                <Card className="border-orange-100">
+                                    <CardContent className="p-6 space-y-4">
+                                        <div className="flex items-center space-x-1">
+                                            {[...Array(5)].map((_, i) => (
+                                                <Star key={i} className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                                            ))}
+                                        </div>
+                                        <p className="text-gray-600">
+                                            "SpikeTracker completely changed how I approach the game. The analytics helped me identify my weak
+                                            spots and improve my serve accuracy by 40%!"
+                                        </p>
+                                        <div className="flex items-center space-x-2">
+                                            <div className="w-8 h-8 bg-gradient-to-br from-orange-400 to-yellow-400 rounded-full"></div>
+                                            <div>
+                                                <div className="font-medium">Alex Chen</div>
+                                                <div className="text-sm text-gray-500">Tournament Player</div>
+                                            </div>
+                                        </div>
+                                    </CardContent>
+                                </Card>
+                                <Card className="border-orange-100">
+                                    <CardContent className="p-6 space-y-4">
+                                        <div className="flex items-center space-x-1">
+                                            {[...Array(5)].map((_, i) => (
+                                                <Star key={i} className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                                            ))}
+                                        </div>
+                                        <p className="text-gray-600">
+                                            "The team analytics feature is incredible. Our doubles team coordination improved dramatically after
+                                            using SpikeTracker for just one month."
+                                        </p>
+                                        <div className="flex items-center space-x-2">
+                                            <div className="w-8 h-8 bg-gradient-to-br from-orange-400 to-yellow-400 rounded-full"></div>
+                                            <div>
+                                                <div className="font-medium">Sarah Johnson</div>
+                                                <div className="text-sm text-gray-500">League Champion</div>
+                                            </div>
+                                        </div>
+                                    </CardContent>
+                                </Card>
+                                <Card className="border-orange-100">
+                                    <CardContent className="p-6 space-y-4">
+                                        <div className="flex items-center space-x-1">
+                                            {[...Array(5)].map((_, i) => (
+                                                <Star key={i} className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                                            ))}
+                                        </div>
+                                        <p className="text-gray-600">
+                                            "As a coach, SpikeTracker gives me the data I need to help my players improve. The instant replay
+                                            feature is a game-changer for training."
+                                        </p>
+                                        <div className="flex items-center space-x-2">
+                                            <div className="w-8 h-8 bg-gradient-to-br from-orange-400 to-yellow-400 rounded-full"></div>
+                                            <div>
+                                                <div className="font-medium">Mike Rodriguez</div>
+                                                <div className="text-sm text-gray-500">Professional Coach</div>
+                                            </div>
+                                        </div>
+                                    </CardContent>
+                                </Card>
+                            </div>
+                        </div>
+                    </section>
+
+                    {/* Download CTA */}
+                    <section id="download" className="w-full py-12 md:py-24 lg:py-32 bg-gradient-to-br from-orange-50 to-yellow-50">
+                        <div className="container px-4 md:px-6">
+                            <div className="flex flex-col items-center justify-center space-y-4 text-center">
+                                <div className="space-y-2">
+                                    <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl">Ready to Elevate Your Game?</h2>
+                                    <p className="max-w-[600px] text-gray-600 md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed">
+                                        Join thousands of players who are already tracking their way to spike ball mastery.
+                                    </p>
+                                </div>
+                                <div className="w-full max-w-sm space-y-2">
+                                    <form className="flex gap-2">
+                                        <Input
+                                            type="email"
+                                            placeholder="Enter your email"
+                                            className="flex-1 border-orange-200 focus:border-orange-400"
+                                        />
+                                        <Button
+                                            type="submit"
+                                            className="bg-gradient-to-r from-orange-500 to-yellow-500 hover:from-orange-600 hover:to-yellow-600"
+                                        >
+                                            Get Started
+                                        </Button>
+                                    </form>
+                                    <p className="text-xs text-gray-500">
+                                        Free to download. Premium features available.{" "}
+                                        <Link href="/privacy" className="underline underline-offset-2 hover:text-orange-600">
+                                            Privacy Policy
+                                        </Link>
+                                    </p>
+                                </div>
+                                <div className="flex flex-col sm:flex-row gap-4 pt-4">
+                                    <Button size="lg" className="bg-black hover:bg-gray-800 text-white">
+                                        <Download className="mr-2 h-4 w-4" />
+                                        Download for iOS
+                                    </Button>
+                                    <Button size="lg" variant="outline" className="border-gray-300 hover:bg-gray-50">
+                                        <Download className="mr-2 h-4 w-4" />
+                                        Download for Android
+                                    </Button>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+                </main>
+
+                {/* Footer */}
+                <footer className="flex flex-col gap-2 sm:flex-row py-6 w-full shrink-0 items-center px-4 md:px-6 border-t bg-white">
+                    <p className="text-xs text-gray-500">© 2024 SpikeTracker. All rights reserved.</p>
+                    <nav className="sm:ml-auto flex gap-4 sm:gap-6">
+                        <Link href="/terms" className="text-xs hover:underline underline-offset-4 hover:text-orange-600">
+                            Terms of Service
+                        </Link>
+                        <Link href="/privacy" className="text-xs hover:underline underline-offset-4 hover:text-orange-600">
+                            Privacy Policy
+                        </Link>
+                        <Link href="/support" className="text-xs hover:underline underline-offset-4 hover:text-orange-600">
+                            Support
+                        </Link>
+                    </nav>
+                </footer>
             </div>
         </>
     );
