@@ -8,7 +8,7 @@ export default defineConfig({
     base: '/build/',
     plugins: [
         laravel({
-            input: ['resources/js/app.tsx', 'resources/js/pages/dashboard.tsx', 'resources/js/pages/Games/Index.tsx'],
+            input: ['resources/js/app.tsx', 'resources/js/pages/dashboard.tsx', 'resources/js/pages/games.tsx'],
             ssr: 'resources/js/ssr.tsx',
             refresh: true,
         }),
