@@ -31,10 +31,10 @@ export default function Welcome() {
                             Dashboard
                         </Link>): (
                         <>
-                        <Link href={route('login')} className="text-sm font-medium hover:text-orange-600 transition-colors">
+                        <Link href={route('login')} className="text-sm font-medium text-gray-900 dark:text-gray-100 hover:text-orange-600 dark:hover:text-orange-400 transition-colors">
                             Login
                         </Link>
-                        <Link href={route('register')} className="text-sm font-medium hover:text-orange-600 transition-colors">
+                        <Link href={route('register')} className="text-sm font-medium text-gray-900 dark:text-gray-100 hover:text-orange-600 dark:hover:text-orange-400 transition-colors">
                             Register
                         </Link>
                         </>
