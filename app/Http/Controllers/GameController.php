@@ -99,7 +99,7 @@ class GameController extends Controller
             ]);
         }
 
-        return Inertia::render('Games/Index', [
+        return Inertia::render('games', [
             'games' => $games,
             'users' => $users,
             'search' => $request->input('search'),
