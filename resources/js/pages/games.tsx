@@ -139,9 +139,9 @@ const ScoreboardRow: FC<{ game: Game }> = ({ game }) => {
     const team1Wins = game.team1_score > game.team2_score;
     const team2Wins = game.team2_score > game.team1_score;
     return (
-        <div className="flex flex-col items-center justify-between gap-4 border-b py-2 last:border-b-0 md:flex-row">
+        <div className="flex flex-col items-center justify-between gap-4 border-b border-gray-200 dark:border-gray-800 py-2 last:border-b-0 md:flex-row">
             <div className="flex flex-1 flex-col items-center md:items-end">
-                <div className="font-semibold">
+                <div className="font-semibold text-gray-900 dark:text-gray-100">
                     {game.team1_player1.name} & {game.team1_player2.name}
                 </div>
             </div>
@@ -155,7 +155,7 @@ const ScoreboardRow: FC<{ game: Game }> = ({ game }) => {
                 </Badge>
             </div>
             <div className="flex flex-1 flex-col items-center md:items-start">
-                <div className="font-semibold">
+                <div className="font-semibold text-gray-900 dark:text-gray-100">
                     {game.team2_player1.name} & {game.team2_player2.name}
                 </div>
             </div>
@@ -191,7 +191,7 @@ const RecentGames: FC = () => {
     return (
         <div className="mt-6">
             <div className="mb-4 flex items-center justify-between">
-                <h2 className="text-2xl font-semibold">Recent Games</h2>
+                <h2 className="text-2xl font-semibold text-gray-900 dark:text-gray-100">Recent Games</h2>
                 <Input
                     type="search"
                     placeholder="Search by user name..."
@@ -201,11 +201,11 @@ const RecentGames: FC = () => {
                 />
             </div>
             {isLoading ? (
-                <div>Loading...</div>
+                <div className="text-gray-600 dark:text-gray-400">Loading...</div>
             ) : error ? (
-                <div>Error: {error.message}</div>
+                <div className="text-red-500 dark:text-red-400">Error: {error.message}</div>
             ) : (
-                <div className="divide-y">
+                <div className="divide-y divide-gray-200 dark:divide-gray-800">
                     {gamesData?.data.data?.length === 0 ? (
                         <div className="py-8 text-center text-muted-foreground">No games found.</div>
                     ) : (
@@ -411,7 +411,7 @@ const TeamGenerator: FC<{ users: User[]; onTeamsGenerated: (teams: { team1: User
         <div className="space-y-6">
             <div className="space-y-4">
                 <div className="flex items-center justify-between">
-                    <h3 className="text-lg font-semibold">Select Players</h3>
+                    <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Select Players</h3>
                 </div>
 
                 <div className="flex gap-2">
@@ -424,7 +424,7 @@ const TeamGenerator: FC<{ users: User[]; onTeamsGenerated: (teams: { team1: User
                     <div className="space-y-2">
                         {selectedPlayers.map((player) => (
                             <div key={player.id} className="flex items-center justify-between rounded-lg bg-muted p-3">
-                                <span>{player.name}</span>
+                                <span className="text-gray-900 dark:text-gray-100">{player.name}</span>
                                 <Button variant="ghost" size="sm" onClick={() => handleRemovePlayer(player.id)}>
                                     <X className="h-4 w-4" />
                                 </Button>
@@ -443,22 +443,22 @@ const TeamGenerator: FC<{ users: User[]; onTeamsGenerated: (teams: { team1: User
             {generatedTeams && (
                 <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
                     <div className="space-y-4">
-                        <h4 className="text-lg font-semibold">Team 1</h4>
+                        <h4 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Team 1</h4>
                         <div className="space-y-2">
                             {generatedTeams.team1.map((player) => (
                                 <div key={player.id} className="flex items-center justify-between rounded-lg bg-muted p-3">
-                                    <span>{player.name}</span>
+                                    <span className="text-gray-900 dark:text-gray-100">{player.name}</span>
                                     <Badge variant="outline">MMR: {player.mmr}</Badge>
                                 </div>
                             ))}
                         </div>
                     </div>
                     <div className="space-y-4">
-                        <h4 className="text-lg font-semibold">Team 2</h4>
+                        <h4 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Team 2</h4>
                         <div className="space-y-2">
                             {generatedTeams.team2.map((player) => (
                                 <div key={player.id} className="flex items-center justify-between rounded-lg bg-muted p-3">
-                                    <span>{player.name}</span>
+                                    <span className="text-gray-900 dark:text-gray-100">{player.name}</span>
                                     <Badge variant="outline">MMR: {player.mmr}</Badge>
                                 </div>
                             ))}
@@ -496,12 +496,12 @@ export default function Index({ users }: Props) {
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Games" />
             <div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
-                <div className="overflow-hidden bg-white">
+                <div className="overflow-hidden bg-background">
                     <div className="space-y-12">
-                        <h3 className="text-lg font-semibold">Team Generator</h3>
+                        <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Team Generator</h3>
                         <TeamGenerator users={users} onTeamsGenerated={setGeneratedTeams} />
 
-                        <h3 className="text-lg font-semibold">New Game</h3>
+                        <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">New Game</h3>
                         <NewGameForm initialTeams={generatedTeams} />
 
                         <Leaderboard leaderboard={gamesData?.leaderboard || []} />
