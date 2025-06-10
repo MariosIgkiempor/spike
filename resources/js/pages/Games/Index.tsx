@@ -1,25 +1,19 @@
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem, PageProps, Game, User } from '@/types';
-import { Head, useForm, router, usePage } from '@inertiajs/react';
+import { Head, useForm, usePage } from '@inertiajs/react';
 import { useState, type FC, useEffect } from 'react';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { ColumnDef, SortingState, flexRender, useReactTable, getCoreRowModel, getSortedRowModel, getFilteredRowModel, ColumnFiltersState } from '@tanstack/react-table';
+import { ColumnDef, SortingState, useReactTable, getCoreRowModel, getSortedRowModel, getFilteredRowModel, ColumnFiltersState } from '@tanstack/react-table';
 import { DataTable } from '@/components/ui/data-table';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { useDebounce } from '@/hooks/useDebounce';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { NumberInput } from '@/components/ui/number-input';
 import { Badge } from '@/components/ui/badge';
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { DataTableColumnHeader } from '@/components/ui/data-table-column-header';
-import { X, Plus } from 'lucide-react';
+import { X } from 'lucide-react';
 import { PlayerInput } from '@/components/PlayerInput';
 import { generateFairTeams } from '@/lib/mmr';
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from '@/components/ui/command';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 
 interface Props extends PageProps {
     games: Game[];
@@ -31,7 +25,7 @@ const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Games', href: '/games' },
 ];
 
-const NewGameForm: FC<{ users: User[], initialTeams: { team1: User[], team2: User[] } | null }> = ({ users, initialTeams }) => {
+const NewGameForm: FC<{ initialTeams: { team1: User[], team2: User[] } | null }> = ({ initialTeams }) => {
     const { data, setData, post, processing, errors, reset } = useForm({
         team1_player1_id: initialTeams?.team1[0]?.id || null,
         team1_player2_id: initialTeams?.team1[1]?.id || null,
@@ -64,7 +58,6 @@ const NewGameForm: FC<{ users: User[], initialTeams: { team1: User[], team2: Use
                     <div className="flex gap-2">
                         <div className="flex-1">
                             <PlayerInput
-                                users={users}
                                 value={data.team1_player1_id}
                                 onChange={(value) => setData('team1_player1_id', value)}
                                 label="Player 1"
@@ -73,7 +66,6 @@ const NewGameForm: FC<{ users: User[], initialTeams: { team1: User[], team2: Use
                         </div>
                         <div className="flex-1">
                             <PlayerInput
-                                users={users}
                                 value={data.team1_player2_id}
                                 onChange={(value) => setData('team1_player2_id', value)}
                                 label="Player 2"
@@ -88,7 +80,6 @@ const NewGameForm: FC<{ users: User[], initialTeams: { team1: User[], team2: Use
                             min={0}
                             max={100}
                             className="w-48 text-4xl"
-                            error={errors.team1_score}
                         />
                     </div>
                 </div>
@@ -104,7 +95,6 @@ const NewGameForm: FC<{ users: User[], initialTeams: { team1: User[], team2: Use
                     <div className="flex gap-2">
                         <div className="flex-1">
                             <PlayerInput
-                                users={users}
                                 value={data.team2_player1_id}
                                 onChange={(value) => setData('team2_player1_id', value)}
                                 label="Player 1"
@@ -113,7 +103,6 @@ const NewGameForm: FC<{ users: User[], initialTeams: { team1: User[], team2: Use
                         </div>
                         <div className="flex-1">
                             <PlayerInput
-                                users={users}
                                 value={data.team2_player2_id}
                                 onChange={(value) => setData('team2_player2_id', value)}
                                 label="Player 2"
@@ -128,7 +117,6 @@ const NewGameForm: FC<{ users: User[], initialTeams: { team1: User[], team2: Use
                             min={0}
                             max={100}
                             className="w-48 text-4xl"
-                            error={errors.team2_score}
                         />
                     </div>
                 </div>
@@ -143,7 +131,7 @@ const NewGameForm: FC<{ users: User[], initialTeams: { team1: User[], team2: Use
     );
 };
 
-const ScoreboardRow: FC<{ game: any }> = ({ game }) => {
+const ScoreboardRow: FC<{ game: Game }> = ({ game }) => {
     const team1Wins = game.team1_score > game.team2_score;
     const team2Wins = game.team2_score > game.team1_score;
     return (
@@ -213,7 +201,7 @@ const RecentGames: FC = () => {
                     {(gamesData?.data.data?.length === 0) ? (
                         <div className="text-center text-muted-foreground py-8">No games found.</div>
                     ) : (
-                        gamesData?.data.data?.map((game: any) => (
+                        gamesData?.data.data?.map((game: Game) => (
                             <ScoreboardRow key={game.id} game={game} />
                         ))
                     )}
@@ -223,13 +211,21 @@ const RecentGames: FC = () => {
     );
 };
 
+type LeaderBoardUser = User & {
+    rank: number;
+    win_rate: number;
+    total_games: number;
+    wins: number;
+    losses: number;
+    score_diff: number;
+}
 // Leaderboard UI
-const Leaderboard: FC<{ leaderboard: any[] }> = ({ leaderboard }) => {
+const Leaderboard: FC<{ leaderboard: LeaderBoardUser[] }> = ({ leaderboard }) => {
     const [sorting, setSorting] = useState<SortingState>([]);
     const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
     const [search, setSearch] = useState('');
 
-    const columns: ColumnDef<any>[] = [
+    const columns: ColumnDef<LeaderBoardUser>[] = [
         {
             accessorKey: 'rank',
             header: ({ column }) => (
@@ -368,9 +364,13 @@ const Leaderboard: FC<{ leaderboard: any[] }> = ({ leaderboard }) => {
     );
 };
 
+type UserWithMMR = User & {
+    mmr: number;
+}
+
 const TeamGenerator: FC<{ users: User[], onTeamsGenerated: (teams: { team1: User[], team2: User[] }) => void }> = ({ users, onTeamsGenerated }) => {
     const [selectedPlayers, setSelectedPlayers] = useState<User[]>([]);
-    const [generatedTeams, setGeneratedTeams] = useState<{ team1: User[], team2: User[] } | null>(null);
+    const [generatedTeams, setGeneratedTeams] = useState<{ team1: UserWithMMR[], team2: UserWithMMR[] } | null>(null);
     const { data: gamesData } = useQuery({
         queryKey: ['games'],
         queryFn: async () => {
@@ -419,7 +419,6 @@ const TeamGenerator: FC<{ users: User[], onTeamsGenerated: (teams: { team1: User
                 <div className="flex gap-2">
                     <div className="flex-1">
                         <PlayerInput
-                            users={users.filter(user => !selectedPlayers.some(p => p.id === user.id))}
                             value={null}
                             onChange={handleAddPlayer}
                             label="Add Player"
@@ -485,13 +484,13 @@ const TeamGenerator: FC<{ users: User[], onTeamsGenerated: (teams: { team1: User
     );
 };
 
-export default function Index({ auth, games, users }: Props) {
-    const { search: initialSearch } = usePage().props as any;
-    const [searchQuery, setSearchQuery] = useState(initialSearch || '');
+export default function Index({ users }: Props) {
+    const { search: initialSearch } = usePage().props;
+    const [searchQuery, ] = useState(initialSearch || '');
     const debouncedSearch = useDebounce(searchQuery, 300);
     const [generatedTeams, setGeneratedTeams] = useState<{ team1: User[], team2: User[] } | null>(null);
 
-    const { data: gamesData, isLoading, error } = useQuery({
+    const { data: gamesData } = useQuery({
         queryKey: ['games', debouncedSearch],
         queryFn: async () => {
             const response = await fetch(route('games.index', { search: debouncedSearch }), {
@@ -517,7 +516,7 @@ export default function Index({ auth, games, users }: Props) {
                         <TeamGenerator users={users} onTeamsGenerated={setGeneratedTeams} />
 
                         <h3 className="text-lg font-semibold">New Game</h3>
-                        <NewGameForm users={users} initialTeams={generatedTeams} />
+                        <NewGameForm initialTeams={generatedTeams} />
 
                         <Leaderboard leaderboard={gamesData?.leaderboard || []} />
 

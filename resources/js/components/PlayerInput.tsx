@@ -1,6 +1,5 @@
-import { User } from "@/types";
 import { Label } from "./ui/label";
-import { AsyncCombobox, type ComboBoxItem } from "./ui/async-combobox";
+import { AsyncCombobox } from "./ui/async-combobox";
 
 interface PlayerInputProps {
     value: number | null;
