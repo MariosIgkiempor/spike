@@ -1,5 +1,5 @@
-import { Label } from "./ui/label";
-import { AsyncCombobox } from "./ui/async-combobox";
+import { AsyncCombobox } from './ui/async-combobox';
+import { Label } from './ui/label';
 
 interface PlayerInputProps {
     value: number | null;
@@ -10,7 +10,7 @@ interface PlayerInputProps {
 }
 
 export function PlayerInput({ value, onChange, label, error, disabled }: PlayerInputProps) {
-    const selectedItem = value ? { value, label: "" } : null;
+    const selectedItem = value ? { value, label: '' } : null;
 
     return (
         <div className="space-y-2">
@@ -26,4 +26,4 @@ export function PlayerInput({ value, onChange, label, error, disabled }: PlayerI
             {error && <p className="text-sm text-destructive">{error}</p>}
         </div>
     );
-} 
+}

@@ -1,9 +1,9 @@
-import { Game, User } from "@/types";
+import { Game, User } from '@/types';
 
 type MatchHistory = {
     our_score: number;
     their_score: number;
-}[]
+}[];
 
 export const calculatePlayerMMR = (matchHistory: MatchHistory, baseMMR = 1000, k = 1.5) => {
     let mmr = baseMMR;
@@ -17,17 +17,23 @@ export const calculatePlayerMMR = (matchHistory: MatchHistory, baseMMR = 1000, k
     });
 
     return Math.round(mmr);
-}
+};
 
 export const generateFairTeams = (players: User[], games: Game[]) => {
-    const playersWithMMR = players.map(player => {
-        const playerGames = games.filter(game => game.team1_player1.id === player.id || game.team1_player2.id === player.id || game.team2_player1.id === player.id || game.team2_player2.id === player.id);
-        const mmr = calculatePlayerMMR(playerGames.map(game => ({ our_score: game.team1_score, their_score: game.team2_score })));
+    const playersWithMMR = players.map((player) => {
+        const playerGames = games.filter(
+            (game) =>
+                game.team1_player1.id === player.id ||
+                game.team1_player2.id === player.id ||
+                game.team2_player1.id === player.id ||
+                game.team2_player2.id === player.id,
+        );
+        const mmr = calculatePlayerMMR(playerGames.map((game) => ({ our_score: game.team1_score, their_score: game.team2_score })));
         return { ...player, mmr };
     });
 
-    type PlayerWithMMR = typeof playersWithMMR[number];
-    const combinations: { team1: [PlayerWithMMR, PlayerWithMMR], team2: [PlayerWithMMR, PlayerWithMMR] }[] = [];
+    type PlayerWithMMR = (typeof playersWithMMR)[number];
+    const combinations: { team1: [PlayerWithMMR, PlayerWithMMR]; team2: [PlayerWithMMR, PlayerWithMMR] }[] = [];
 
     // Try every possible combination of 2v2 teams
     for (let i = 0; i < playersWithMMR.length; i++) {
@@ -39,7 +45,7 @@ export const generateFairTeams = (players: User[], games: Game[]) => {
 
                     combinations.push({
                         team1: [playersWithMMR[i], playersWithMMR[j]],
-                        team2: [playersWithMMR[k], playersWithMMR[l]]
+                        team2: [playersWithMMR[k], playersWithMMR[l]],
                     });
                 }
             }
@@ -47,14 +53,14 @@ export const generateFairTeams = (players: User[], games: Game[]) => {
     }
 
     // Calculate the MMR difference for each combination
-    const combinationsWithMMR = combinations.map(combination => {
+    const combinationsWithMMR = combinations.map((combination) => {
         const team1MMR = combination.team1.reduce((sum, player) => sum + player.mmr, 0);
         const team2MMR = combination.team2.reduce((sum, player) => sum + player.mmr, 0);
         const mmrDifference = Math.abs(team1MMR - team2MMR);
 
         return {
             ...combination,
-            mmrDifference
+            mmrDifference,
         };
     });
 
@@ -63,6 +69,6 @@ export const generateFairTeams = (players: User[], games: Game[]) => {
 
     return {
         team1: mostBalancedCombination.team1,
-        team2: mostBalancedCombination.team2
+        team2: mostBalancedCombination.team2,
     };
-}
+};
