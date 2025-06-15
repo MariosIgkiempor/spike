@@ -21,7 +21,7 @@ import {
     useReactTable,
 } from '@tanstack/react-table';
 import { X } from 'lucide-react';
-import { type FC, useEffect, useState } from 'react';
+import { type FC, useState } from 'react';
 
 interface Props extends PageProps {
     games: Game[];
@@ -139,7 +139,7 @@ const ScoreboardRow: FC<{ game: Game }> = ({ game }) => {
     const team1Wins = game.team1_score > game.team2_score;
     const team2Wins = game.team2_score > game.team1_score;
     return (
-        <div className="flex flex-col items-center justify-between gap-4 border-b border-gray-200 dark:border-gray-800 py-2 last:border-b-0 md:flex-row">
+        <div className="flex flex-col items-center justify-between gap-4 border-b border-gray-200 py-2 last:border-b-0 md:flex-row dark:border-gray-800">
             <div className="flex flex-1 flex-col items-center md:items-end">
                 <div className="font-semibold text-gray-900 dark:text-gray-100">
                     {game.team1_player1.name} & {game.team1_player2.name}
@@ -327,9 +327,10 @@ const Leaderboard: FC<{ leaderboard: LeaderBoardUser[] }> = ({ leaderboard }) =>
         getFilteredRowModel: getFilteredRowModel(),
     });
 
-    useEffect(() => {
+    const onSearchChange = (value: string) => {
+        setSearch(value)
         table.getColumn('name')?.setFilterValue(search);
-    }, [search]);
+    }
 
     return (
         <div className="mb-8">
@@ -352,7 +353,7 @@ const Leaderboard: FC<{ leaderboard: LeaderBoardUser[] }> = ({ leaderboard }) =>
                         type="search"
                         placeholder="Search by player name..."
                         value={search}
-                        onChange={(e) => setSearch(e.target.value)}
+                        onChange={({ target }) => onSearchChange(target.value)}
                         className="max-w-md"
                     />
                 </div>

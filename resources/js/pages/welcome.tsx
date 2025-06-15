@@ -1,6 +1,5 @@
-import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import { Card, CardContent } from '@/components/ui/card';
 import { type SharedData } from '@/types';
 import { Head, Link, usePage } from '@inertiajs/react';
 import { Badge, BarChart3, Download, Github, Play, Star, Target, Trophy, Users, Zap } from 'lucide-react';
@@ -14,30 +13,37 @@ export default function Welcome() {
                 <link rel="preconnect" href="https://fonts.bunny.net" />
                 <link href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600" rel="stylesheet" />
             </Head>
-            <div className="flex flex-col min-h-screen bg-gradient-to-br from-orange-50 to-yellow-50 dark:from-gray-900 dark:to-gray-950">
+            <div className="flex min-h-screen flex-col bg-gradient-to-br from-orange-50 to-yellow-50 dark:from-gray-900 dark:to-gray-950">
                 {/* Header */}
-                <header className="px-4 lg:px-6 h-16 flex items-center border-b bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm sticky top-0 z-50 border-gray-200 dark:border-gray-800">
+                <header className="sticky top-0 z-50 flex h-16 items-center border-b border-gray-200 bg-white/80 px-4 backdrop-blur-sm lg:px-6 dark:border-gray-800 dark:bg-gray-900/80">
                     <Link href="/" className="flex items-center justify-center">
-                        <div className="w-8 h-8 bg-gradient-to-br from-orange-500 to-yellow-500 rounded-full flex items-center justify-center">
+                        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-orange-500 to-yellow-500">
                             <Target className="h-5 w-5 text-white" />
                         </div>
-                        <span className="ml-2 text-xl font-bold bg-gradient-to-r from-orange-600 to-yellow-600 bg-clip-text text-transparent">
+                        <span className="ml-2 bg-gradient-to-r from-orange-600 to-yellow-600 bg-clip-text text-xl font-bold text-transparent">
                             SpikeTracker
                         </span>
                     </Link>
                     <nav className="ml-auto flex gap-4 sm:gap-6">
                         {auth.user ? (
-                        <Link href={route('dashboard')} className="text-sm font-medium hover:text-orange-600 transition-colors">
-                            Dashboard
-                        </Link>): (
-                        <>
-                        <Link href={route('login')} className="text-sm font-medium text-gray-900 dark:text-gray-100 hover:text-orange-600 dark:hover:text-orange-400 transition-colors">
-                            Login
-                        </Link>
-                        <Link href={route('register')} className="text-sm font-medium text-gray-900 dark:text-gray-100 hover:text-orange-600 dark:hover:text-orange-400 transition-colors">
-                            Register
-                        </Link>
-                        </>
+                            <Link href={route('dashboard')} className="text-sm font-medium transition-colors hover:text-orange-600">
+                                Dashboard
+                            </Link>
+                        ) : (
+                            <>
+                                <Link
+                                    href={route('login')}
+                                    className="text-sm font-medium text-gray-900 transition-colors hover:text-orange-600 dark:text-gray-100 dark:hover:text-orange-400"
+                                >
+                                    Login
+                                </Link>
+                                <Link
+                                    href={route('register')}
+                                    className="text-sm font-medium text-gray-900 transition-colors hover:text-orange-600 dark:text-gray-100 dark:hover:text-orange-400"
+                                >
+                                    Register
+                                </Link>
+                            </>
                         )}
                     </nav>
                 </header>
@@ -49,17 +55,15 @@ export default function Welcome() {
                             <div className="grid gap-6 lg:grid-cols-[1fr_400px] lg:gap-12 xl:grid-cols-[1fr_600px]">
                                 <div className="flex flex-col justify-center space-y-4">
                                     <div className="space-y-2">
-                                        <Badge className="bg-orange-100 text-orange-800 hover:bg-orange-200">
-                                            🏆 #1 Spike Ball Tracking App
-                                        </Badge>
+                                        <Badge className="bg-orange-100 text-orange-800 hover:bg-orange-200">🏆 #1 Spike Ball Tracking App</Badge>
                                         <h1 className="text-3xl font-bold tracking-tighter sm:text-5xl xl:text-6xl/none">
-                                            Track Every{" "}
+                                            Track Every{' '}
                                             <span className="bg-gradient-to-r from-orange-600 to-yellow-600 bg-clip-text text-transparent">
                                                 Spike
                                             </span>
                                             <br></br>Master Every Game
                                         </h1>
-                                        <p className="max-w-[600px] text-gray-600 dark:text-gray-400 md:text-xl">
+                                        <p className="max-w-[600px] text-gray-600 md:text-xl dark:text-gray-400">
                                             The ultimate spike ball tracking companion, definitely not generated by AI...
                                         </p>
                                     </div>
@@ -71,7 +75,11 @@ export default function Welcome() {
                                             <Play className="mr-2 h-4 w-4" />
                                             Start Tracking
                                         </Button>
-                                        <Button variant="outline" size="lg" className="border-orange-200 hover:bg-orange-50 dark:border-orange-800 dark:hover:bg-orange-950">
+                                        <Button
+                                            variant="outline"
+                                            size="lg"
+                                            className="border-orange-200 hover:bg-orange-50 dark:border-orange-800 dark:hover:bg-orange-950"
+                                        >
                                             <Github className="mr-2 h-4 w-4" />
                                             View Demo
                                         </Button>
@@ -93,13 +101,13 @@ export default function Welcome() {
                                 </div>
                                 <div className="flex items-center justify-center">
                                     <div className="relative">
-                                        <div className="absolute inset-0 bg-gradient-to-r from-orange-400 to-yellow-400 rounded-3xl blur-3xl opacity-20"></div>
+                                        <div className="absolute inset-0 rounded-3xl bg-gradient-to-r from-orange-400 to-yellow-400 opacity-20 blur-3xl"></div>
                                         <img
                                             src="/placeholder.svg?height=400&width=300"
                                             width="300"
                                             height="400"
                                             alt="SpikeTracker App Screenshot"
-                                            className="relative rounded-3xl shadow-2xl border-8 border-white"
+                                            className="relative rounded-3xl border-8 border-white shadow-2xl"
                                         />
                                     </div>
                                 </div>
@@ -108,22 +116,22 @@ export default function Welcome() {
                     </section>
 
                     {/* Features Section */}
-                    <section id="features" className="w-full py-12 md:py-24 lg:py-32 bg-white dark:bg-gray-900">
+                    <section id="features" className="w-full bg-white py-12 md:py-24 lg:py-32 dark:bg-gray-900">
                         <div className="container px-4 md:px-6">
                             <div className="flex flex-col items-center justify-center space-y-4 text-center">
                                 <div className="space-y-2">
                                     <Badge className="bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200">Features</Badge>
                                     <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl">Everything You Need to Dominate</h2>
-                                    <p className="max-w-[900px] text-gray-600 dark:text-gray-400 md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed">
-                                        From real-time game tracking to advanced analytics, SpikeTracker has all the tools to elevate your
-                                        spike ball game.
+                                    <p className="max-w-[900px] text-gray-600 md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed dark:text-gray-400">
+                                        From real-time game tracking to advanced analytics, SpikeTracker has all the tools to elevate your spike ball
+                                        game.
                                     </p>
                                 </div>
                             </div>
                             <div className="mx-auto grid max-w-5xl items-center gap-6 py-12 lg:grid-cols-3 lg:gap-12">
-                                <Card className="border-orange-100 dark:border-orange-900 hover:shadow-lg transition-shadow dark:bg-gray-800">
+                                <Card className="border-orange-100 transition-shadow hover:shadow-lg dark:border-orange-900 dark:bg-gray-800">
                                     <CardContent className="flex flex-col items-center space-y-4 p-6">
-                                        <div className="w-12 h-12 bg-gradient-to-br from-orange-500 to-yellow-500 rounded-full flex items-center justify-center">
+                                        <div className="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-orange-500 to-yellow-500">
                                             <BarChart3 className="h-6 w-6 text-white" />
                                         </div>
                                         <h3 className="text-xl font-bold">Real-Time Stats</h3>
@@ -132,9 +140,9 @@ export default function Welcome() {
                                         </p>
                                     </CardContent>
                                 </Card>
-                                <Card className="border-orange-100 dark:border-orange-900 hover:shadow-lg transition-shadow dark:bg-gray-800">
+                                <Card className="border-orange-100 transition-shadow hover:shadow-lg dark:border-orange-900 dark:bg-gray-800">
                                     <CardContent className="flex flex-col items-center space-y-4 p-6">
-                                        <div className="w-12 h-12 bg-gradient-to-br from-orange-500 to-yellow-500 rounded-full flex items-center justify-center">
+                                        <div className="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-orange-500 to-yellow-500">
                                             <Trophy className="h-6 w-6 text-white" />
                                         </div>
                                         <h3 className="text-xl font-bold">Tournament Mode</h3>
@@ -143,9 +151,9 @@ export default function Welcome() {
                                         </p>
                                     </CardContent>
                                 </Card>
-                                <Card className="border-orange-100 dark:border-orange-900 hover:shadow-lg transition-shadow dark:bg-gray-800">
+                                <Card className="border-orange-100 transition-shadow hover:shadow-lg dark:border-orange-900 dark:bg-gray-800">
                                     <CardContent className="flex flex-col items-center space-y-4 p-6">
-                                        <div className="w-12 h-12 bg-gradient-to-br from-orange-500 to-yellow-500 rounded-full flex items-center justify-center">
+                                        <div className="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-orange-500 to-yellow-500">
                                             <Users className="h-6 w-6 text-white" />
                                         </div>
                                         <h3 className="text-xl font-bold">Team Analytics</h3>
@@ -154,9 +162,9 @@ export default function Welcome() {
                                         </p>
                                     </CardContent>
                                 </Card>
-                                <Card className="border-orange-100 dark:border-orange-900 hover:shadow-lg transition-shadow dark:bg-gray-800">
+                                <Card className="border-orange-100 transition-shadow hover:shadow-lg dark:border-orange-900 dark:bg-gray-800">
                                     <CardContent className="flex flex-col items-center space-y-4 p-6">
-                                        <div className="w-12 h-12 bg-gradient-to-br from-orange-500 to-yellow-500 rounded-full flex items-center justify-center">
+                                        <div className="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-orange-500 to-yellow-500">
                                             <Target className="h-6 w-6 text-white" />
                                         </div>
                                         <h3 className="text-xl font-bold">Precision Tracking</h3>
@@ -165,9 +173,9 @@ export default function Welcome() {
                                         </p>
                                     </CardContent>
                                 </Card>
-                                <Card className="border-orange-100 dark:border-orange-900 hover:shadow-lg transition-shadow dark:bg-gray-800">
+                                <Card className="border-orange-100 transition-shadow hover:shadow-lg dark:border-orange-900 dark:bg-gray-800">
                                     <CardContent className="flex flex-col items-center space-y-4 p-6">
-                                        <div className="w-12 h-12 bg-gradient-to-br from-orange-500 to-yellow-500 rounded-full flex items-center justify-center">
+                                        <div className="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-orange-500 to-yellow-500">
                                             <Zap className="h-6 w-6 text-white" />
                                         </div>
                                         <h3 className="text-xl font-bold">Instant Replay</h3>
@@ -176,9 +184,9 @@ export default function Welcome() {
                                         </p>
                                     </CardContent>
                                 </Card>
-                                <Card className="border-orange-100 dark:border-orange-900 hover:shadow-lg transition-shadow dark:bg-gray-800">
+                                <Card className="border-orange-100 transition-shadow hover:shadow-lg dark:border-orange-900 dark:bg-gray-800">
                                     <CardContent className="flex flex-col items-center space-y-4 p-6">
-                                        <div className="w-12 h-12 bg-gradient-to-br from-orange-500 to-yellow-500 rounded-full flex items-center justify-center">
+                                        <div className="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-orange-500 to-yellow-500">
                                             <Star className="h-6 w-6 text-white" />
                                         </div>
                                         <h3 className="text-xl font-bold">Skill Rating</h3>
@@ -192,7 +200,7 @@ export default function Welcome() {
                     </section>
 
                     {/* Stats Section */}
-                    <section id="stats" className="w-full py-12 md:py-24 lg:py-32 bg-gradient-to-r from-orange-500 to-yellow-500">
+                    <section id="stats" className="w-full bg-gradient-to-r from-orange-500 to-yellow-500 py-12 md:py-24 lg:py-32">
                         <div className="container px-4 md:px-6">
                             <div className="grid gap-6 lg:grid-cols-[1fr_400px] lg:gap-12 xl:grid-cols-[1fr_600px]">
                                 <div className="flex flex-col justify-center space-y-4 text-white">
@@ -227,7 +235,7 @@ export default function Welcome() {
                                         width="400"
                                         height="400"
                                         alt="Game Statistics Dashboard"
-                                        className="rounded-2xl shadow-2xl border-4 border-white/20"
+                                        className="rounded-2xl border-4 border-white/20 shadow-2xl"
                                     />
                                 </div>
                             </div>
@@ -235,19 +243,19 @@ export default function Welcome() {
                     </section>
 
                     {/* Testimonials Section */}
-                    <section id="testimonials" className="w-full py-12 md:py-24 lg:py-32 bg-gray-50 dark:bg-gray-900">
+                    <section id="testimonials" className="w-full bg-gray-50 py-12 md:py-24 lg:py-32 dark:bg-gray-900">
                         <div className="container px-4 md:px-6">
                             <div className="flex flex-col items-center justify-center space-y-4 text-center">
                                 <div className="space-y-2">
                                     <Badge className="bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200">Testimonials</Badge>
                                     <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl">What Players Are Saying</h2>
-                                    <p className="max-w-[900px] text-gray-600 dark:text-gray-400 md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed">
+                                    <p className="max-w-[900px] text-gray-600 md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed dark:text-gray-400">
                                         Join thousands of satisfied players who have transformed their game with SpikeTracker.
                                     </p>
                                 </div>
                             </div>
                             <div className="mx-auto grid max-w-5xl items-center gap-6 py-12 lg:grid-cols-3 lg:gap-12">
-                                <Card className="border-orange-100 dark:border-orange-900 hover:shadow-lg transition-shadow dark:bg-gray-800">
+                                <Card className="border-orange-100 transition-shadow hover:shadow-lg dark:border-orange-900 dark:bg-gray-800">
                                     <CardContent className="flex flex-col items-center space-y-4 p-6">
                                         <div className="flex items-center space-x-2">
                                             <Star className="h-5 w-5 fill-yellow-400 text-yellow-400" />
@@ -268,7 +276,7 @@ export default function Welcome() {
                                         </div>
                                     </CardContent>
                                 </Card>
-                                <Card className="border-orange-100 dark:border-orange-900 hover:shadow-lg transition-shadow dark:bg-gray-800">
+                                <Card className="border-orange-100 transition-shadow hover:shadow-lg dark:border-orange-900 dark:bg-gray-800">
                                     <CardContent className="flex flex-col items-center space-y-4 p-6">
                                         <div className="flex items-center space-x-2">
                                             <Star className="h-5 w-5 fill-yellow-400 text-yellow-400" />
@@ -289,7 +297,7 @@ export default function Welcome() {
                                         </div>
                                     </CardContent>
                                 </Card>
-                                <Card className="border-orange-100 dark:border-orange-900 hover:shadow-lg transition-shadow dark:bg-gray-800">
+                                <Card className="border-orange-100 transition-shadow hover:shadow-lg dark:border-orange-900 dark:bg-gray-800">
                                     <CardContent className="flex flex-col items-center space-y-4 p-6">
                                         <div className="flex items-center space-x-2">
                                             <Star className="h-5 w-5 fill-yellow-400 text-yellow-400" />
@@ -315,7 +323,7 @@ export default function Welcome() {
                     </section>
 
                     {/* CTA Section */}
-                    <section id="cta" className="w-full py-12 md:py-24 lg:py-32 bg-gradient-to-r from-orange-500 to-yellow-500">
+                    <section id="cta" className="w-full bg-gradient-to-r from-orange-500 to-yellow-500 py-12 md:py-24 lg:py-32">
                         <div className="container px-4 md:px-6">
                             <div className="flex flex-col items-center justify-center space-y-4 text-center">
                                 <div className="space-y-2">
@@ -331,7 +339,11 @@ export default function Welcome() {
                                     >
                                         Get Started
                                     </Button>
-                                    <Button variant="outline" size="lg" className="border-white text-white hover:bg-orange-600 dark:border-orange-200 dark:hover:bg-orange-600">
+                                    <Button
+                                        variant="outline"
+                                        size="lg"
+                                        className="border-white text-white hover:bg-orange-600 dark:border-orange-200 dark:hover:bg-orange-600"
+                                    >
                                         Learn More
                                     </Button>
                                 </div>
@@ -341,16 +353,16 @@ export default function Welcome() {
                 </main>
 
                 {/* Footer */}
-                <footer className="flex flex-col gap-2 sm:flex-row py-6 w-full shrink-0 items-center px-4 md:px-6 border-t bg-white">
+                <footer className="flex w-full shrink-0 flex-col items-center gap-2 border-t bg-white px-4 py-6 sm:flex-row md:px-6">
                     <p className="text-xs text-gray-500">© 2024 SpikeTracker. All rights reserved.</p>
-                    <nav className="sm:ml-auto flex gap-4 sm:gap-6">
-                        <Link href="/terms" className="text-xs hover:underline underline-offset-4 hover:text-orange-600">
+                    <nav className="flex gap-4 sm:ml-auto sm:gap-6">
+                        <Link href="/terms" className="text-xs underline-offset-4 hover:text-orange-600 hover:underline">
                             Terms of Service
                         </Link>
-                        <Link href="/privacy" className="text-xs hover:underline underline-offset-4 hover:text-orange-600">
+                        <Link href="/privacy" className="text-xs underline-offset-4 hover:text-orange-600 hover:underline">
                             Privacy Policy
                         </Link>
-                        <Link href="/support" className="text-xs hover:underline underline-offset-4 hover:text-orange-600">
+                        <Link href="/support" className="text-xs underline-offset-4 hover:text-orange-600 hover:underline">
                             Support
                         </Link>
                     </nav>

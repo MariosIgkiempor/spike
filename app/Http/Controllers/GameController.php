@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Game;
 use App\Models\User;
+use Closure;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
@@ -20,15 +21,15 @@ class GameController extends Controller
                 $q->whereHas('team1_player1', function ($q) use ($search) {
                     $q->where('name', 'like', "%{$search}%");
                 })
-                ->orWhereHas('team1_player2', function ($q) use ($search) {
-                    $q->where('name', 'like', "%{$search}%");
-                })
-                ->orWhereHas('team2_player1', function ($q) use ($search) {
-                    $q->where('name', 'like', "%{$search}%");
-                })
-                ->orWhereHas('team2_player2', function ($q) use ($search) {
-                    $q->where('name', 'like', "%{$search}%");
-                });
+                    ->orWhereHas('team1_player2', function ($q) use ($search) {
+                        $q->where('name', 'like', "%{$search}%");
+                    })
+                    ->orWhereHas('team2_player1', function ($q) use ($search) {
+                        $q->where('name', 'like', "%{$search}%");
+                    })
+                    ->orWhereHas('team2_player2', function ($q) use ($search) {
+                        $q->where('name', 'like', "%{$search}%");
+                    });
             });
         }
 
@@ -50,10 +51,10 @@ class GameController extends Controller
                     $q2->where('team1_player1_id', $user->id)
                         ->orWhere('team1_player2_id', $user->id);
                 })->whereColumn('team1_score', '>', 'team2_score')
-                ->orWhere(function ($q2) use ($user) {
-                    $q2->where('team2_player1_id', $user->id)
-                        ->orWhere('team2_player2_id', $user->id);
-                })->whereColumn('team2_score', '>', 'team1_score');
+                    ->orWhere(function ($q2) use ($user) {
+                        $q2->where('team2_player1_id', $user->id)
+                            ->orWhere('team2_player2_id', $user->id);
+                    })->whereColumn('team2_score', '>', 'team1_score');
             })->count();
 
             $losses = $totalGames - $wins;
@@ -110,12 +111,12 @@ class GameController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'team1_player1_id' => 'required|exists:users,id',
-            'team1_player2_id' => 'required|exists:users,id',
-            'team2_player1_id' => 'required|exists:users,id',
-            'team2_player2_id' => 'required|exists:users,id',
-            'team1_score' => 'required|integer|min:0|max:100',
-            'team2_score' => 'required|integer|min:0|max:100',
+            'team1_player1_id' => ['required', 'exists:users,id'],
+            'team1_player2_id' => ['required', 'exists:users,id'],
+            'team2_player1_id' => ['required', 'exists:users,id'],
+            'team2_player2_id' => ['required', 'exists:users,id'],
+            'team1_score' => ['required', 'integer', 'min:0', 'max:100'],
+            'team2_score' => ['required', 'integer', 'min:0', 'max:100'],
         ]);
 
         // Custom validation: no draws, winner must win by 2 and have at least 21
@@ -141,4 +142,4 @@ class GameController extends Controller
 
         return redirect()->route('games.index');
     }
-} 
+}
