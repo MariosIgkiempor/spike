@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Game;
+use App\Models\Team;
 use App\Models\User;
 use Closure;
 use Illuminate\Http\Request;
@@ -138,7 +139,23 @@ class GameController extends Controller
             }
         }
 
-        Game::create($validated);
+        $game = Game::create();
+        $team1 = Team::whereHas('players', function ($query) use ($validated) {
+            $query->where('users.id', $validated['team1_player1_id']);
+        })->whereHas('players', function ($query) use ($validated) {
+            $query->where('users.id', $validated['team1_player2_id']);
+        })->firstOrCreate();
+
+        $team2 = Team::whereHas('players', function ($query) use ($validated) {
+            $query->where('users.id', $validated['team2_player1_id']);
+        })->whereHas('players', function ($query) use ($validated) {
+            $query->where('users.id', $validated['team2_player2_id']);
+        })->firstOrCreate();
+
+        $game->teams()->attach($team1, ['score' => $validated['team1_score']]);
+        $game->teams()->attach($team2, ['score' => $validated['team2_score']]);
+
+        $game->save();
 
         return redirect()->route('games.index');
     }

@@ -225,6 +225,7 @@ type LeaderBoardUser = User & {
     losses: number;
     score_diff: number;
 };
+
 // Leaderboard UI
 const Leaderboard: FC<{ leaderboard: LeaderBoardUser[] }> = ({ leaderboard }) => {
     const [sorting, setSorting] = useState<SortingState>([]);
