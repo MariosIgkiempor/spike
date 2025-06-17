@@ -17,6 +17,11 @@ return new class extends Migration
             $table->string('email')->unique();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
+
+            // Game statistics
+            $table->integer('games_played')->default(0);
+            $table->integer('games_won')->default(0);
+
             $table->rememberToken();
             $table->timestamps();
         });

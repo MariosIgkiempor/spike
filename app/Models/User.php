@@ -4,6 +4,7 @@ namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Database\Factories\UserFactory;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -48,7 +49,12 @@ class User extends Authenticatable
         ];
     }
 
-    public function games(): BelongsToMany {
-
+    public function games()
+    {
+        return Game::whereHas('teams', function ($q) {
+            $q->whereHas('players', function ($q) {
+                $q->where('users.id', $this->id);
+            });
+        })->get();
     }
 }

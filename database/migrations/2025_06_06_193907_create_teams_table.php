@@ -18,6 +18,7 @@ return new class extends Migration
             $table->foreignId('game_id')->constrained('games');
             $table->foreignId('team_id')->constrained('teams');
             $table->integer('score');
+            $table->boolean('won');
             $table->timestamps();
         });
 

@@ -27,6 +27,7 @@ export interface SharedData {
     auth: Auth;
     ziggy: Config & { location: string };
     sidebarOpen: boolean;
+
     [key: string]: unknown;
 }
 
@@ -49,16 +50,39 @@ export interface PageProps {
 
 export interface Team {
     id: number;
-    name: string;
+    players: User[];
+    score: number;
+    won: boolean;
 }
 
 export interface Game {
     id: number;
-    team1_player1: User;
-    team1_player2: User;
-    team2_player1: User;
-    team2_player2: User;
-    team1_score: number;
-    team2_score: number;
-    created_at: string;
+    teams: Team[];
+    scores: number[];
+    createdAt: string;
+    updatedAt: string;
+}
+
+export interface Paginated<T> {
+    data: T[];
+    links: {
+        first: string;
+        last: string;
+        prev: string | null;
+        next: string | null;
+    };
+    meta: {
+        current_page: number;
+        from: number;
+        last_page: number;
+        links: {
+            url: string | null;
+            label: string;
+            active: boolean;
+        }[];
+        path: string;
+        per_page: number;
+        to: number;
+        total: number;
+    };
 }

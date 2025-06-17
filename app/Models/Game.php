@@ -16,6 +16,6 @@ class Game extends Model
 
     public function teams(): BelongsToMany {
         return $this->belongsToMany(Team::class)
-            ->withPivot('score');
+            ->withPivot(['score', 'won']);
     }
 }

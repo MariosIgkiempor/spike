@@ -2,11 +2,13 @@
 
 namespace Database\Seeders;
 
-use App\Models\User;
-// use Illuminate\Database\Console\Seeds\WithoutModelEvents;
-use Illuminate\Database\Seeder;
-use App\Models\Player;
 use App\Models\Game;
+use App\Models\Player;
+use App\Models\Team;
+use App\Models\User;
+use Illuminate\Database\Seeder;
+
+// use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 
 class DatabaseSeeder extends Seeder
 {
@@ -15,46 +17,55 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // User::factory(10)->create();
-
         User::factory()->create([
             'name' => 'Test User',
             'email' => 'test@example.com',
         ]);
 
-        for ($i = 1; $i <= 20; $i++) {
-            User::create([
-                'name' => 'User ' . $i,
-                'email' => 'user' . $i . '@example.com',
-                'password' => bcrypt('password'),
-            ]);
-        }
+        $users = User::factory(10)->create();
 
-        // Create some players
-        $players = [
-            Player::create(['name' => 'John Doe', 'email' => 'john@example.com']),
-            Player::create(['name' => 'Jane Smith', 'email' => 'jane@example.com']),
-            Player::create(['name' => 'Mike Johnson', 'email' => 'mike@example.com']),
-            Player::create(['name' => 'Sarah Williams', 'email' => 'sarah@example.com']),
-        ];
+        $games = Game::factory(10)->create();
 
-        // Create games using the created users
-        Game::create([
-            'team1_player1_id' => 1,
-            'team1_player2_id' => 2,
-            'team2_player1_id' => 3,
-            'team2_player2_id' => 4,
-            'team1_score' => 21,
-            'team2_score' => 15,
-        ]);
+        $teamCount = 2;
 
-        Game::create([
-            'team1_player1_id' => 5,
-            'team1_player2_id' => 6,
-            'team2_player1_id' => 7,
-            'team2_player2_id' => 8,
-            'team1_score' => 21,
-            'team2_score' => 19,
-        ]);
+        $games->each(function ($game) use ($teamCount) {
+            for ($i = 0; $i < $teamCount; $i++) {
+                $playersPerTeam = 2;
+                $players = User::inRandomOrder()->take($playersPerTeam)->get();
+                $playerIds = $players->pluck('id');
+
+                // Try to find existing team with exactly these players
+                $team = Team::whereHas('players', function ($query) use ($playerIds) {
+                    $query->whereIn('users.id', $playerIds);
+                }, '=', $playerIds->count())
+                    ->whereDoesntHave('players', function ($query) use ($playerIds) {
+                        $query->whereNotIn('users.id', $playerIds);
+                    })
+                    ->first();
+
+                // If no such team exists, create one and attach players
+                if (!$team) {
+                    $team = Team::create(); // Or factory(1)->create()->first()
+                    $team->players()->attach($playerIds);
+                }
+
+                // Attach team to game
+                $game->teams()->attach($team->id, ['score' => 0, 'won' => false]);
+            }
+
+            // Assign a random team as winner
+            $winningTeam = $game->teams()->inRandomOrder()->first();
+            $game->teams()->updateExistingPivot($winningTeam->id, ['score' => 100, 'won' => true]);
+
+            // Update stats
+            $game->teams->each(function ($team) use ($winningTeam) {
+                $team->players->each(function ($player) use ($team, $winningTeam) {
+                    $player->increment('games_played');
+                    if ($team->id === $winningTeam->id) {
+                        $player->increment('games_won');
+                    }
+                });
+            });
+        });
     }
 }

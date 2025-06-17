@@ -22,6 +22,7 @@ class AppServiceProvider extends ServiceProvider
     {
         Model::unguard();
         Model::shouldBeStrict();
+        Model::automaticallyEagerLoadRelationships();
         Date::use(CarbonImmutable::class);
     }
 }

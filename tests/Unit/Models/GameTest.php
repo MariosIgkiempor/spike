@@ -21,8 +21,8 @@ it('has teams', function () {
     $teams = Team::factory(2)->create();
 
     $game->teams()->saveMany($teams, [
-        ['score' => 20],
-        ['score' => 30],
+        ['score' => 20, 'won' => false],
+        ['score' => 30, 'won' => true],
     ]);
 
     expect($game->teams)->toHaveCount(2);
