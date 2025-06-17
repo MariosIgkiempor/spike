@@ -14,7 +14,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('dashboard', function () {
         return Inertia::render('dashboard');
     })->name('dashboard');
+
     Route::get('/games', [WebController::class, 'home'])->name('web.games.index');
+
     Route::get('/api/games', [GameController::class, 'index'])->name('api.games.index');
     Route::post('/api/games', [GameController::class, 'store'])->name('api.games.store');
 

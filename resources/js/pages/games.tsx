@@ -14,7 +14,7 @@ const breadcrumbs: BreadcrumbItem[] = [
 ];
 
 const PageContainer: FC<PropsWithChildren> = ({ children }) => {
-    return <div className={'container space-y-12 px-4 lg:px-6'}>{children}</div>;
+    return <div className={'container my-4 space-y-12 px-4 lg:my-6 lg:px-6'}>{children}</div>;
 };
 
 export default function Index(_props: PageProps) {
@@ -27,8 +27,22 @@ export default function Index(_props: PageProps) {
         </AppLayout>
     );
 }
+
+const fetchGames = async (search: string) => {
+    const response = await fetch(route('api.games.index', { search: search.length > 0 ? search : undefined }), {
+        headers: {
+            Accept: 'application/json',
+            'X-Requested-With': 'XMLHttpRequest',
+        },
+    });
+    if (!response.ok) {
+        throw new Error('Could not fetch recent games');
+    }
+    return response.json();
+};
+
 const RecentGames: FC = () => {
-    const [searchQuery, setSearchQuery] = useState('');
+    const [searchQuery, setSearchQuery] = useState<string>('');
     const debouncedSearch = useDebounce(searchQuery, 300);
     const {
         data: gamesData,
@@ -36,22 +50,11 @@ const RecentGames: FC = () => {
         error,
     } = useQuery<Paginated<Game>>({
         queryKey: ['games', debouncedSearch],
-        queryFn: async () => {
-            const response = await fetch(route('api.games.index'), {
-                headers: {
-                    Accept: 'application/json',
-                    'X-Requested-With': 'XMLHttpRequest',
-                },
-            });
-            if (!response.ok) {
-                throw new Error('Network response was not ok');
-            }
-            return response.json();
-        },
+        queryFn: async () => fetchGames(debouncedSearch),
     });
 
     return (
-        <div className="mt-6">
+        <div>
             <div className="mb-4 flex items-center justify-between">
                 <h2 className="text-2xl font-semibold text-gray-900 dark:text-gray-100">Recent Games</h2>
                 <Input
@@ -67,12 +70,14 @@ const RecentGames: FC = () => {
             ) : error ? (
                 <div className="text-red-500 dark:text-red-400">Error: {error.message}</div>
             ) : (
-                <div className="divide-y divide-gray-200 dark:divide-gray-800">
-                    {gamesData?.data.length === 0 ? (
-                        <div className="py-8 text-center text-muted-foreground">No games found.</div>
-                    ) : (
-                        gamesData?.data.map((game: Game) => <ScoreboardRow key={game.id} game={game} />)
-                    )}
+                <div className={'space-y-4'}>
+                    <div className="divide-y divide-gray-200 dark:divide-gray-800">
+                        {gamesData?.data.length === 0 ? (
+                            <div className="py-8 text-center text-muted-foreground">No games found.</div>
+                        ) : (
+                            gamesData?.data.map((game: Game) => <ScoreboardRow key={game.id} game={game} />)
+                        )}
+                    </div>
                 </div>
             )}
         </div>

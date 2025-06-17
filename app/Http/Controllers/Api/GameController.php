@@ -7,12 +7,19 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Game;
 use App\Models\Team;
-use Illuminate\Support\Facades\Request;
+use Illuminate\Http\Request;
 
 class GameController extends Controller
 {
-    public function index() {
+    public function index(Request $request)
+    {
         $query = Game::with(['teams', 'teams.players']);
+
+        if ($request->has('search')) {
+            $query->whereHas('teams.players', function ($query) use ($request) {
+                $query->where('name', 'like', "%{$request->search}%");
+            });
+        }
 
         return $query->paginate()->toResourceCollection();
     }
