@@ -1,29 +1,36 @@
-import type { FC } from 'react';
+import { PlayerInput } from '@/components/PlayerInput';
+import { Button } from '@/components/ui/button';
+import { NumberInput } from '@/components/ui/number-input';
 import { User } from '@/types';
 import { useForm } from '@inertiajs/react';
-import { PlayerInput } from '@/components/PlayerInput';
-import { NumberInput } from '@/components/ui/number-input';
-import { Button } from '@/components/ui/button';
+import { FC, FormEvent } from 'react';
 
-const NewGameForm: FC<{ initialTeams: { team1: User[]; team2: User[] } | null }> = ({ initialTeams }) => {
+interface NewGameFormProps {
+    initialTeams?: {
+        team1: User[];
+        team2: User[];
+    };
+}
+
+export const NewGameForm: FC<NewGameFormProps> = ({ initialTeams }) => {
     const { data, setData, post, processing, errors, reset } = useForm({
         team1_player1_id: initialTeams?.team1[0]?.id || null,
         team1_player2_id: initialTeams?.team1[1]?.id || null,
         team2_player1_id: initialTeams?.team2[0]?.id || null,
         team2_player2_id: initialTeams?.team2[1]?.id || null,
         team1_score: 21,
-        team2_score: 21
+        team2_score: 21,
     });
 
     const team1Error = errors.team1_player1_id || errors.team1_player2_id || errors.team1_score;
     const team2Error = errors.team2_player1_id || errors.team2_player2_id || errors.team2_score;
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = (e: FormEvent) => {
         e.preventDefault();
-        post(route('games.store'), {
+        post(route('api.games.store'), {
             onSuccess: () => {
                 reset();
-            }
+            },
         });
     };
 

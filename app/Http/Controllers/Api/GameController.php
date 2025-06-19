@@ -55,17 +55,40 @@ class GameController extends Controller
         }
 
         $game = Game::create();
-        $team1 = Team::whereHas('players', function ($query) use ($validated) {
-            $query->where('users.id', $validated['team1_player1_id']);
-        })->whereHas('players', function ($query) use ($validated) {
-            $query->where('users.id', $validated['team1_player2_id']);
-        })->firstOrCreate();
 
-        $team2 = Team::whereHas('players', function ($query) use ($validated) {
-            $query->where('users.id', $validated['team2_player1_id']);
-        })->whereHas('players', function ($query) use ($validated) {
-            $query->where('users.id', $validated['team2_player2_id']);
-        })->firstOrCreate();
+        $team1Player1Id = $validated['team1_player1_id'];
+        $team1Player2Id = $validated['team1_player2_id'];
+        $team1PlayerIds = collect([$team1Player1Id, $team1Player2Id]);
+        $team1 = Team::whereHas('players', function ($query) use ($team1PlayerIds) {
+            $query->whereIn('users.id', $team1PlayerIds);
+        }, '=', $team1PlayerIds->count())
+            ->whereDoesntHave('players', function ($query) use ($team1PlayerIds) {
+                $query->whereNotIn('users.id', $team1PlayerIds);
+            })
+            ->first();
+
+        // If no such team exists, create one and attach players
+        if (!$team1) {
+            $team1 = Team::create(); // Or factory(1)->create()->first()
+            $team1->players()->attach($team1PlayerIds);
+        }
+
+        $team2Player1Id = $validated['team2_player1_id'];
+        $team2Player2Id = $validated['team2_player2_id'];
+        $team2PlayerIds = collect([$team2Player1Id, $team2Player2Id]);
+        $team2 = Team::whereHas('players', function ($query) use ($team2PlayerIds) {
+            $query->whereIn('users.id', $team2PlayerIds);
+        }, '=', $team1PlayerIds->count())
+            ->whereDoesntHave('players', function ($query) use ($team2PlayerIds) {
+                $query->whereNotIn('users.id', $team2PlayerIds);
+            })
+            ->first();
+
+        // If no such team exists, create one and attach players
+        if (!$team2) {
+            $team2 = Team::create(); // Or factory(1)->create()->first()
+            $team2->players()->attach($team2PlayerIds);
+        }
 
         $game->teams()->attach($team1, ['score' => $validated['team1_score'], 'won' => $t1 > $t2]);
         $game->teams()->attach($team2, ['score' => $validated['team2_score'], 'won' => $t2 > $t1]);
@@ -80,6 +103,6 @@ class GameController extends Controller
 
         $game->save();
 
-        return redirect()->route('games.index');
+        return redirect()->back();
     }
 }
