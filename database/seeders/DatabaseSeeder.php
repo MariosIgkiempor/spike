@@ -16,8 +16,13 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         $me = User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
+            'name' => 'Alice',
+            'email' => 'alice@example.com',
+        ]);
+
+        $you = User::factory()->create([
+            'name' => 'Bob',
+            'email' => 'bob@example.com'
         ]);
 
         $leagues = League::factory(10)->for($me)->create();

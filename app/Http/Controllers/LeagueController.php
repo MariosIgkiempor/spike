@@ -58,4 +58,15 @@ class LeagueController extends Controller
     {
         //
     }
+
+    public function join(Request $request, League $league)
+    {
+        if ($request->user()->leagues->contains($league)) {
+            return redirect()->route('web.leagues.show', ['league' => $league]);
+        }
+
+        $league->users()->attach($request->user()->id);
+
+        return redirect()->route('web.leagues.show', ['league' => $league]);
+    }
 }
