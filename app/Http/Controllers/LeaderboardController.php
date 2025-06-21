@@ -9,55 +9,94 @@ use Illuminate\Support\Facades\DB;
 class LeaderboardController extends Controller
 {
     /**
-     * Display the leaderboard for a given league, including users with no games.
+     * Display the leaderboard for a given league, including users with no games,
+     * and calculate MMR (Elo rating) for each user, ordered by MMR.
      *
      * @param League $league
      * @return JsonResponse
      */
     public function show(League $league): JsonResponse
     {
-        // Build an Eloquent query starting from league users
+        // Elo parameters
+        $baseRating = 1000;
+
+        // Initialize all users' ratings
+        $ratings = [];
+        $league->users->each(function ($user) use (&$ratings, $baseRating) {
+            $ratings[$user->id] = $baseRating;
+        });
+
+        // Process games chronologically to update Elo
+        $league->games()
+            ->with(['teams.players'])
+            ->orderBy('created_at')
+            ->get()
+            ->each(function ($game) use (&$ratings) {
+                $K = 32;
+                $teams = $game->teams;
+                if ($teams->count() < 2) {
+                    return;
+                }
+                $winner = $teams->firstWhere('pivot.won', true);
+                $loser = $teams->firstWhere('pivot.won', false);
+                if (!$winner || !$loser) {
+                    return;
+                }
+                // Compute average ratings
+                $winnerAvg = $winner->players->avg(fn($u) => $ratings[$u->id]);
+                $loserAvg = $loser->players->avg(fn($u) => $ratings[$u->id]);
+                $expected = 1 / (1 + pow(10, ($loserAvg - $winnerAvg) / 400));
+                $delta = $K * (1 - $expected);
+
+                // Update each player's rating
+                foreach ($winner->players as $u) {
+                    $ratings[$u->id] += $delta;
+                }
+                foreach ($loser->players as $u) {
+                    $ratings[$u->id] -= $delta;
+                }
+            });
+
+        // Query basic stats for all league users
         $users = $league->users()
             ->select(
                 'users.*',
                 DB::raw('COUNT(game_team.game_id) as total_games'),
                 DB::raw('COALESCE(SUM(CASE WHEN game_team.won THEN 1 ELSE 0 END), 0) as wins'),
                 DB::raw('COALESCE(SUM(CASE WHEN game_team.won = 0 THEN 1 ELSE 0 END), 0) as losses'),
-                DB::raw('COALESCE(ROUND(SUM(CASE WHEN game_team.won THEN 1 ELSE 0 END) / NULLIF(COUNT(game_team.game_id), 0), 2), 0) as win_rate'),
                 DB::raw('COALESCE(SUM(game_team.score - opponent.score), 0) as score_diff')
             )
             ->leftJoin('team_user', 'users.id', '=', 'team_user.user_id')
             ->leftJoin('game_team', 'team_user.team_id', '=', 'game_team.team_id')
-            // Restrict games to this league via left join condition
             ->leftJoin('games', function ($join) use ($league) {
                 $join->on('game_team.game_id', '=', 'games.id')
                     ->where('games.league_id', $league->id);
             })
-            // Join opponent scores, still left join to include nulls
             ->leftJoin('game_team as opponent', function ($join) {
                 $join->on('opponent.game_id', '=', 'game_team.game_id')
                     ->whereColumn('opponent.team_id', '!=', 'game_team.team_id');
             })
             ->groupBy('users.id')
-            // Sort primarily by win rate, then score differential, then total wins
-            ->orderByDesc('win_rate')
-            ->orderByDesc('score_diff')
-            ->orderByDesc('wins')
             ->get();
 
-        // Assign ranks and cast stats types
-        $leaderboard = $users->values()->map(function ($user, $index) {
-            $user->rank = $index + 1;
-            $user->total_games = (int)$user->total_games;
-            $user->wins = (int)$user->wins;
+        // Combine stats, compute win_rate and attach MMR, then sort by MMR
+        $leaderboard = $users->map(function ($user) use ($baseRating, $ratings) {
+            $total = (int)$user->total_games;
+            $wins = (int)$user->wins;
+            $user->total_games = $total;
+            $user->wins = $wins;
             $user->losses = (int)$user->losses;
             $user->score_diff = (int)$user->score_diff;
-            // Calculate win rate dynamically to ensure consistency
-            $user->win_rate = $user->total_games > 0
-                ? round($user->wins / $user->total_games, 2)
-                : 0;
+            $user->win_rate = $total > 0 ? round($wins / $total, 2) : 0;
+            $user->mmr = round($ratings[$user->id] ?? $baseRating);
             return $user;
-        });
+        })
+            ->sortByDesc('mmr')
+            ->values()
+            ->map(function ($user, $index) {
+                $user->rank = $index + 1;
+                return $user;
+            });
 
         return response()->json($leaderboard);
     }

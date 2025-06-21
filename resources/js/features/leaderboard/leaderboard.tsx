@@ -24,6 +24,7 @@ export type LeaderboardUser = User & {
     wins: number;
     losses: number;
     score_diff: number;
+    mmr: number;
 };
 
 interface LeaderboardProps {
@@ -109,6 +110,13 @@ export const Leaderboard: FC<LeaderboardProps> = ({ leaderboard, isLoading }) =>
             enableSorting: true,
             enableHiding: true,
         },
+        {
+            accessorKey: 'mmr',
+            header: ({ column }) => <DataTableColumnHeader column={column} title="MMR" />,
+            cell: ({ row }) => <span className="flex justify-center">{row.original.mmr}</span>,
+            enableSorting: true,
+            enableHiding: true,
+        },
     ];
 
     const columnNames: Record<string, string> = {
@@ -118,6 +126,7 @@ export const Leaderboard: FC<LeaderboardProps> = ({ leaderboard, isLoading }) =>
         total_games: '# Games',
         wins: 'W/L',
         score_diff: 'Score Diff',
+        mmr: 'MMR',
     };
 
     const table = useReactTable({
