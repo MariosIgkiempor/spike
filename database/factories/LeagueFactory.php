@@ -2,14 +2,14 @@
 
 namespace Database\Factories;
 
-use App\Models\Game;
 use App\Models\League;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends Factory<Game>
+ * @extends Factory<League>
  */
-class GameFactory extends Factory
+class LeagueFactory extends Factory
 {
     /**
      * Define the model's default state.
@@ -19,7 +19,8 @@ class GameFactory extends Factory
     public function definition(): array
     {
         return [
-            'league_id' => League::factory(),
+            'name' => str(fake()->words(3, true))->title(),
+            'user_id' => User::factory(),
         ];
     }
 }

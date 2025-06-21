@@ -10,6 +10,7 @@ test('to array', function () {
 
     expect(array_keys($game->toArray()))->toBe([
         'id',
+        'league_id',
         'created_at',
         'updated_at',
     ]);

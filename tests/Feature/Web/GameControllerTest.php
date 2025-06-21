@@ -2,12 +2,18 @@
 
 declare(strict_types=1);
 
+use App\Models\League;
 use App\Models\User;
 
-test('store', function() {
-    $this->actingAs(User::factory()->create());
+test('store', function () {
+    $user = User::factory()->create();
+    $league = League::factory()->create(['user_id' => $user->id]);
+    $user->current_league_id = $league->id;
+    $user->save();
 
-    $response = $this->postJson(route('games.store'), [
+    $this->actingAs($user);
+
+    $response = $this->postJson(route('api.games.store'), [
         'team1_player1_id' => User::factory()->create()->id,
         'team1_player2_id' => User::factory()->create()->id,
         'team2_player1_id' => User::factory()->create()->id,

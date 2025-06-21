@@ -1,3 +1,4 @@
+import { FC } from 'react';
 import { AsyncCombobox } from './ui/async-combobox';
 import { Label } from './ui/label';
 
@@ -7,9 +8,10 @@ interface PlayerInputProps {
     label: string;
     error?: string;
     disabled?: boolean;
+    leagueId?: number;
 }
 
-export function PlayerInput({ value, onChange, label, error, disabled }: PlayerInputProps) {
+export const PlayerInput: FC<PlayerInputProps> = ({ value, onChange, label, error, disabled, leagueId }) => {
     const selectedItem = value ? { value, label: '' } : null;
 
     return (
@@ -17,7 +19,7 @@ export function PlayerInput({ value, onChange, label, error, disabled }: PlayerI
             <Label htmlFor={label.toLowerCase()}>{label}</Label>
             <AsyncCombobox
                 selectedItem={selectedItem}
-                url={route('api.users.search')}
+                url={route('api.users.search', { league: leagueId })}
                 onSelect={(item) => onChange(item.value as number)}
                 searchPlaceholder="Search player..."
                 disabled={disabled}
@@ -26,4 +28,4 @@ export function PlayerInput({ value, onChange, label, error, disabled }: PlayerI
             {error && <p className="text-sm text-destructive">{error}</p>}
         </div>
     );
-}
+};

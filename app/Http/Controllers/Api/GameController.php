@@ -6,20 +6,23 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Game;
+use App\Models\League;
 use App\Models\Team;
 use Illuminate\Http\Request;
 
 class GameController extends Controller
 {
-    public function index(Request $request)
+    public function index(Request $request, ?League $league)
     {
-        $query = Game::with(['teams', 'teams.players']);
-
-        if ($request->has('search')) {
-            $query->whereHas('teams.players', function ($query) use ($request) {
-                $query->where('name', 'like', "%{$request->search}%");
+        $query = Game::with(['teams', 'teams.players'])
+            ->when($request->has('search'), function ($query) use ($request) {
+                $query->whereHas('teams.players', function ($query) use ($request) {
+                    $query->where('name', 'like', "%{$request->search}%");
+                });
+            })
+            ->when($league, function ($query) use ($league) {
+                $query->where('league_id', $league->id);
             });
-        }
 
         return $query->paginate()->toResourceCollection();
     }
@@ -27,6 +30,7 @@ class GameController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
+            'league_id' => ['required', 'exists:leagues,id'],
             'team1_player1_id' => ['required', 'exists:users,id'],
             'team1_player2_id' => ['required', 'exists:users,id'],
             'team2_player1_id' => ['required', 'exists:users,id'],
@@ -54,7 +58,9 @@ class GameController extends Controller
             }
         }
 
-        $game = Game::create();
+        $game = Game::create([
+            'league_id' => $validated['league_id'],
+        ]);
 
         $team1Player1Id = $validated['team1_player1_id'];
         $team1Player2Id = $validated['team1_player2_id'];
@@ -100,8 +106,6 @@ class GameController extends Controller
         } else {
             $team2->players->each->increment('games_won');
         }
-
-        $game->save();
 
         return redirect()->back();
     }

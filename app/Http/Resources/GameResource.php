@@ -16,6 +16,7 @@ class GameResource extends JsonResource
     {
         return [
             'id' => $this->id,
+            'league_id' => $this->league_id,
             'teams' => TeamResource::collection($this->teams),
             'scores' => $this->teams()->withPivot(['score', 'won'])->get()->map(fn($team) => $team->pivot->score),
             'createdAt' => $this->created_at,

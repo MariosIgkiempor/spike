@@ -1,5 +1,10 @@
 // Leaderboard UI
-import { FC, useState } from 'react';
+import { Badge } from '@/components/ui/badge';
+import { DataTable } from '@/components/ui/data-table';
+import { DataTableColumnHeader } from '@/components/ui/data-table-column-header';
+import { Input } from '@/components/ui/input';
+import { Skeleton } from '@/components/ui/skeleton';
+import { User } from '@/types';
 import {
     ColumnDef,
     ColumnFiltersState,
@@ -7,16 +12,12 @@ import {
     getFilteredRowModel,
     getSortedRowModel,
     SortingState,
-    useReactTable
+    useReactTable,
 } from '@tanstack/react-table';
-import { DataTableColumnHeader } from '@/components/ui/data-table-column-header';
-import { Badge } from '@/components/ui/badge';
 import { X } from 'lucide-react';
-import { Input } from '@/components/ui/input';
-import { DataTable } from '@/components/ui/data-table';
-import { User } from '@/types';
+import { FC, useState } from 'react';
 
-type LeaderBoardUser = User & {
+export type LeaderboardUser = User & {
     rank: number;
     win_rate: number;
     total_games: number;
@@ -25,44 +26,50 @@ type LeaderBoardUser = User & {
     score_diff: number;
 };
 
-export const Leaderboard: FC<{ leaderboard: LeaderBoardUser[] }> = ({ leaderboard }) => {
+interface LeaderboardProps {
+    leaderboard: LeaderboardUser[];
+    isLoading: boolean;
+}
+
+export const Leaderboard: FC<LeaderboardProps> = ({ leaderboard, isLoading }) => {
     const [sorting, setSorting] = useState<SortingState>([]);
     const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
     const [search, setSearch] = useState('');
 
-    const columns: ColumnDef<LeaderBoardUser>[] = [
+    const columns: ColumnDef<LeaderboardUser>[] = [
         {
             accessorKey: 'rank',
-            header: ({ column }) => <DataTableColumnHeader column={column} title="Rank" />,
-            cell: ({ row }) => <span className="block text-center font-medium">{row.original.rank}</span>,
+            header: () => null,
+            cell: ({ row }) => <span>{row.original.rank}</span>,
             enableSorting: true,
-            enableHiding: true
+            enableHiding: true,
         },
         {
             accessorKey: 'name',
             header: ({ column }) => <DataTableColumnHeader column={column} title="Player" />,
             cell: ({ row }) => <span className="font-medium">{row.original.name}</span>,
             enableSorting: true,
-            enableHiding: true
+            enableHiding: true,
         },
         {
             accessorKey: 'win_rate',
             header: ({ column }) => <DataTableColumnHeader column={column} title="Win Rate" />,
             cell: ({ row }) => (
                 <span className="block text-center">
-                    <Badge
-                        variant={row.original.win_rate >= 50 ? 'success' : 'destructive'}>{row.original.win_rate}%</Badge>
+                    <Badge variant={row.original.win_rate >= 0.5 ? 'success' : 'destructive'}>
+                        {Intl.NumberFormat('en-GB', { style: 'percent' }).format(row.original.win_rate)}
+                    </Badge>
                 </span>
             ),
             enableSorting: true,
-            enableHiding: true
+            enableHiding: true,
         },
         {
             accessorKey: 'total_games',
             header: ({ column }) => <DataTableColumnHeader column={column} title="Total Games" />,
             cell: ({ row }) => <span className="block text-center">{row.original.total_games}</span>,
             enableSorting: true,
-            enableHiding: true
+            enableHiding: true,
         },
         {
             accessorKey: 'wins',
@@ -77,8 +84,8 @@ export const Leaderboard: FC<{ leaderboard: LeaderBoardUser[] }> = ({ leaderboar
                             row.original.wins > row.original.losses
                                 ? 'success'
                                 : row.original.wins < row.original.losses
-                                    ? 'destructive'
-                                    : 'secondary'
+                                  ? 'destructive'
+                                  : 'secondary'
                         }
                     >
                         {row.original.wins - row.original.losses > 0 ? '+' : ''}
@@ -87,31 +94,30 @@ export const Leaderboard: FC<{ leaderboard: LeaderBoardUser[] }> = ({ leaderboar
                 </div>
             ),
             enableSorting: true,
-            enableHiding: true
+            enableHiding: true,
         },
         {
             accessorKey: 'score_diff',
             header: ({ column }) => <DataTableColumnHeader column={column} title="Score Difference" />,
             cell: ({ row }) => (
                 <span className="flex justify-center">
-                    <Badge
-                        variant={row.original.score_diff > 0 ? 'success' : row.original.score_diff < 0 ? 'destructive' : 'secondary'}>
+                    <Badge variant={row.original.score_diff > 0 ? 'success' : row.original.score_diff < 0 ? 'destructive' : 'secondary'}>
                         {row.original.score_diff}
                     </Badge>
                 </span>
             ),
             enableSorting: true,
-            enableHiding: true
-        }
+            enableHiding: true,
+        },
     ];
 
     const columnNames: Record<string, string> = {
         rank: 'Rank',
         name: 'Player',
         win_rate: 'Win Rate',
-        total_games: 'Total Games',
+        total_games: '# Games',
         wins: 'W/L',
-        score_diff: 'Score Difference'
+        score_diff: 'Score Diff',
     };
 
     const table = useReactTable({
@@ -119,19 +125,24 @@ export const Leaderboard: FC<{ leaderboard: LeaderBoardUser[] }> = ({ leaderboar
         columns,
         state: {
             sorting,
-            columnFilters
+            columnFilters,
         },
         onSortingChange: setSorting,
         onColumnFiltersChange: setColumnFilters,
         getCoreRowModel: getCoreRowModel(),
         getSortedRowModel: getSortedRowModel(),
-        getFilteredRowModel: getFilteredRowModel()
+        getFilteredRowModel: getFilteredRowModel(),
     });
 
     const onSearchChange = (value: string) => {
         setSearch(value);
-        table.getColumn('name')?.setFilterValue(search);
+        if (value.length === 0) table.getColumn('name')?.setFilterValue(undefined);
+        else table.getColumn('name')?.setFilterValue(() => search);
     };
+
+    if (isLoading) {
+        return <Skeleton className={'h-48 w-full'} />;
+    }
 
     return (
         <div className="mb-8">

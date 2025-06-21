@@ -1,23 +1,31 @@
 import { PlayerInput } from '@/components/PlayerInput';
 import { Button } from '@/components/ui/button';
 import { NumberInput } from '@/components/ui/number-input';
-import { User } from '@/types';
+import { League } from '@/types';
 import { useForm } from '@inertiajs/react';
 import { FC, FormEvent } from 'react';
 
 interface NewGameFormProps {
-    initialTeams?: {
-        team1: User[];
-        team2: User[];
-    };
+    league: League;
 }
 
-export const NewGameForm: FC<NewGameFormProps> = ({ initialTeams }) => {
-    const { data, setData, post, processing, errors, reset } = useForm({
-        team1_player1_id: initialTeams?.team1[0]?.id || null,
-        team1_player2_id: initialTeams?.team1[1]?.id || null,
-        team2_player1_id: initialTeams?.team2[0]?.id || null,
-        team2_player2_id: initialTeams?.team2[1]?.id || null,
+type NewGameFormData = {
+    league_id: number;
+    team1_player1_id: number | null;
+    team1_player2_id: number | null;
+    team2_player1_id: number | null;
+    team2_player2_id: number | null;
+    team1_score: number;
+    team2_score: number;
+};
+
+export const NewGameForm: FC<NewGameFormProps> = ({ league }) => {
+    const { data, setData, post, processing, errors, reset } = useForm<NewGameFormData>({
+        league_id: league.id,
+        team1_player1_id: null,
+        team1_player2_id: null,
+        team2_player1_id: null,
+        team2_player2_id: null,
         team1_score: 21,
         team2_score: 21,
     });
@@ -43,6 +51,7 @@ export const NewGameForm: FC<NewGameFormProps> = ({ initialTeams }) => {
                     <div className="flex gap-2">
                         <div className="flex-1">
                             <PlayerInput
+                                leagueId={league.id}
                                 value={data.team1_player1_id}
                                 onChange={(value) => setData('team1_player1_id', value)}
                                 label="Player 1"
@@ -51,6 +60,7 @@ export const NewGameForm: FC<NewGameFormProps> = ({ initialTeams }) => {
                         </div>
                         <div className="flex-1">
                             <PlayerInput
+                                leagueId={league.id}
                                 value={data.team1_player2_id}
                                 onChange={(value) => setData('team1_player2_id', value)}
                                 label="Player 2"
@@ -78,6 +88,7 @@ export const NewGameForm: FC<NewGameFormProps> = ({ initialTeams }) => {
                     <div className="flex gap-2">
                         <div className="flex-1">
                             <PlayerInput
+                                leagueId={league.id}
                                 value={data.team2_player1_id}
                                 onChange={(value) => setData('team2_player1_id', value)}
                                 label="Player 1"
@@ -86,6 +97,7 @@ export const NewGameForm: FC<NewGameFormProps> = ({ initialTeams }) => {
                         </div>
                         <div className="flex-1">
                             <PlayerInput
+                                leagueId={league.id}
                                 value={data.team2_player2_id}
                                 onChange={(value) => setData('team2_player2_id', value)}
                                 label="Player 2"

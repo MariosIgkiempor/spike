@@ -63,6 +63,13 @@ export interface Game {
     updatedAt: string;
 }
 
+export interface League {
+    id: number;
+    name: string;
+    games: Game[];
+    players: User[];
+}
+
 export interface Paginated<T> {
     data: T[];
     links: {
@@ -85,4 +92,12 @@ export interface Paginated<T> {
         to: number;
         total: number;
     };
+}
+
+export interface Resource<T> {
+    data: T;
+}
+
+export interface ResourceCollection<T> {
+    data: T[];
 }
