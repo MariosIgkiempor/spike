@@ -8,7 +8,13 @@ export default defineConfig({
     base: '/build/',
     plugins: [
         laravel({
-            input: ['resources/js/app.tsx', 'resources/js/pages/dashboard.tsx', 'resources/js/pages/welcome.tsx', 'resources/js/pages/games.tsx'],
+            input: [
+                'resources/js/app.tsx',
+                'resources/js/pages/dashboard.tsx',
+                'resources/js/pages/welcome.tsx',
+                'resources/js/pages/league.tsx',
+                'resources/js/pages/league-join.tsx',
+            ],
             ssr: 'resources/js/ssr.tsx',
             refresh: true,
         }),

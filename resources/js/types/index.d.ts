@@ -68,6 +68,7 @@ export interface League {
     name: string;
     games: Game[];
     players: User[];
+    owner: User;
 }
 
 export interface Paginated<T> {
