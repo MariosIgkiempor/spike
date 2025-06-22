@@ -14,6 +14,7 @@ test('store', function () {
     $this->actingAs($user);
 
     $response = $this->postJson(route('api.games.store'), [
+        'league_id' => $league->id,
         'team1_player1_id' => User::factory()->create()->id,
         'team1_player2_id' => User::factory()->create()->id,
         'team2_player1_id' => User::factory()->create()->id,

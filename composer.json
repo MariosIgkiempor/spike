@@ -1,8 +1,8 @@
 {
     "$schema": "https://getcomposer.org/schema.json",
-    "name": "laravel/react-starter-kit",
+    "name": "mariosigkiempor/spiking.me",
     "type": "project",
-    "description": "The skeleton application for the Laravel framework.",
+    "description": "Web app to track Spikeball leagues",
     "keywords": [
         "laravel",
         "framework"
@@ -65,7 +65,7 @@
         ],
         "test": [
             "@php artisan config:clear --ansi",
-            "@php artisan test"
+            "@php artisan test --parallel"
         ]
     },
     "extra": {
