@@ -37,6 +37,8 @@ export const RecentGames: FC<RecentGamesProps> = ({ league }) => {
         queryFn: async () => fetchGames(league.id, debouncedSearch),
     });
 
+    console.log({ gamesData });
+
     return (
         <PageSection>
             <div className="flex items-center justify-between">
