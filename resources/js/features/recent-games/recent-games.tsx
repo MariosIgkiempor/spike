@@ -14,12 +14,6 @@ const fetchGames = async (leagueId: number, search: string) => {
             league: leagueId,
             search: search.length > 0 ? search : undefined,
         }),
-        {
-            headers: {
-                Accept: 'application/json',
-                'X-Requested-With': 'XMLHttpRequest',
-            },
-        },
     );
     if (!response.ok) {
         throw new Error('Could not fetch recent games');

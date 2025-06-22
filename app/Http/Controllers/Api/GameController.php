@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\GameResource;
 use App\Models\Game;
 use App\Models\League;
 use App\Models\Team;
@@ -14,7 +15,7 @@ class GameController extends Controller
 {
     public function index(Request $request, ?League $league)
     {
-        $query = Game::with(['teams', 'teams.players'])
+        $games = Game::with(['league', 'teams', 'teams.players'])
             ->when($request->has('search'), function ($query) use ($request) {
                 $query->whereHas('teams.players', function ($query) use ($request) {
                     $query->where('name', 'like', "%{$request->search}%");
@@ -22,9 +23,10 @@ class GameController extends Controller
             })
             ->when($league, function ($query) use ($league) {
                 $query->where('league_id', $league->id);
-            });
+            })
+            ->get();
 
-        return $query->paginate()->toResourceCollection();
+        return GameResource::collection($games);
     }
 
     public function store(Request $request)
