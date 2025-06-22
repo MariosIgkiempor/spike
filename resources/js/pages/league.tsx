@@ -6,6 +6,7 @@ import { PageSection } from '@/components/ui/pageSection';
 import { SectionHeading } from '@/components/ui/sectionHeading';
 import { Leaderboard, LeaderboardUser } from '@/features/leaderboard/leaderboard';
 import { NewGameForm } from '@/features/new-game/newGameForm';
+import { RecentGames } from '@/features/recent-games/recent-games';
 import Layout from '@/layouts/app-layout';
 import { League, PageProps, Resource } from '@/types';
 import { Head } from '@inertiajs/react';
@@ -169,7 +170,7 @@ const LeaguePage: FC<LeaguePageProps> = ({ league: { data: league } }) => {
                 </SectionHeading>
                 <NewGameForm league={league} />
                 <LeaguePlayers league={league} />
-                {/*<RecentGames league={league} />*/}
+                <RecentGames league={league} />
             </PageContainer>
         </Layout>
     );

@@ -18,7 +18,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/leagues/{league}/join', [WebController::class, 'leagueJoin'])->name('web.leagues.join');
 
     Route::get('/api/games/{league?}', [GameController::class, 'index'])->name('api.games.index');
-    Route::post('/api/games', [GameController::class, 'store'])->name('api.games.store');
+    Route::post('/api/games', [GameController::class, 'stor'])->name('api.games.store');
 
     Route::post('/api/leagues', [LeagueController::class, 'store'])->name('api.leagues.store');
     Route::post('/api/leagues/join/{league}', [LeagueController::class, 'join'])->name('api.leagues.join');
