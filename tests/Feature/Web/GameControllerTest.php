@@ -8,7 +8,6 @@ use App\Models\User;
 test('store', function () {
     $user = User::factory()->create();
     $league = League::factory()->create(['user_id' => $user->id]);
-    $user->current_league_id = $league->id;
     $user->save();
 
     $this->actingAs($user);

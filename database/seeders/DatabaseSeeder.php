@@ -29,7 +29,6 @@ class DatabaseSeeder extends Seeder
         $leagues->each(function ($league) {
             $league->users()->attach($league->user_id);
         });
-        $me->update(['current_league_id' => $leagues->first()->id]);
         $me->leagues()->sync($leagues->pluck('id'));
 
         $leagues->each(function ($league) {

@@ -12,7 +12,6 @@ return new class extends Migration {
     {
         Schema::create('users', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('current_league_id')->nullable()->constrained('leagues');
 
             $table->string('name');
             $table->string('email')->unique();

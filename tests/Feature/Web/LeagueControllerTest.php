@@ -18,7 +18,6 @@ test('store', function () {
 
     $this->assertDatabaseCount('leagues', 1);
     $league = League::first();
-    expect($user->current_league_id)->toBe($league->id);
     expect($league->users()->count())->toBe(1);
     expect($user->leagues()->count())->toBe(1);
 });

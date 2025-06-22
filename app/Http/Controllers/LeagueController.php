@@ -23,10 +23,6 @@ class LeagueController extends Controller
             'user_id' => $request->user()->id,
         ]);
 
-        $request->user()->update([
-            'current_league_id' => $league->id,
-        ]);
-
         $request->user()->leagues()->attach($league->id);
 
         return redirect()->route('web.leagues.show', $league->id);

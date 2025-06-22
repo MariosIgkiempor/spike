@@ -5,7 +5,6 @@ namespace App\Models;
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -43,11 +42,6 @@ class User extends Authenticatable
                 $q->where('users.id', $this->id);
             });
         })->get();
-    }
-
-    public function currentLeague(): BelongsTo
-    {
-        return $this->belongsTo(League::class, 'current_league_id');
     }
 
     public function leagues(): BelongsToMany
