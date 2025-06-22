@@ -57,26 +57,29 @@ class LeaderboardController extends Controller
                 }
             });
 
-        // Query basic stats for all league users
         $users = $league->users()
             ->select(
                 'users.*',
-                DB::raw('COUNT(game_team.game_id) as total_games'),
-                DB::raw('COALESCE(SUM(CASE WHEN game_team.won THEN 1 ELSE 0 END), 0) as wins'),
-                DB::raw('COALESCE(SUM(CASE WHEN game_team.won = 0 THEN 1 ELSE 0 END), 0) as losses'),
-                DB::raw('COALESCE(SUM(game_team.score - opponent.score), 0) as score_diff')
+                DB::raw('COUNT(game_team.game_id)                                  as total_games'),
+                DB::raw('COALESCE(SUM(CASE WHEN game_team.won THEN 1 ELSE 0 END),0)   as wins'),
+                DB::raw('COALESCE(SUM(CASE WHEN game_team.won = 0 THEN 1 ELSE 0 END),0) as losses'),
+                DB::raw('COALESCE(SUM(game_team.score - opponent.score),0)           as score_diff')
             )
             ->leftJoin('team_user', 'users.id', '=', 'team_user.user_id')
             ->leftJoin('game_team', 'team_user.team_id', '=', 'game_team.team_id')
-            ->leftJoin('games', function ($join) use ($league) {
-                $join->on('game_team.game_id', '=', 'games.id')
+            ->leftJoin('games', function ($j) use ($league) {
+                $j->on('game_team.game_id', '=', 'games.id')
                     ->where('games.league_id', $league->id);
             })
-            ->leftJoin('game_team as opponent', function ($join) {
-                $join->on('opponent.game_id', '=', 'game_team.game_id')
+            ->leftJoin('game_team as opponent', function ($j) {
+                $j->on('opponent.game_id', '=', 'game_team.game_id')
                     ->whereColumn('opponent.team_id', '!=', 'game_team.team_id');
             })
-            ->groupBy('users.id')
+            ->groupBy([
+                'users.id',
+                'league_user.league_id',
+                'league_user.user_id',
+            ])
             ->get();
 
         // Combine stats, compute win_rate and attach MMR, then sort by MMR
