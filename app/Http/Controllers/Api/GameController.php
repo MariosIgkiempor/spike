@@ -43,6 +43,7 @@ class GameController extends Controller
             'team2_player2_id' => ['required', 'exists:users,id'],
             'team1_score' => ['required', 'integer', 'min:0', 'max:100'],
             'team2_score' => ['required', 'integer', 'min:0', 'max:100'],
+            'date' => ['required', 'date', 'before:now'],
         ]);
 
         // Custom validation: no draws, winner must win by 2 and have at least 21
@@ -66,6 +67,7 @@ class GameController extends Controller
 
         $game = Game::create([
             'league_id' => $validated['league_id'],
+            'created_at' => $validated['date'],
         ]);
 
         $team1Player1Id = $validated['team1_player1_id'];

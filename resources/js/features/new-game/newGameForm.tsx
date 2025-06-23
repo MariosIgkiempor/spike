@@ -1,5 +1,6 @@
 import { PlayerInput } from '@/components/PlayerInput';
 import { Button } from '@/components/ui/button';
+import { DatePickerDemo } from '@/components/ui/date-picker';
 import { NumberInput } from '@/components/ui/number-input';
 import { League } from '@/types';
 import { useForm } from '@inertiajs/react';
@@ -17,6 +18,7 @@ type NewGameFormData = {
     team2_player2_id: number | null;
     team1_score: number;
     team2_score: number;
+    date: Date;
 };
 
 export const NewGameForm: FC<NewGameFormProps> = ({ league }) => {
@@ -28,6 +30,7 @@ export const NewGameForm: FC<NewGameFormProps> = ({ league }) => {
         team2_player2_id: null,
         team1_score: 21,
         team2_score: 21,
+        date: new Date(),
     });
 
     const team1Error = errors.team1_player1_id || errors.team1_player2_id || errors.team1_score;
@@ -115,6 +118,9 @@ export const NewGameForm: FC<NewGameFormProps> = ({ league }) => {
                         />
                     </div>
                 </div>
+
+                <div></div>
+                <DatePickerDemo value={data.date} onChange={(value) => setData('date', value!)} />
             </div>
 
             <div className="flex justify-center">
