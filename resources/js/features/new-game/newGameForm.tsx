@@ -5,6 +5,7 @@ import { NumberInput } from '@/components/ui/number-input';
 import { League } from '@/types';
 import { useForm } from '@inertiajs/react';
 import { FC, FormEvent } from 'react';
+import { toast } from 'sonner';
 
 interface NewGameFormProps {
     league: League;
@@ -41,6 +42,7 @@ export const NewGameForm: FC<NewGameFormProps> = ({ league }) => {
         post(route('api.games.store'), {
             onSuccess: () => {
                 reset();
+                toast.success('Game created');
             },
         });
     };
