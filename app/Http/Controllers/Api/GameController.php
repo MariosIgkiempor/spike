@@ -31,6 +31,10 @@ class GameController extends Controller
 
     public function store(Request $request)
     {
+        if (!$request->user()->leagues->contains($request->league_id)) {
+            return response('You do not belong to this league', 403);
+        }
+
         $validated = $request->validate([
             'league_id' => ['required', 'exists:leagues,id'],
             'team1_player1_id' => ['required', 'exists:users,id'],

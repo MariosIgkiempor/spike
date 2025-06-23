@@ -21,3 +21,10 @@ test('store', function () {
     expect($league->users()->count())->toBe(1);
     expect($user->leagues()->count())->toBe(1);
 });
+
+test('store - must be authenticated', function () {
+    $response = $this->postJson(route('api.leagues.store'));
+
+    $response->assertStatus(401);
+});
+
