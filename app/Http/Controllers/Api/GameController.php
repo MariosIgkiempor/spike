@@ -24,6 +24,7 @@ class GameController extends Controller
             ->when($league, function ($query) use ($league) {
                 $query->where('league_id', $league->id);
             })
+            ->orderBy('created_at', 'desc')
             ->get();
 
         return GameResource::collection($games);
