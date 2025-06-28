@@ -23,7 +23,7 @@ type NewGameFormData = {
 };
 
 export const NewGameForm: FC<NewGameFormProps> = ({ league }) => {
-    const { data, setData, post, processing, errors, reset } = useForm<NewGameFormData>({
+    const { data, setData, post, processing, errors } = useForm<NewGameFormData>({
         league_id: league.id,
         team1_player1_id: null,
         team1_player2_id: null,
@@ -41,7 +41,6 @@ export const NewGameForm: FC<NewGameFormProps> = ({ league }) => {
         e.preventDefault();
         post(route('api.games.store'), {
             onSuccess: () => {
-                reset();
                 toast.success('Game created');
             },
         });

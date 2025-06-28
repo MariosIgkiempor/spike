@@ -154,32 +154,29 @@ export const Leaderboard: FC<LeaderboardProps> = ({ leaderboard, isLoading }) =>
     }
 
     return (
-        <div className="mb-8">
-            <div className="mb-2 flex items-baseline justify-between gap-2">
-                <h2 className="text-2xl font-semibold">Player Leaderboard</h2>
-                <div className="flex flex-1 flex-wrap justify-end gap-2">
-                    {sorting.length > 0 && (
-                        <Badge variant="outline" className="h-8">
-                            {sorting.map((sort) => (
-                                <span key={sort.id} className="flex items-center gap-1">
-                                    {columnNames[sort.id]} {sort.desc ? '↓' : '↑'}
-                                </span>
-                            ))}
-                            <button onClick={() => setSorting([])} className="ml-2 rounded-sm p-0.5 hover:bg-muted">
-                                <X className="h-3 w-3" />
-                            </button>
-                        </Badge>
-                    )}
-                    <Input
-                        type="search"
-                        placeholder="Search by player name..."
-                        value={search}
-                        onChange={({ target }) => onSearchChange(target.value)}
-                        className="max-w-md"
-                    />
-                </div>
+        <>
+            <div className={'flex flex-col items-baseline gap-2 sm:flex-row'}>
+                <Input
+                    type="search"
+                    placeholder="Search by player name..."
+                    value={search}
+                    onChange={({ target }) => onSearchChange(target.value)}
+                    className="max-w-md"
+                />
+                {sorting.length > 0 && (
+                    <Badge variant="outline" className="h-8">
+                        {sorting.map((sort) => (
+                            <span key={sort.id} className="flex items-center gap-1">
+                                {columnNames[sort.id]} {sort.desc ? '↓' : '↑'}
+                            </span>
+                        ))}
+                        <button onClick={() => setSorting([])} className="ml-2 rounded-sm p-0.5 hover:bg-muted">
+                            <X className="h-3 w-3" />
+                        </button>
+                    </Badge>
+                )}
             </div>
             <DataTable table={table} />
-        </div>
+        </>
     );
 };

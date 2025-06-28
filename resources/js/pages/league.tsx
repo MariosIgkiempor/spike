@@ -1,6 +1,5 @@
 import { PlayerInput } from '@/components/PlayerInput';
 import { Button } from '@/components/ui/button';
-import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { PageContainer } from '@/components/ui/pageContainer';
 import { PageSection } from '@/components/ui/pageSection';
 import { SectionHeading } from '@/components/ui/sectionHeading';
@@ -11,6 +10,7 @@ import Layout from '@/layouts/app-layout';
 import { League, PageProps, Resource } from '@/types';
 import { Head } from '@inertiajs/react';
 import { useQuery } from '@tanstack/react-query';
+import { Trash } from 'lucide-react';
 import { FC, useState } from 'react';
 import { toast } from 'sonner';
 
@@ -38,11 +38,12 @@ const LeaguePlayers: FC<{ league: League }> = ({ league }) => {
 
     return (
         <>
-            <PageSection>
-                <SectionHeading>Pick fair teams</SectionHeading>
+            <PageSection title={'Pick fair teams'}>
                 {leaderboard === undefined ? null : <GameGenerator leaderboard={leaderboard} league={league} />}
             </PageSection>
-            <PageSection>{leaderboard === undefined ? null : <Leaderboard leaderboard={leaderboard} isLoading={isLoading} />}</PageSection>
+            <PageSection title={'Leaderboard'}>
+                {leaderboard === undefined ? null : <Leaderboard leaderboard={leaderboard} isLoading={isLoading} />}
+            </PageSection>
         </>
     );
 };
@@ -104,6 +105,12 @@ const GameGenerator: FC<{ leaderboard: LeaderboardUser[]; league: League }> = ({
         return players.reduce((a, b) => a + b, 0);
     };
 
+    const handleRemovePlayer = (playerId: number) => {
+        const newList = players.filter(p => p !== playerId)
+
+        setPlayers(newList)
+    }
+
     return (
         <>
             <PlayerInput
@@ -113,16 +120,21 @@ const GameGenerator: FC<{ leaderboard: LeaderboardUser[]; league: League }> = ({
                 leagueId={league.id}
             />
 
-            <div className={'grid gap-4 md:grid-cols-2 lg:grid-cols-3'}>
+            <div className={'flex flex-col gap-4'}>
                 {players.map((playerId) => {
                     const player = leaderboard.find((u) => u.id === playerId);
                     return (
-                        <Card key={playerId} className="mt-2">
-                            <CardHeader>
-                                <CardTitle>{player?.name || playerId}</CardTitle>
-                                <CardDescription>{player?.mmr}</CardDescription>
-                            </CardHeader>
-                        </Card>
+                        <div className={'flex justify-between gap-2'}>
+                            <div>
+                                <h3 className={'font-semibold'}>{player?.name || playerId}</h3>
+                                <div className={'text-sm text-muted-foreground'}>
+                                    MMR <span className={'font-semibold'}>{player?.mmr}</span>
+                                </div>
+                            </div>
+                            <Button variant={'destructive'} size={'icon'} onClick={() => handleRemovePlayer(playerId)}>
+                                <Trash />
+                            </Button>
+                        </div>
                     );
                 })}
             </div>

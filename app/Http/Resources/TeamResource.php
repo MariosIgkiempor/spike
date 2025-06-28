@@ -17,6 +17,8 @@ class TeamResource extends JsonResource
         return [
             'id' => $this->id,
             'players' => UserResource::collection($this->players),
+            'score' => $this->pivot->score,
+            'won' => $this->pivot->won,
             'createdAt' => $this->created_at,
             'updatedAt' => $this->updated_at,
         ];

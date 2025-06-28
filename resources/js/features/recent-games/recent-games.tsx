@@ -1,11 +1,11 @@
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { PageSection } from '@/components/ui/pageSection';
-import { SectionHeading } from '@/components/ui/sectionHeading';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useDebounce } from '@/hooks/useDebounce';
 import { Game, League, Paginated } from '@/types';
 import { useQuery } from '@tanstack/react-query';
+import { format } from 'date-fns';
 import { FC, useState } from 'react';
 
 const fetchGames = async (leagueId: number, search: string) => {
@@ -38,31 +38,31 @@ export const RecentGames: FC<RecentGamesProps> = ({ league }) => {
     });
 
     return (
-        <PageSection>
-            <div className="flex items-center justify-between">
-                <SectionHeading>Recent Games</SectionHeading>
-                <Input
-                    type="search"
-                    placeholder="Search by user name..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="max-w-sm"
-                />
-            </div>
-
+        <PageSection
+            title={'Recent Games'}
+            extra={
+                <div>
+                    <Input
+                        type="search"
+                        placeholder="Search by user name..."
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        className="max-w-sm"
+                    />
+                </div>
+            }
+        >
             {isLoading ? (
                 <Skeleton className={'h-32 w-full'} />
             ) : error ? (
                 <div className="text-red-500 dark:text-red-400">Error: {error.message}</div>
             ) : (
-                <div className={'space-y-4'}>
-                    <div className="divide-y divide-gray-200 dark:divide-gray-800">
-                        {gamesData?.data.length === 0 ? (
-                            <div className="py-8 text-center text-muted-foreground">No games found.</div>
-                        ) : (
-                            gamesData?.data.map((game: Game) => <ScoreboardRow key={game.id} game={game} />)
-                        )}
-                    </div>
+                <div className={'space-y-8'}>
+                    {gamesData?.data.length === 0 ? (
+                        <div className="py-8 text-center text-muted-foreground">No games found.</div>
+                    ) : (
+                        gamesData?.data.map((game: Game) => <ScoreboardRow key={game.id} game={game} />)
+                    )}
                 </div>
             )}
         </PageSection>
@@ -70,33 +70,23 @@ export const RecentGames: FC<RecentGamesProps> = ({ league }) => {
 };
 
 const ScoreboardRow: FC<{ game: Game }> = ({ game }) => {
-    const team1 = game.teams[0];
-    const team2 = game.teams[1];
-
     return (
-        <div className="flex flex-col items-center justify-between gap-4 border-b border-gray-200 py-2 last:border-b-0 md:flex-row dark:border-gray-800">
-            <div className="flex flex-1 flex-col items-center md:items-end">
-                <div className="font-semibold text-gray-900 dark:text-gray-100">
-                    {team1.players[0].name} & {team1.players[1].name}
+        <div className={'grid gap-2.5 sm:grid-cols-[_1fr__1fr_80px]'}>
+            {game.teams.map((team) => (
+                <div key={team.id} className={'flex gap-4'}>
+                    <Badge variant={team.won ? 'success' : 'outline'} className={'w-8 overflow-hidden'}>
+                        {team.score}
+                    </Badge>
+                    <div>
+                        {team.players.map((player) => (
+                            <div key={player.id} className={'line-clamp-1 text-sm'}>
+                                {player.name}
+                            </div>
+                        ))}
+                    </div>
                 </div>
-            </div>
-            <div className="flex items-center gap-2">
-                <Badge variant={team1.won ? 'success' : team2.won ? 'destructive' : 'secondary'} className="px-4 py-2 text-lg">
-                    {game.scores[0]}
-                </Badge>
-                <span className="text-xl font-bold text-muted-foreground">-</span>
-                <Badge variant={team2.won ? 'success' : team1.won ? 'destructive' : 'secondary'} className="px-4 py-2 text-lg">
-                    {game.scores[1]}
-                </Badge>
-            </div>
-            <div className="flex flex-1 flex-col items-center md:items-start">
-                <div className="font-semibold text-gray-900 dark:text-gray-100">
-                    {team2.players[0].name} & {team2.players[1].name}
-                </div>
-            </div>
-            <div className="hidden min-w-[100px] text-center text-sm text-muted-foreground md:block">
-                {new Date(game.createdAt).toLocaleDateString()}
-            </div>
+            ))}
+            <div className={'text-xs'}>{format(game.createdAt, 'd MMM y')}</div>
         </div>
     );
 };
