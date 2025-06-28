@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { DatePickerDemo } from '@/components/ui/date-picker';
 import { NumberInput } from '@/components/ui/number-input';
 import { League, User } from '@/types';
-import { useForm } from '@inertiajs/react';
+import { router, useForm } from '@inertiajs/react';
 import { FC, FormEvent } from 'react';
 import { toast } from 'sonner';
 
@@ -42,6 +42,7 @@ export const NewGameForm: FC<NewGameFormProps> = ({ league, players }) => {
         e.preventDefault();
         post(route('api.games.store'), {
             onSuccess: () => {
+                router.reload({ only: ['league'] });
                 toast.success('Game created');
             },
         });

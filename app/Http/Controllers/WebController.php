@@ -26,10 +26,10 @@ class WebController extends Controller
         }
 
         return Inertia::render('league', [
-            'league' => LeagueResource::make($league),
-            'players' => UserResource::collection($league->users),
-            'leaderboard' => $league->leaderboard(),
-            'teamStats' => $league->teamStats(),
+            'league' => fn() => LeagueResource::make($league),
+            'players' => fn() => UserResource::collection($league->users),
+            'leaderboard' => fn() => $league->leaderboard(),
+            'teamStats' => fn() => $league->teamStats(),
         ]);
     }
 

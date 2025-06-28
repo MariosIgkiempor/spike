@@ -20,7 +20,10 @@ test('store', function () {
         'team2_player2_id' => User::factory()->create()->id,
         'team1_score' => 10,
         'team2_score' => 21,
+        'date' => now()->subHour(),
     ]);
+
+    $response->assertRedirectBack();
 
     $this->assertDatabaseCount('games', 1);
     $this->assertDatabaseCount('teams', 2);
