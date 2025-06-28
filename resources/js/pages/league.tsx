@@ -7,50 +7,11 @@ import { Leaderboard, LeaderboardUser } from '@/features/leaderboard/leaderboard
 import { NewGameForm } from '@/features/new-game/newGameForm';
 import { RecentGames } from '@/features/recent-games/recent-games';
 import Layout from '@/layouts/app-layout';
-import { League, PageProps, Resource } from '@/types';
+import { League, PageProps, Resource, ResourceCollection, User } from '@/types';
 import { Head } from '@inertiajs/react';
-import { useQuery } from '@tanstack/react-query';
 import { Trash } from 'lucide-react';
 import { FC, useState } from 'react';
 import { toast } from 'sonner';
-
-const fetchLeaderboard = async (leagueId: number) => {
-    const response = await fetch(route('api.leaderboard.show', { league: leagueId }), {
-        headers: {
-            Accept: 'application/json',
-            'X-Requested-With': 'XMLHttpRequest',
-        },
-    });
-
-    if (!response.ok) {
-        throw new Error('Could not fetch leaderboard');
-    }
-
-    const json = await response.json();
-    return json as LeaderboardUser[];
-};
-
-const LeaguePlayers: FC<{ league: League }> = ({ league }) => {
-    const { data: leaderboard, isLoading } = useQuery<LeaderboardUser[]>({
-        queryKey: ['leaderboard', league.id],
-        queryFn: () => fetchLeaderboard(league.id),
-    });
-
-    return (
-        <>
-            <PageSection title={'Pick fair teams'}>
-                {leaderboard === undefined ? null : <GameGenerator leaderboard={leaderboard} league={league} />}
-            </PageSection>
-            <PageSection title={'Leaderboard'}>
-                {leaderboard === undefined ? null : <Leaderboard leaderboard={leaderboard} isLoading={isLoading} />}
-            </PageSection>
-        </>
-    );
-};
-
-type LeaguePageProps = PageProps & {
-    league: Resource<League>;
-};
 
 const CopyLeagueJoinLink: FC<{ league: League }> = ({ league }) => {
     const copyLink = () => {
@@ -67,13 +28,13 @@ const CopyLeagueJoinLink: FC<{ league: League }> = ({ league }) => {
     return <Button onClick={copyLink}>Copy join link</Button>;
 };
 
-const GameGenerator: FC<{ leaderboard: LeaderboardUser[]; league: League }> = ({ leaderboard, league }) => {
-    const [players, setPlayers] = useState<number[]>([]);
+const GameGenerator: FC<{ leaderboard: LeaderboardUser[]; players: User[] }> = ({ leaderboard, players }) => {
+    const [selectedPlayers, setSelectedPlayers] = useState<number[]>([]);
     const [teams, setTeams] = useState<number[][]>([]);
 
     const generateTeams = () => {
         // Map selected IDs to full user objects with MMR
-        const selectedUsers = players.map((id) => leaderboard.find((u) => u.id === id)).filter((u): u is LeaderboardUser => !!u);
+        const selectedUsers = selectedPlayers.map((id) => leaderboard.find((u) => u.id === id)).filter((u): u is LeaderboardUser => !!u);
 
         // Sort by descending MMR
         const sorted = [...selectedUsers].sort((a, b) => b.mmr - a.mmr);
@@ -106,22 +67,22 @@ const GameGenerator: FC<{ leaderboard: LeaderboardUser[]; league: League }> = ({
     };
 
     const handleRemovePlayer = (playerId: number) => {
-        const newList = players.filter(p => p !== playerId)
+        const newList = selectedPlayers.filter((p) => p !== playerId);
 
-        setPlayers(newList)
-    }
+        setSelectedPlayers(newList);
+    };
 
     return (
         <>
             <PlayerInput
-                onChange={(playerId) => setPlayers((prev) => (playerId ? [...prev, playerId] : prev))}
+                onChange={(playerId) => setSelectedPlayers((prev) => (playerId ? [...prev, playerId] : prev))}
                 label="Player"
                 value={null}
-                leagueId={league.id}
+                players={players.filter((p) => !selectedPlayers.includes(p.id))}
             />
 
             <div className={'flex flex-col gap-4'}>
-                {players.map((playerId) => {
+                {selectedPlayers.map((playerId) => {
                     const player = leaderboard.find((u) => u.id === playerId);
                     return (
                         <div className={'flex justify-between gap-2'}>
@@ -139,7 +100,7 @@ const GameGenerator: FC<{ leaderboard: LeaderboardUser[]; league: League }> = ({
                 })}
             </div>
 
-            <Button onClick={generateTeams} className="mt-4" disabled={players.length < 2}>
+            <Button onClick={generateTeams} className="mt-4" disabled={selectedPlayers.length < 2}>
                 Generate Teams
             </Button>
 
@@ -169,7 +130,13 @@ const GameGenerator: FC<{ leaderboard: LeaderboardUser[]; league: League }> = ({
     );
 };
 
-const LeaguePage: FC<LeaguePageProps> = ({ league: { data: league } }) => {
+type LeaguePageProps = PageProps & {
+    league: Resource<League>;
+    leaderboard: LeaderboardUser[];
+    players: ResourceCollection<User>;
+};
+
+const LeaguePage: FC<LeaguePageProps> = ({ league: { data: league }, players: { data: players }, leaderboard }) => {
     return (
         <Layout>
             <Head title="league" />
@@ -180,8 +147,13 @@ const LeaguePage: FC<LeaguePageProps> = ({ league: { data: league } }) => {
                         <CopyLeagueJoinLink league={league} />
                     </div>
                 </SectionHeading>
-                <NewGameForm league={league} />
-                <LeaguePlayers league={league} />
+                <NewGameForm league={league} players={players} />
+                <PageSection title={'Pick fair teams'}>
+                    <GameGenerator leaderboard={leaderboard} players={players} />
+                </PageSection>
+                <PageSection title={'Leaderboard'}>
+                    <Leaderboard leaderboard={leaderboard} />
+                </PageSection>
                 <RecentGames league={league} />
             </PageContainer>
         </Layout>

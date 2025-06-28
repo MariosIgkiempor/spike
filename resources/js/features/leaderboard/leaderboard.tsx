@@ -3,7 +3,6 @@ import { Badge } from '@/components/ui/badge';
 import { DataTable } from '@/components/ui/data-table';
 import { DataTableColumnHeader } from '@/components/ui/data-table-column-header';
 import { Input } from '@/components/ui/input';
-import { Skeleton } from '@/components/ui/skeleton';
 import { User } from '@/types';
 import {
     ColumnDef,
@@ -29,10 +28,9 @@ export type LeaderboardUser = User & {
 
 interface LeaderboardProps {
     leaderboard: LeaderboardUser[];
-    isLoading: boolean;
 }
 
-export const Leaderboard: FC<LeaderboardProps> = ({ leaderboard, isLoading }) => {
+export const Leaderboard: FC<LeaderboardProps> = ({ leaderboard }) => {
     const [sorting, setSorting] = useState<SortingState>([]);
     const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
     const [search, setSearch] = useState('');
@@ -148,10 +146,6 @@ export const Leaderboard: FC<LeaderboardProps> = ({ leaderboard, isLoading }) =>
         if (value.length === 0) table.getColumn('name')?.setFilterValue(undefined);
         else table.getColumn('name')?.setFilterValue(() => search);
     };
-
-    if (isLoading) {
-        return <Skeleton className={'h-48 w-full'} />;
-    }
 
     return (
         <>
