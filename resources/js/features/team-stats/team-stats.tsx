@@ -64,7 +64,7 @@ export const TeamStats: FC<LeaderboardProps> = ({ stats }) => {
         },
         {
             accessorKey: 'won',
-            header: ({ column }) => <DataTableColumnHeader column={column} title="Total Games" />,
+            header: ({ column }) => <DataTableColumnHeader column={column} title="Won" />,
             cell: ({ row }) => <span className="block text-center">{row.original.won}</span>,
             enableSorting: true,
             enableHiding: true,
