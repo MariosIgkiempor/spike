@@ -6,6 +6,7 @@ import { SectionHeading } from '@/components/ui/sectionHeading';
 import { Leaderboard, LeaderboardUser } from '@/features/leaderboard/leaderboard';
 import { NewGameForm } from '@/features/new-game/newGameForm';
 import { RecentGames } from '@/features/recent-games/recent-games';
+import { TeamStats } from '@/features/team-stats/team-stats';
 import Layout from '@/layouts/app-layout';
 import { League, PageProps, Resource, ResourceCollection, User } from '@/types';
 import { Head } from '@inertiajs/react';
@@ -134,9 +135,10 @@ type LeaguePageProps = PageProps & {
     league: Resource<League>;
     leaderboard: LeaderboardUser[];
     players: ResourceCollection<User>;
+    teamStats: TeamStats[];
 };
 
-const LeaguePage: FC<LeaguePageProps> = ({ league: { data: league }, players: { data: players }, leaderboard }) => {
+const LeaguePage: FC<LeaguePageProps> = ({ league: { data: league }, players: { data: players }, leaderboard, teamStats }) => {
     return (
         <Layout>
             <Head title="league" />
@@ -147,12 +149,17 @@ const LeaguePage: FC<LeaguePageProps> = ({ league: { data: league }, players: { 
                         <CopyLeagueJoinLink league={league} />
                     </div>
                 </SectionHeading>
-                <NewGameForm league={league} players={players} />
+                <PageSection title={'Record new game'}>
+                    <NewGameForm league={league} players={players} />
+                </PageSection>
                 <PageSection title={'Pick fair teams'}>
                     <GameGenerator leaderboard={leaderboard} players={players} />
                 </PageSection>
                 <PageSection title={'Leaderboard'}>
                     <Leaderboard leaderboard={leaderboard} />
+                </PageSection>
+                <PageSection title={'Team stats'}>
+                    <TeamStats stats={teamStats} />
                 </PageSection>
                 <RecentGames league={league} />
             </PageContainer>

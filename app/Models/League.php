@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
 class League extends Model
@@ -121,5 +122,41 @@ class League extends Model
     public function users(): BelongsToMany
     {
         return $this->belongsToMany(User::class);
+    }
+
+    public function teamStats(): Collection
+    {
+        $stats = [];
+
+        // Eager-load teams and their players for all games in this league
+        $games = $this->games()
+            ->with('teams.players')
+            ->get();
+
+        foreach ($games as $game) {
+            foreach ($game->teams as $team) {
+                $teamId = $team->id;
+
+                if (!isset($stats[$teamId])) {
+                    $stats[$teamId] = [
+                        'team' => $team,
+                        'players' => $team->players,
+                        'played' => 0,
+                        'won' => 0,
+                    ];
+                }
+
+                // Increment games played for this team
+                $stats[$teamId]['played']++;
+
+                // Increment wins if this team won in this game
+                if ($team->pivot->won) {
+                    $stats[$teamId]['won']++;
+                }
+            }
+        }
+
+        // Return a plain Collection (values re-indexed)
+        return collect(array_values($stats));
     }
 }

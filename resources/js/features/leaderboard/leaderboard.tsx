@@ -1,4 +1,4 @@
-// Leaderboard UI
+// TeamStats UI
 import { Badge } from '@/components/ui/badge';
 import { DataTable } from '@/components/ui/data-table';
 import { DataTableColumnHeader } from '@/components/ui/data-table-column-header';
