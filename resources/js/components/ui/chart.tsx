@@ -2,6 +2,7 @@
 
 import * as React from 'react';
 import * as RechartsPrimitive from 'recharts';
+import { LegendPayload } from 'recharts';
 
 import { cn } from '@/lib/utils';
 
@@ -257,9 +258,10 @@ function ChartLegendContent({
                                 verticalAlign = 'bottom',
                                 nameKey
                             }: React.ComponentProps<'div'> &
-    Pick<RechartsPrimitive.LegendProps, 'payload' | 'verticalAlign'> & {
+    Pick<RechartsPrimitive.LegendProps, 'verticalAlign'> & {
     hideIcon?: boolean
     nameKey?: string
+    payload?: ReadonlyArray<LegendPayload>
 }) {
     const { config } = useChart();
 

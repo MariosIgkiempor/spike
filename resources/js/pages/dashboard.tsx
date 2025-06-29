@@ -2,10 +2,11 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ChartContainer, ChartLegend, ChartLegendContent, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
 import { PageContainer } from '@/components/ui/pageContainer';
 import { PageSection } from '@/components/ui/pageSection';
+import { Skeleton } from '@/components/ui/skeleton';
 import { MyLeagues } from '@/features/leagues/my-leagues';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem, League, PageProps, ResourceCollection } from '@/types';
-import { Head } from '@inertiajs/react';
+import { Deferred, Head } from '@inertiajs/react';
 import { FC, ReactNode } from 'react';
 import { Bar, BarChart, CartesianGrid, XAxis } from 'recharts';
 
@@ -48,46 +49,54 @@ export default function Dashboard({ leagues, gamesByMonth, totalGames, winRate }
 const GamesByMonth: FC<{ gamesByMonth: GamesPerMonth[] }> = ({ gamesByMonth }) => {
     return (
         <PageSection title={'Games by month'}>
-            <ChartContainer
-                config={{
-                    played: {
-                        label: 'Played',
-                        color: 'var(--chart-3)',
-                    },
-                    won: {
-                        label: 'Won',
-                        color: 'var(--chart-2)',
-                    },
-                }}
-                className="min-h-[200px] w-full"
-            >
-                <BarChart accessibilityLayer data={gamesByMonth}>
-                    <CartesianGrid vertical={false} />
-                    <XAxis
-                        dataKey="month"
-                        tickLine={false}
-                        tickMargin={10}
-                        axisLine={false}
-                        // tickFormatter={(value) => value.slice(0, 3)}
-                    />
-                    <ChartTooltip content={<ChartTooltipContent />} />
-                    <ChartLegend content={<ChartLegendContent />} />
-                    <Bar dataKey="played" fill="var(--color-played)" radius={4} />
-                    <Bar dataKey="won" fill="var(--color-won)" radius={4} />
-                </BarChart>
-            </ChartContainer>
+            <Deferred fallback={<Skeleton className={'h-64 w-full'} />} data={'gamesByMonth'}>
+                <ChartContainer
+                    config={{
+                        played: {
+                            label: 'Played',
+                            color: 'var(--chart-3)',
+                        },
+                        won: {
+                            label: 'Won',
+                            color: 'var(--chart-2)',
+                        },
+                    }}
+                    className="min-h-[200px] w-full"
+                >
+                    <BarChart accessibilityLayer data={gamesByMonth}>
+                        <CartesianGrid vertical={false} />
+                        <XAxis
+                            dataKey="month"
+                            tickLine={false}
+                            tickMargin={10}
+                            axisLine={false}
+                            // tickFormatter={(value) => value.slice(0, 3)}
+                        />
+                        <ChartTooltip content={<ChartTooltipContent />} />
+                        <ChartLegend content={<ChartLegendContent payload={undefined} />} />
+                        <Bar dataKey="played" fill="var(--color-played)" radius={4} />
+                        <Bar dataKey="won" fill="var(--color-won)" radius={4} />
+                    </BarChart>
+                </ChartContainer>
+            </Deferred>
         </PageSection>
     );
 };
 
 const WinRate: FC<{ winRate: number }> = ({ winRate }) => {
-    console.log({ winRate });
-    return <Statistic label={'Win rate'} value={new Intl.NumberFormat('en-GB', { style: 'percent' }).format(winRate)} />;
+    return (
+        <Deferred fallback={<Skeleton className={'h-32 w-full'} />} data={'winRate'}>
+            <Statistic label={'Win rate'} value={new Intl.NumberFormat('en-GB', { style: 'percent' }).format(winRate)} />
+        </Deferred>
+    );
 };
 
 const TotalGames: FC<{ totalGames: number }> = ({ totalGames }) => {
-    console.log({ totalGames });
-    return <Statistic label={'Total games'} value={totalGames} />;
+    return (
+        <Deferred fallback={<Skeleton className={'h-32 w-full'} />} data={'totalGames'}>
+            <Statistic label={'Total games'} value={totalGames} />
+        </Deferred>
+    );
 };
 
 const Statistic: FC<{ label: string; value: ReactNode }> = ({ label, value }) => {
