@@ -24,11 +24,11 @@ export const PlayerInput: FC<PlayerInputProps> = ({ players, value, onChange, la
             <div className={'space-y-2'}>
                 <Popover open={open} onOpenChange={setOpen}>
                     <PopoverTrigger asChild>
-                        <Button variant="outline" className="w-[150px] justify-start" disabled={disabled}>
+                        <Button variant="outline" className="w-full justify-start" disabled={disabled}>
                             {value ? <>{players.find((p) => p.id === value)!.name}</> : <>{label}</>}
                         </Button>
                     </PopoverTrigger>
-                    <PopoverContent className="w-[200px] p-0" align="start">
+                    <PopoverContent className="p-0" align="start">
                         <PlayerList
                             players={players}
                             setOpen={setOpen}
@@ -46,7 +46,7 @@ export const PlayerInput: FC<PlayerInputProps> = ({ players, value, onChange, la
         <div className={'space-y-2'}>
             <Drawer open={open} onOpenChange={setOpen}>
                 <DrawerTrigger asChild>
-                    <Button variant="outline" className="w-[150px] justify-start">
+                    <Button variant="outline" className="w-full justify-start">
                         {value ? <>{players.find((p) => p.id === value)!.name}</> : <>{label}</>}
                     </Button>
                 </DrawerTrigger>
@@ -78,7 +78,7 @@ function PlayerList({
 }) {
     return (
         <Command>
-            <CommandInput placeholder="Filter status..." />
+            <CommandInput placeholder="Search players..." />
             <CommandList>
                 <CommandEmpty>No results found.</CommandEmpty>
                 <CommandGroup>

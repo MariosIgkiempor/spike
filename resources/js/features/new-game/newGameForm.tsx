@@ -52,7 +52,7 @@ export const NewGameForm: FC<NewGameFormProps> = ({ league, players }) => {
         <form onSubmit={handleSubmit} className="space-y-8">
             <div className="grid grid-cols-1 justify-items-center gap-8 lg:grid-cols-[_1fr_100px__1fr]">
                 {/* Team 1 */}
-                <div className="w-fit space-y-4">
+                <div className="w-full max-w-sm space-y-4">
                     {team1Error && <div className="mb-2 text-sm text-red-500">{team1Error}</div>}
                     <PlayerInput
                         players={players}
@@ -73,7 +73,7 @@ export const NewGameForm: FC<NewGameFormProps> = ({ league, players }) => {
                         onChange={(value) => setData('team1_score', value)}
                         min={0}
                         max={100}
-                        className="w-48 text-4xl"
+                        className="w-full text-4xl"
                     />
                 </div>
 
@@ -81,7 +81,7 @@ export const NewGameForm: FC<NewGameFormProps> = ({ league, players }) => {
                 <div className="px-4 py-4 text-6xl font-bold text-muted-foreground md:py-0">VS</div>
 
                 {/* Team 2 */}
-                <div className="w-fit space-y-4">
+                <div className="w-full max-w-sm space-y-4">
                     {team2Error && <div className="mb-2 text-sm text-red-500">{team2Error}</div>}
                     <PlayerInput
                         players={players}
@@ -102,7 +102,7 @@ export const NewGameForm: FC<NewGameFormProps> = ({ league, players }) => {
                         onChange={(value) => setData('team2_score', value)}
                         min={0}
                         max={100}
-                        className="w-48 text-4xl"
+                        className="w-full text-4xl"
                     />
                 </div>
 

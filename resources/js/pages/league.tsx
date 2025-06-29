@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import { PageContainer } from '@/components/ui/pageContainer';
 import { PageSection } from '@/components/ui/pageSection';
 import { SectionHeading } from '@/components/ui/sectionHeading';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Leaderboard, LeaderboardUser } from '@/features/leaderboard/leaderboard';
 import { NewGameForm } from '@/features/new-game/newGameForm';
 import { RecentGames } from '@/features/recent-games/recent-games';
@@ -157,19 +158,32 @@ const LeaguePage: FC<LeaguePageProps> = ({ league: { data: league }, players: { 
                         <CopyLeagueJoinLink league={league} />
                     </div>
                 </SectionHeading>
-                <PageSection title={'Record new game'}>
-                    <NewGameForm league={league} players={players} />
-                </PageSection>
-                <PageSection title={'Pick fair teams'}>
-                    <GameGenerator leaderboard={leaderboard} players={players} />
-                </PageSection>
-                <PageSection title={'Leaderboard'}>
-                    <Leaderboard leaderboard={leaderboard} />
-                </PageSection>
-                <PageSection title={'Team stats'}>
-                    <TeamStats stats={teamStats} />
-                </PageSection>
-                <RecentGames league={league} />
+                <Tabs defaultValue={'home'}>
+                    <TabsList>
+                        <TabsTrigger value="home">Home</TabsTrigger>
+                        <TabsTrigger value="history">History</TabsTrigger>
+                        <TabsTrigger value="teams">Teams</TabsTrigger>
+                    </TabsList>
+                    <TabsContent value={'home'}>
+                        <PageSection title={'Record new game'}>
+                            <NewGameForm league={league} players={players} />
+                        </PageSection>
+                        <PageSection title={'Pick fair teams'}>
+                            <GameGenerator leaderboard={leaderboard} players={players} />
+                        </PageSection>
+                        <PageSection title={'Leaderboard'}>
+                            <Leaderboard leaderboard={leaderboard} />
+                        </PageSection>
+                    </TabsContent>
+                    <TabsContent value={'history'}>
+                        <RecentGames league={league} />
+                    </TabsContent>
+                    <TabsContent value={'teams'}>
+                        <PageSection title={'Team stats'}>
+                            <TeamStats stats={teamStats} />
+                        </PageSection>
+                    </TabsContent>
+                </Tabs>
             </PageContainer>
         </Layout>
     );
