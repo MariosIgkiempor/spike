@@ -17,6 +17,8 @@ class WebController extends Controller
         return Inertia::render('dashboard', [
             'leagues' => fn() => LeagueResource::collection($leagues),
             'gamesByMonth' => fn() => $request->user()->gamesByMonth(),
+            'totalGames' => fn() => $request->user()->games()->count(),
+            'winRate' => fn() => $request->user()->winRate(),
         ]);
     }
 

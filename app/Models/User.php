@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
 
 class User extends Authenticatable
 {
@@ -39,6 +40,29 @@ class User extends Authenticatable
     public function leagues(): BelongsToMany
     {
         return $this->belongsToMany(League::class);
+    }
+
+    public function teams(): BelongsToMany
+    {
+        return $this->belongsToMany(Team::class);
+    }
+
+    public function winRate(): float
+    {
+        $stats = DB::table('game_team')
+            ->join('team_user', 'game_team.team_id', '=', 'team_user.team_id')
+            ->where('team_user.user_id', $this->id)
+            ->selectRaw('
+                COUNT(game_team.game_id) AS played,
+                SUM(CASE WHEN game_team.won = 1 THEN 1 ELSE 0 END) AS wins
+            ')
+            ->first();
+
+        if (!$stats->played) {
+            return 0.0;
+        }
+
+        return round($stats->wins / $stats->played, 2);
     }
 
     public function gamesByMonth()
