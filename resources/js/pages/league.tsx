@@ -1,5 +1,6 @@
 import { PlayerInput } from '@/components/PlayerInput';
 import { Button } from '@/components/ui/button';
+import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { PageContainer } from '@/components/ui/pageContainer';
 import { PageSection } from '@/components/ui/pageSection';
 import { SectionHeading } from '@/components/ui/sectionHeading';
@@ -9,6 +10,7 @@ import { NewGameForm } from '@/features/new-game/newGameForm';
 import { RecentGames } from '@/features/recent-games/recent-games';
 import { TeamStats } from '@/features/team-stats/team-stats';
 import Layout from '@/layouts/app-layout';
+import { shuffleArray } from '@/lib/shuffle-array';
 import { League, PageProps, Resource, ResourceCollection, User } from '@/types';
 import { Head } from '@inertiajs/react';
 import { Trash } from 'lucide-react';
@@ -34,7 +36,7 @@ const GameGenerator: FC<{ leaderboard: LeaderboardUser[]; players: User[] }> = (
     const [selectedPlayers, setSelectedPlayers] = useState<number[]>([]);
     const [teams, setTeams] = useState<number[][]>([]);
 
-    const generateTeams = () => {
+    const generateFairTeams = () => {
         // Map selected IDs to full user objects with MMR
         const selectedUsers = selectedPlayers.map((id) => leaderboard.find((u) => u.id === id)).filter((u): u is LeaderboardUser => !!u);
 
@@ -54,6 +56,23 @@ const GameGenerator: FC<{ leaderboard: LeaderboardUser[]; players: User[] }> = (
             } else {
                 teamB.push(user.id);
                 sumB += user.mmr;
+            }
+        });
+
+        setTeams([teamA, teamB]);
+    };
+
+    const generateRandomTeams = () => {
+        const indexes = [...Array(selectedPlayers.length).keys()];
+        shuffleArray(indexes);
+
+        const teamA: number[] = [];
+        const teamB: number[] = [];
+        indexes.forEach((index) => {
+            if (teamA.length > teamB.length) {
+                teamB.push(selectedPlayers[index]);
+            } else {
+                teamA.push(selectedPlayers[index]);
             }
         });
 
@@ -102,30 +121,38 @@ const GameGenerator: FC<{ leaderboard: LeaderboardUser[]; players: User[] }> = (
                 })}
             </div>
 
-            <Button onClick={generateTeams} className="mt-4" disabled={selectedPlayers.length < 2}>
-                Generate Teams
-            </Button>
+            <div className={'flex flex-wrap gap-4'}>
+                <Button onClick={generateFairTeams} disabled={selectedPlayers.length < 2}>
+                    Fair Teams
+                </Button>
+
+                <Button onClick={generateRandomTeams} disabled={selectedPlayers.length < 2}>
+                    Random Teams
+                </Button>
+            </div>
 
             {teams.length === 2 && (
                 <div className="mt-6 grid grid-cols-2 gap-4">
-                    <div>
-                        <h3 className="text-lg font-semibold">Team A (MMR: {teamMMR(teams[0])})</h3>
-                        <ul className="list-disc pl-5">
-                            {teams[0].map((id) => {
-                                const user = leaderboard.find((u) => u.id === id);
-                                return <li key={id}>{user?.name || id}</li>;
-                            })}
-                        </ul>
-                    </div>
-                    <div>
-                        <h3 className="text-lg font-semibold">Team B (MMR: {teamMMR(teams[1])})</h3>
-                        <ul className="list-disc pl-5">
-                            {teams[1].map((id) => {
-                                const user = leaderboard.find((u) => u.id === id);
-                                return <li key={id}>{user?.name || id}</li>;
-                            })}
-                        </ul>
-                    </div>
+                    {[teams[0], teams[1]].map((team) => (
+                        <div>
+                            <h3 className="text-lg font-semibold">Team A (MMR: {teamMMR(team)})</h3>
+                            <ul className="grid gap-4 md:grid-cols-2">
+                                {team.map((id) => {
+                                    const user = leaderboard.find((u) => u.id === id);
+                                    return (
+                                        <li key={id}>
+                                            <Card className={'p-3'}>
+                                                <CardHeader className={'p-3'}>
+                                                    <CardTitle>{user?.name || id}</CardTitle>
+                                                    <CardDescription>{user?.mmr}</CardDescription>
+                                                </CardHeader>
+                                            </Card>
+                                        </li>
+                                    );
+                                })}
+                            </ul>
+                        </div>
+                    ))}
                 </div>
             )}
         </>
@@ -168,7 +195,7 @@ const LeaguePage: FC<LeaguePageProps> = ({ league: { data: league }, players: { 
                         <PageSection title={'Record new game'}>
                             <NewGameForm league={league} players={players} />
                         </PageSection>
-                        <PageSection title={'Pick fair teams'}>
+                        <PageSection title={'Pick teams'}>
                             <GameGenerator leaderboard={leaderboard} players={players} />
                         </PageSection>
                         <PageSection title={'Leaderboard'}>
