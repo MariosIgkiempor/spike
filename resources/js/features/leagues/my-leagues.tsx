@@ -31,7 +31,7 @@ export const MyLeagues: FC<{ leagues: League[] }> = ({ leagues }) => {
                             prefetch
                             href={route('web.leagues.show', { league: league.id })}
                             key={league.id}
-                            className={'-mx-6 -my-2 block px-6 py-2 hover:bg-accent'}
+                            className={'-mx-6 -my-2 block px-6 py-2 hover:bg-accent hover:text-accent-foreground'}
                         >
                             <h3 className={'text-lg font-semibold'}>{league.name}</h3>
                             <div>{league.players.length} players</div>

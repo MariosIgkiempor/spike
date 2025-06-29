@@ -15,7 +15,7 @@ import Layout from '@/layouts/app-layout';
 import { shuffleArray } from '@/lib/shuffle-array';
 import { League, PageProps, Resource, User } from '@/types';
 import { Head } from '@inertiajs/react';
-import { format, parseISO, startOfWeek } from 'date-fns';
+import { format, isWithinInterval, startOfWeek, subWeeks } from 'date-fns';
 import { Trash } from 'lucide-react';
 import { FC, useState } from 'react';
 import { Bar, BarChart, CartesianGrid, XAxis } from 'recharts';
@@ -183,28 +183,25 @@ type LeaguePageProps = PageProps & {
     teamStats: TeamStats[];
 };
 
+function lastNWeeks(n: number) {
+    const startOfThisWeek = startOfWeek(new Date(), { weekStartsOn: 1 });
+    const weeks = [startOfThisWeek];
+    for (let i = 1; i < n; i++) {
+        weeks.push(subWeeks(weeks[weeks.length - 1], 1));
+    }
+    return weeks.reverse();
+}
+
 const LeaguePage: FC<LeaguePageProps> = ({ league: { data: league }, leaderboard, teamStats }) => {
-    const gamesByWeek = Object.entries(
-        league.games.reduce(
-            (groups, game) => {
-                // normalize to a Date
-                const date = parseISO(game.createdAt);
-
-                // get the Monday of that week
-                const monday = startOfWeek(date, { weekStartsOn: 1 });
-
-                // key it as 'yyyy-MM-dd'
-                const key = format(monday, 'yyyy-MM-dd');
-
-                // bucket
-                if (!groups[key]) groups[key] = [];
-                groups[key].push(game);
-
-                return groups;
-            },
-            {} as Record<string, typeof league.games>,
-        ),
-    ).map(([week, games]) => ({ week, count: games.length }));
+    const gamesByWeek = lastNWeeks(6).map((week, index, weeks) => ({
+        week: format(week, 'dd MMM'),
+        count: league.games.filter((game) =>
+            isWithinInterval(game.createdAt, {
+                start: week,
+                end: index === weeks.length - 1 ? new Date() : weeks[index + 1],
+            }),
+        ).length,
+    }));
 
     return (
         <Layout
@@ -234,14 +231,14 @@ const LeaguePage: FC<LeaguePageProps> = ({ league: { data: league }, leaderboard
                         <div className={'grid gap-6 lg:grid-cols-3'}>
                             <NewGameSection league={league} leaderboard={leaderboard} />
                         </div>
-                        <div className={'grid gap-6 md:grid-cols-2 lg:grid-cols-3'}>
+                        <div className={'grid gap-6 lg:grid-cols-3'}>
                             <div>
                                 <Statistic label={'Total players'} value={league.players.length} />
                             </div>
                             <div>
                                 <Statistic label={'Total games'} value={league.games.length} />
                             </div>
-                            <PageSection title={'Games by week'} className={'md:col-span-2'}>
+                            <PageSection title={'Games by week'} className={'lg:col-span-2'}>
                                 <GamesByWeek gamesByWeek={gamesByWeek} />
                             </PageSection>
                         </div>
@@ -270,7 +267,7 @@ function GamesByWeek({ gamesByWeek }: { gamesByWeek: { week: string; count: numb
         <ChartContainer
             config={{
                 count: {
-                    label: 'Weeks',
+                    label: 'W/C',
                     color: 'var(--chart-3)',
                 },
             }}
