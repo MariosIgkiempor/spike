@@ -28,6 +28,7 @@ export const MyLeagues: FC<{ leagues: League[] }> = ({ leagues }) => {
                 {leagues.map((league) => (
                     <article key={league.id}>
                         <Link
+                            prefetch
                             href={route('web.leagues.show', { league: league.id })}
                             key={league.id}
                             className={'-mx-6 -my-2 block px-6 py-2 hover:bg-accent'}

@@ -6,7 +6,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { MyLeagues } from '@/features/leagues/my-leagues';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem, League, PageProps, ResourceCollection } from '@/types';
-import { Deferred, Head } from '@inertiajs/react';
+import { Deferred, Head, WhenVisible } from '@inertiajs/react';
 import { FC, ReactNode } from 'react';
 import { Bar, BarChart, CartesianGrid, XAxis } from 'recharts';
 
@@ -85,17 +85,17 @@ const GamesByMonth: FC<{ gamesByMonth: GamesPerMonth[] }> = ({ gamesByMonth }) =
 
 const WinRate: FC<{ winRate: number }> = ({ winRate }) => {
     return (
-        <Deferred fallback={<Skeleton className={'h-32 w-full'} />} data={'winRate'}>
+        <WhenVisible fallback={<Skeleton className={'h-32 w-full'} />} data={'winRate'}>
             <Statistic label={'Win rate'} value={new Intl.NumberFormat('en-GB', { style: 'percent' }).format(winRate)} />
-        </Deferred>
+        </WhenVisible>
     );
 };
 
 const TotalGames: FC<{ totalGames: number }> = ({ totalGames }) => {
     return (
-        <Deferred fallback={<Skeleton className={'h-32 w-full'} />} data={'totalGames'}>
+        <WhenVisible fallback={<Skeleton className={'h-32 w-full'} />} data={'totalGames'}>
             <Statistic label={'Total games'} value={totalGames} />
-        </Deferred>
+        </WhenVisible>
     );
 };
 

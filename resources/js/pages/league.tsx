@@ -140,7 +140,15 @@ type LeaguePageProps = PageProps & {
 
 const LeaguePage: FC<LeaguePageProps> = ({ league: { data: league }, players: { data: players }, leaderboard, teamStats }) => {
     return (
-        <Layout>
+        <Layout
+            breadcrumbs={[
+                { title: 'Leagues', href: route('dashboard') },
+                {
+                    title: league.name,
+                    href: route('web.leagues.show', { league: league.id }),
+                },
+            ]}
+        >
             <Head title="league" />
             <PageContainer>
                 <SectionHeading className={'flex w-full flex-col justify-between gap-2 md:flex-row'}>
