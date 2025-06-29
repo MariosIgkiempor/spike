@@ -13,7 +13,7 @@ type DatePickerProps = {
     onChange?: (value?: Date) => void;
 }
 
-export const DatePickerDemo: FC<DatePickerProps> = ({ value, onChange }) => {
+export const DatePicker: FC<DatePickerProps> = ({ value, onChange }) => {
     return (
         <Popover>
             <PopoverTrigger asChild>

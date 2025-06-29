@@ -1,13 +1,14 @@
-import { ComponentProps, FC, PropsWithChildren, ReactNode } from 'react';
+import { ComponentProps, FC, ReactNode } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { cn } from '@/lib/utils';
 
-type PageSectionProps = PropsWithChildren<{
+type PageSectionProps = ComponentProps<typeof Card> & {
     title?: ReactNode;
     extra?: ReactNode;
-}>;
+};
 
-const PageSection: FC<PageSectionProps> = ({ title, extra, children }) => {
-    return <Card className={'space-y-6'}>
+const PageSection: FC<PageSectionProps> = ({ title, extra, children, className, ...props }) => {
+    return <Card className={cn('space-y-6', className)} {...props}>
         {title ? <CardHeader>
             <div className={'flex flex-col gap-2 sm:flex-row sm:justify-between items-baseline'}>
                 <PageSectionTitle>{title}</PageSectionTitle>

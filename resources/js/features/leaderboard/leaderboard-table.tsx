@@ -26,11 +26,13 @@ export type LeaderboardUser = User & {
     mmr: number;
 };
 
+export type Leaderboard = LeaderboardUser[];
+
 interface LeaderboardProps {
     leaderboard: LeaderboardUser[];
 }
 
-export const Leaderboard: FC<LeaderboardProps> = ({ leaderboard }) => {
+export const LeaderboardTable: FC<LeaderboardProps> = ({ leaderboard }) => {
     const [sorting, setSorting] = useState<SortingState>([]);
     const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
     const [search, setSearch] = useState('');

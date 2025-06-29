@@ -1,18 +1,16 @@
 import { PlayerInput } from '@/components/PlayerInput';
 import { Button } from '@/components/ui/button';
-import { DatePickerDemo } from '@/components/ui/date-picker';
+import { DatePicker } from '@/components/ui/date-picker';
 import { NumberInput } from '@/components/ui/number-input';
-import { League, User } from '@/types';
+import { League } from '@/types';
 import { router, useForm } from '@inertiajs/react';
 import { FC, FormEvent } from 'react';
 import { toast } from 'sonner';
 
 type NewGameFormData = {
     league_id: number;
-    team1_player1_id: number | null;
-    team1_player2_id: number | null;
-    team2_player1_id: number | null;
-    team2_player2_id: number | null;
+    team1: number[];
+    team2: number[];
     team1_score: number;
     team2_score: number;
     date: Date;
@@ -20,32 +18,48 @@ type NewGameFormData = {
 
 type NewGameFormProps = {
     league: League;
-    players: User[];
+    teams: number[][];
+    onTeamsChange: (teams: number[][]) => void;
 };
 
-export const NewGameForm: FC<NewGameFormProps> = ({ league, players }) => {
-    const { data, setData, post, processing, errors } = useForm<NewGameFormData>({
+export const NewGameForm: FC<NewGameFormProps> = ({ league, teams, onTeamsChange }) => {
+    const { data, setData, post, processing, errors, transform, reset } = useForm<NewGameFormData>({
         league_id: league.id,
-        team1_player1_id: null,
-        team1_player2_id: null,
-        team2_player1_id: null,
-        team2_player2_id: null,
+        team1: [],
+        team2: [],
         team1_score: 21,
         team2_score: 21,
         date: new Date(),
     });
 
-    const team1Error = errors.team1_player1_id || errors.team1_player2_id || errors.team1_score;
-    const team2Error = errors.team2_player1_id || errors.team2_player2_id || errors.team2_score;
+    const team1Error = errors.team1 || errors.team1_score;
+    const team2Error = errors.team2 || errors.team2_score;
 
     const handleSubmit = (e: FormEvent) => {
         e.preventDefault();
+        transform((data) => ({
+            ...data,
+            team1: teams[0],
+            team2: teams[1],
+        }));
+
         post(route('api.games.store'), {
             onSuccess: () => {
-                router.reload({ only: ['league'] });
+                router.reload();
                 toast.success('Game created');
+                reset('team1_score', 'team2_score');
             },
         });
+    };
+
+    const handleTeamChange = (teamIndex: number, playerIndex: number, playerId: number | null) => {
+        const newTeams = teams.map((team) => team.map((p) => p));
+        if (playerId) {
+            newTeams[teamIndex][playerIndex] = playerId;
+        } else {
+            newTeams[teamIndex].splice(playerIndex);
+        }
+        onTeamsChange(newTeams);
     };
 
     return (
@@ -55,18 +69,18 @@ export const NewGameForm: FC<NewGameFormProps> = ({ league, players }) => {
                 <div className="w-full max-w-sm space-y-4">
                     {team1Error && <div className="mb-2 text-sm text-red-500">{team1Error}</div>}
                     <PlayerInput
-                        players={players}
-                        value={data.team1_player1_id}
-                        onChange={(value) => setData('team1_player1_id', value)}
+                        players={league.players}
+                        value={teams[0]?.[0] ?? null}
+                        onChange={(value) => handleTeamChange(0, 0, value)}
                         label="Player 1"
-                        error={errors.team1_player1_id}
+                        error={errors.team1}
                     />
                     <PlayerInput
-                        players={players}
-                        value={data.team1_player2_id}
-                        onChange={(value) => setData('team1_player2_id', value)}
+                        players={league.players}
+                        value={teams[0]?.[1] ?? null}
+                        onChange={(value) => handleTeamChange(0, 1, value)}
                         label="Player 2"
-                        error={errors.team1_player2_id}
+                        error={errors.team1}
                     />
                     <NumberInput
                         value={data.team1_score}
@@ -84,18 +98,18 @@ export const NewGameForm: FC<NewGameFormProps> = ({ league, players }) => {
                 <div className="w-full max-w-sm space-y-4">
                     {team2Error && <div className="mb-2 text-sm text-red-500">{team2Error}</div>}
                     <PlayerInput
-                        players={players}
-                        value={data.team2_player1_id}
-                        onChange={(value) => setData('team2_player1_id', value)}
+                        players={league.players}
+                        value={teams[1]?.[0] ?? null}
+                        onChange={(value) => handleTeamChange(1, 0, value)}
                         label="Player 1"
-                        error={errors.team2_player1_id}
+                        error={errors.team2}
                     />
                     <PlayerInput
-                        players={players}
-                        value={data.team2_player2_id}
-                        onChange={(value) => setData('team2_player2_id', value)}
+                        players={league.players}
+                        value={teams[1]?.[1] ?? null}
+                        onChange={(value) => handleTeamChange(1, 0, value)}
                         label="Player 2"
-                        error={errors.team2_player2_id}
+                        error={errors.team2}
                     />
                     <NumberInput
                         value={data.team2_score}
@@ -107,7 +121,7 @@ export const NewGameForm: FC<NewGameFormProps> = ({ league, players }) => {
                 </div>
 
                 <div></div>
-                <DatePickerDemo value={data.date} onChange={(value) => setData('date', value!)} />
+                <DatePicker value={data.date} onChange={(value) => setData('date', value!)} />
             </div>
 
             <div className="flex justify-center">

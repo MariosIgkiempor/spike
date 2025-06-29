@@ -14,10 +14,8 @@ test('store', function () {
 
     $response = $this->postJson(route('api.games.store'), [
         'league_id' => $league->id,
-        'team1_player1_id' => User::factory()->create()->id,
-        'team1_player2_id' => User::factory()->create()->id,
-        'team2_player1_id' => User::factory()->create()->id,
-        'team2_player2_id' => User::factory()->create()->id,
+        'team1' => [User::factory()->create()->id, User::factory()->create()->id],
+        'team2' => [User::factory()->create()->id, User::factory()->create()->id],
         'team1_score' => 10,
         'team2_score' => 21,
         'date' => now()->subHour(),

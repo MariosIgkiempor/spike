@@ -38,10 +38,8 @@ class GameController extends Controller
 
         $validated = $request->validate([
             'league_id' => ['required', 'exists:leagues,id'],
-            'team1_player1_id' => ['required', 'exists:users,id'],
-            'team1_player2_id' => ['required', 'exists:users,id'],
-            'team2_player1_id' => ['required', 'exists:users,id'],
-            'team2_player2_id' => ['required', 'exists:users,id'],
+            'team1.*' => ['required', 'exists:users,id'],
+            'team2.*' => ['required', 'exists:users,id'],
             'team1_score' => ['required', 'integer', 'min:0', 'max:100'],
             'team2_score' => ['required', 'integer', 'min:0', 'max:100'],
             'date' => ['required', 'date', 'before:now'],
@@ -71,8 +69,8 @@ class GameController extends Controller
             'created_at' => $validated['date'],
         ]);
 
-        $team1Player1Id = $validated['team1_player1_id'];
-        $team1Player2Id = $validated['team1_player2_id'];
+        $team1Player1Id = $validated['team1'][0];
+        $team1Player2Id = $validated['team1'][1];
         $team1PlayerIds = collect([$team1Player1Id, $team1Player2Id]);
         $team1 = Team::whereHas('players', function ($query) use ($team1PlayerIds) {
             $query->whereIn('users.id', $team1PlayerIds);
@@ -88,8 +86,8 @@ class GameController extends Controller
             $team1->players()->attach($team1PlayerIds);
         }
 
-        $team2Player1Id = $validated['team2_player1_id'];
-        $team2Player2Id = $validated['team2_player2_id'];
+        $team2Player1Id = $validated['team2'][0];
+        $team2Player2Id = $validated['team2'][1];
         $team2PlayerIds = collect([$team2Player1Id, $team2Player2Id]);
         $team2 = Team::whereHas('players', function ($query) use ($team2PlayerIds) {
             $query->whereIn('users.id', $team2PlayerIds);

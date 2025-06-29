@@ -1,13 +1,13 @@
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ChartContainer, ChartLegend, ChartLegendContent, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
 import { PageContainer } from '@/components/ui/pageContainer';
 import { PageSection } from '@/components/ui/pageSection';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Statistic } from '@/components/ui/statistic';
 import { MyLeagues } from '@/features/leagues/my-leagues';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem, League, PageProps, ResourceCollection } from '@/types';
 import { Deferred, Head, WhenVisible } from '@inertiajs/react';
-import { FC, ReactNode } from 'react';
+import { FC } from 'react';
 import { Bar, BarChart, CartesianGrid, XAxis } from 'recharts';
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -96,18 +96,5 @@ const TotalGames: FC<{ totalGames: number }> = ({ totalGames }) => {
         <WhenVisible fallback={<Skeleton className={'h-32 w-full'} />} data={'totalGames'}>
             <Statistic label={'Total games'} value={totalGames} />
         </WhenVisible>
-    );
-};
-
-const Statistic: FC<{ label: string; value: ReactNode }> = ({ label, value }) => {
-    return (
-        <Card className={'gap-3'}>
-            <CardHeader>
-                <CardTitle>{label}</CardTitle>
-            </CardHeader>
-            <CardContent>
-                <div className={'text-2xl font-semibold'}>{value}</div>
-            </CardContent>
-        </Card>
     );
 };

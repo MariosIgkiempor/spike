@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Http\Resources\LeagueResource;
-use App\Http\Resources\UserResource;
 use App\Models\League;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -30,7 +29,6 @@ class WebController extends Controller
 
         return Inertia::render('league', [
             'league' => fn() => LeagueResource::make($league),
-            'players' => fn() => UserResource::collection($league->users),
             'leaderboard' => fn() => $league->leaderboard(),
             'teamStats' => fn() => $league->teamStats(),
         ]);

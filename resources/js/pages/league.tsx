@@ -1,20 +1,24 @@
 import { PlayerInput } from '@/components/PlayerInput';
 import { Button } from '@/components/ui/button';
 import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { ChartContainer, ChartLegend, ChartLegendContent, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
 import { PageContainer } from '@/components/ui/pageContainer';
 import { PageSection } from '@/components/ui/pageSection';
 import { SectionHeading } from '@/components/ui/sectionHeading';
+import { Statistic } from '@/components/ui/statistic';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Leaderboard, LeaderboardUser } from '@/features/leaderboard/leaderboard';
+import { Leaderboard, LeaderboardTable, LeaderboardUser } from '@/features/leaderboard/leaderboard-table';
 import { NewGameForm } from '@/features/new-game/newGameForm';
 import { RecentGames } from '@/features/recent-games/recent-games';
 import { TeamStats } from '@/features/team-stats/team-stats';
 import Layout from '@/layouts/app-layout';
 import { shuffleArray } from '@/lib/shuffle-array';
-import { League, PageProps, Resource, ResourceCollection, User } from '@/types';
+import { League, PageProps, Resource, User } from '@/types';
 import { Head } from '@inertiajs/react';
+import { format, parseISO, startOfWeek } from 'date-fns';
 import { Trash } from 'lucide-react';
 import { FC, useState } from 'react';
+import { Bar, BarChart, CartesianGrid, XAxis } from 'recharts';
 import { toast } from 'sonner';
 
 const CopyLeagueJoinLink: FC<{ league: League }> = ({ league }) => {
@@ -32,7 +36,11 @@ const CopyLeagueJoinLink: FC<{ league: League }> = ({ league }) => {
     return <Button onClick={copyLink}>Copy join link</Button>;
 };
 
-const GameGenerator: FC<{ leaderboard: LeaderboardUser[]; players: User[] }> = ({ leaderboard, players }) => {
+const GameGenerator: FC<{
+    leaderboard: LeaderboardUser[];
+    players: User[];
+    onTeamsGenerated?: (teams: number[][]) => void;
+}> = ({ leaderboard, players, onTeamsGenerated }) => {
     const [selectedPlayers, setSelectedPlayers] = useState<number[]>([]);
     const [teams, setTeams] = useState<number[][]>([]);
 
@@ -59,7 +67,9 @@ const GameGenerator: FC<{ leaderboard: LeaderboardUser[]; players: User[] }> = (
             }
         });
 
-        setTeams([teamA, teamB]);
+        const teams = [teamA, teamB];
+        setTeams(teams);
+        onTeamsGenerated?.(teams);
     };
 
     const generateRandomTeams = () => {
@@ -76,7 +86,9 @@ const GameGenerator: FC<{ leaderboard: LeaderboardUser[]; players: User[] }> = (
             }
         });
 
-        setTeams([teamA, teamB]);
+        const teams = [teamA, teamB];
+        setTeams(teams);
+        onTeamsGenerated?.(teams);
     };
 
     const teamMMR = (team: number[]) => {
@@ -132,21 +144,16 @@ const GameGenerator: FC<{ leaderboard: LeaderboardUser[]; players: User[] }> = (
             </div>
 
             {teams.length === 2 && (
-                <div className="mt-6 grid grid-cols-2 gap-4">
+                <div className="mt-6 grid gap-4">
                     {[teams[0], teams[1]].map((team) => (
                         <div>
                             <h3 className="text-lg font-semibold">Team A (MMR: {teamMMR(team)})</h3>
                             <ul className="grid gap-4 md:grid-cols-2">
                                 {team.map((id) => {
-                                    const user = leaderboard.find((u) => u.id === id);
+                                    const user = leaderboard.find((u) => u.id === id)!;
                                     return (
                                         <li key={id}>
-                                            <Card className={'p-3'}>
-                                                <CardHeader className={'p-3'}>
-                                                    <CardTitle>{user?.name || id}</CardTitle>
-                                                    <CardDescription>{user?.mmr}</CardDescription>
-                                                </CardHeader>
-                                            </Card>
+                                            <UserCard user={user} />
                                         </li>
                                     );
                                 })}
@@ -159,14 +166,46 @@ const GameGenerator: FC<{ leaderboard: LeaderboardUser[]; players: User[] }> = (
     );
 };
 
+const UserCard: FC<{ user: User & { mmr?: number } }> = ({ user }) => {
+    return (
+        <Card className={'p-1.5'}>
+            <CardHeader className={'p-1'}>
+                <CardTitle>{user.name}</CardTitle>
+                {user.mmr && <CardDescription>MMR {user.mmr}</CardDescription>}
+            </CardHeader>
+        </Card>
+    );
+};
+
 type LeaguePageProps = PageProps & {
     league: Resource<League>;
-    leaderboard: LeaderboardUser[];
-    players: ResourceCollection<User>;
+    leaderboard: Leaderboard;
     teamStats: TeamStats[];
 };
 
-const LeaguePage: FC<LeaguePageProps> = ({ league: { data: league }, players: { data: players }, leaderboard, teamStats }) => {
+const LeaguePage: FC<LeaguePageProps> = ({ league: { data: league }, leaderboard, teamStats }) => {
+    const gamesByWeek = Object.entries(
+        league.games.reduce(
+            (groups, game) => {
+                // normalize to a Date
+                const date = parseISO(game.createdAt);
+
+                // get the Monday of that week
+                const monday = startOfWeek(date, { weekStartsOn: 1 });
+
+                // key it as 'yyyy-MM-dd'
+                const key = format(monday, 'yyyy-MM-dd');
+
+                // bucket
+                if (!groups[key]) groups[key] = [];
+                groups[key].push(game);
+
+                return groups;
+            },
+            {} as Record<string, typeof league.games>,
+        ),
+    ).map(([week, games]) => ({ week, count: games.length }));
+
     return (
         <Layout
             breadcrumbs={[
@@ -192,14 +231,22 @@ const LeaguePage: FC<LeaguePageProps> = ({ league: { data: league }, players: { 
                         <TabsTrigger value="teams">Teams</TabsTrigger>
                     </TabsList>
                     <TabsContent value={'home'}>
-                        <PageSection title={'Record new game'}>
-                            <NewGameForm league={league} players={players} />
-                        </PageSection>
-                        <PageSection title={'Pick teams'}>
-                            <GameGenerator leaderboard={leaderboard} players={players} />
-                        </PageSection>
+                        <div className={'grid gap-6 lg:grid-cols-3'}>
+                            <NewGameSection league={league} leaderboard={leaderboard} />
+                        </div>
+                        <div className={'grid gap-6 md:grid-cols-2 lg:grid-cols-3'}>
+                            <div>
+                                <Statistic label={'Total players'} value={league.players.length} />
+                            </div>
+                            <div>
+                                <Statistic label={'Total games'} value={league.games.length} />
+                            </div>
+                            <PageSection title={'Games by week'} className={'md:col-span-2'}>
+                                <GamesByWeek gamesByWeek={gamesByWeek} />
+                            </PageSection>
+                        </div>
                         <PageSection title={'Leaderboard'}>
-                            <Leaderboard leaderboard={leaderboard} />
+                            <LeaderboardTable leaderboard={leaderboard} />
                         </PageSection>
                     </TabsContent>
                     <TabsContent value={'history'}>
@@ -217,3 +264,46 @@ const LeaguePage: FC<LeaguePageProps> = ({ league: { data: league }, players: { 
 };
 
 export default LeaguePage;
+
+function GamesByWeek({ gamesByWeek }: { gamesByWeek: { week: string; count: number }[] }) {
+    return (
+        <ChartContainer
+            config={{
+                count: {
+                    label: 'Weeks',
+                    color: 'var(--chart-3)',
+                },
+            }}
+            className="max-h-[300px] min-h-[200px] w-full"
+        >
+            <BarChart accessibilityLayer data={gamesByWeek}>
+                <CartesianGrid vertical={false} />
+                <XAxis
+                    dataKey="week"
+                    tickLine={false}
+                    tickMargin={10}
+                    axisLine={false}
+                    // tickFormatter={(value) => value.slice(0, 3)}
+                />
+                <ChartTooltip content={<ChartTooltipContent />} />
+                <ChartLegend content={<ChartLegendContent payload={undefined} />} />
+                <Bar dataKey="count" fill="var(--color-played)" radius={4} />
+            </BarChart>
+        </ChartContainer>
+    );
+}
+
+function NewGameSection({ league, leaderboard }: { league: League; leaderboard: Leaderboard }) {
+    const [teams, setTeams] = useState<number[][] | undefined>(undefined);
+
+    return (
+        <>
+            <PageSection title={'Pick teams'}>
+                <GameGenerator leaderboard={leaderboard} players={league.players} onTeamsGenerated={(teams) => setTeams(teams)} />
+            </PageSection>
+            <PageSection title={'Record new game'} className={'col-span-2'}>
+                <NewGameForm teams={teams ?? []} onTeamsChange={(newTeams) => setTeams(newTeams)} league={league} />
+            </PageSection>
+        </>
+    );
+}
