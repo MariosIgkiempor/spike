@@ -20,6 +20,7 @@ class GameFactory extends Factory
     {
         return [
             'league_id' => League::factory(),
+            'created_at' => fake()->dateTimeBetween('-6 months', 'now'),
         ];
     }
 }
