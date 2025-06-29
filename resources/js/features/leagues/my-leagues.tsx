@@ -27,9 +27,13 @@ export const MyLeagues: FC<{ leagues: League[] }> = ({ leagues }) => {
             <div className={'space-y-4'}>
                 {leagues.map((league) => (
                     <article key={league.id}>
-                        <Link href={route('web.leagues.show', { league: league.id })} key={league.id} className={'-m-2 block p-2 hover:bg-accent'}>
+                        <Link
+                            href={route('web.leagues.show', { league: league.id })}
+                            key={league.id}
+                            className={'-mx-6 -my-2 block px-6 py-2 hover:bg-accent'}
+                        >
                             <h3 className={'text-lg font-semibold'}>{league.name}</h3>
-                            <div>3 players</div>
+                            <div>{league.players.length} players</div>
                         </Link>
                     </article>
                 ))}
