@@ -2,6 +2,7 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { PageSection } from '@/components/ui/pageSection';
 import { Skeleton } from '@/components/ui/skeleton';
+import { UserCard } from '@/features/users/user-card';
 import { useDebounce } from '@/hooks/useDebounce';
 import { Game, League, Paginated } from '@/types';
 import { useQuery } from '@tanstack/react-query';
@@ -57,13 +58,13 @@ export const RecentGames: FC<RecentGamesProps> = ({ league }) => {
             ) : error ? (
                 <div className="text-red-500 dark:text-red-400">Error: {error.message}</div>
             ) : (
-                <div className={'space-y-8'}>
+                <>
                     {gamesData?.data.length === 0 ? (
                         <div className="py-8 text-center text-muted-foreground">No games found.</div>
                     ) : (
-                        gamesData?.data.map((game: Game) => <ScoreboardRow key={game.id} game={game} />)
+                        <ul className={'flex flex-col gap-8'}>{gamesData?.data.map((game: Game) => <ScoreboardRow key={game.id} game={game} />)}</ul>
                     )}
-                </div>
+                </>
             )}
         </PageSection>
     );
@@ -71,22 +72,22 @@ export const RecentGames: FC<RecentGamesProps> = ({ league }) => {
 
 const ScoreboardRow: FC<{ game: Game }> = ({ game }) => {
     return (
-        <div className={'grid gap-2.5 sm:grid-cols-[_1fr__1fr_80px]'}>
-            {game.teams.map((team) => (
-                <div key={team.id} className={'flex gap-4'}>
-                    <Badge variant={team.won ? 'success' : 'outline'} className={'w-8 overflow-hidden'}>
-                        {team.score}
-                    </Badge>
-                    <div>
-                        {team.players.map((player) => (
-                            <div key={player.id} className={'line-clamp-1 text-sm'}>
-                                {player.name}
-                            </div>
-                        ))}
+        <li className={'flex justify-between gap-4'}>
+            <div className={'flex flex-wrap justify-start gap-2'}>
+                {game.teams.map((team) => (
+                    <div key={team.id} className={'flex items-center gap-4'}>
+                        <Badge variant={team.won ? 'success' : 'destructive'} className={'text-md w-8 overflow-hidden font-semibold'}>
+                            {team.score}
+                        </Badge>
+                        <ul className={'flex w-32 flex-col'}>
+                            {team.players.map((player) => (
+                                <UserCard key={player.id} user={player} />
+                            ))}
+                        </ul>
                     </div>
-                </div>
-            ))}
-            <div className={'text-xs'}>{format(game.createdAt, 'd MMM y')}</div>
-        </div>
+                ))}
+            </div>
+            <div className={'w-24 text-xs'}>{format(game.createdAt, 'dd MMM yy')}</div>
+        </li>
     );
 };

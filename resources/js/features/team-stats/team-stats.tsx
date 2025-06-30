@@ -3,6 +3,7 @@ import { Badge } from '@/components/ui/badge';
 import { DataTable } from '@/components/ui/data-table';
 import { DataTableColumnHeader } from '@/components/ui/data-table-column-header';
 import { Input } from '@/components/ui/input';
+import { UserCard } from '@/features/users/user-card';
 import { User } from '@/types';
 import {
     ColumnDef,
@@ -43,9 +44,9 @@ export const TeamStats: FC<LeaderboardProps> = ({ stats }) => {
             accessorKey: 'players',
             header: ({ column }) => <DataTableColumnHeader column={column} title="Players" />,
             cell: ({ row }) => (
-                <div className="font-medium">
+                <div className="flex justify-start gap-4">
                     {row.original.players.map((p) => (
-                        <div>{p.name}</div>
+                        <UserCard key={p.id} user={p} />
                     ))}
                 </div>
             ),
@@ -64,8 +65,22 @@ export const TeamStats: FC<LeaderboardProps> = ({ stats }) => {
         },
         {
             accessorKey: 'won',
-            header: ({ column }) => <DataTableColumnHeader column={column} title="Won" />,
-            cell: ({ row }) => <span className="block text-center">{row.original.won}</span>,
+            header: ({ column }) => <DataTableColumnHeader column={column} title="W/L" />,
+            cell: ({ row }) => {
+                const losses = row.original.played - row.original.won;
+                const { won, played } = row.original;
+                return (
+                    <div className="gitems-center flex flex-wrap gap-1">
+                        <span className="block text-center">
+                            {won}/{played - won}
+                        </span>
+                        <Badge variant={won > losses ? 'success' : won < losses ? 'destructive' : 'outline'} className={'w-8'}>
+                            {won - losses > 0 ? '+' : ''}
+                            {won - losses}
+                        </Badge>
+                    </div>
+                );
+            },
             enableSorting: true,
             enableHiding: true,
         },
