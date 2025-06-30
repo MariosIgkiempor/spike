@@ -82,11 +82,7 @@ export const LeaderboardTable: FC<LeaderboardProps> = ({ leaderboard }) => {
                     </span>
                     <Badge
                         variant={
-                            row.original.wins > row.original.losses
-                                ? 'success'
-                                : row.original.wins < row.original.losses
-                                  ? 'destructive'
-                                  : 'secondary'
+                            row.original.wins > row.original.losses ? 'success' : row.original.wins < row.original.losses ? 'destructive' : 'outline'
                         }
                     >
                         {row.original.wins - row.original.losses > 0 ? '+' : ''}
@@ -102,7 +98,7 @@ export const LeaderboardTable: FC<LeaderboardProps> = ({ leaderboard }) => {
             header: ({ column }) => <DataTableColumnHeader column={column} title="Score Difference" />,
             cell: ({ row }) => (
                 <span className="flex justify-center">
-                    <Badge variant={row.original.score_diff > 0 ? 'success' : row.original.score_diff < 0 ? 'destructive' : 'secondary'}>
+                    <Badge variant={row.original.score_diff > 0 ? 'success' : row.original.score_diff < 0 ? 'destructive' : 'outline'}>
                         {row.original.score_diff}
                     </Badge>
                 </span>
