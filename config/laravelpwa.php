@@ -7,7 +7,7 @@ return [
         'short_name' => 'SME',
         'start_url' => '/',
         'background_color' => '#ffffff',
-        'theme_color' => '#0066ff',
+        'theme_color' => '#fcb203',
         'display' => 'standalone',
         'orientation' => 'any',
         'status_bar' => 'black',

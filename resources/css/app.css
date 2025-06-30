@@ -178,10 +178,10 @@
     --card-foreground: oklch(0 0 0);
     --popover: oklch(1.0000 0 0);
     --popover-foreground: oklch(0 0 0);
-    --primary: oklch(0.6489 0.2370 26.9728);
-    --primary-foreground: oklch(1.0000 0 0);
-    --secondary: oklch(0.9680 0.2110 109.7692);
-    --secondary-foreground: oklch(0 0 0);
+    --primary: oklch(0.8128 0.1687 78.47);
+    --primary-foreground: oklch(0 0 0);
+    --secondary: oklch(0.6489 0.2370 26.9728);
+    --secondary-foreground: oklch(1.0000 0 0);
     --muted: oklch(0.9551 0 0);
     --muted-foreground: oklch(0.3211 0 0);
     --accent: oklch(0.5635 0.2408 260.8178);
@@ -200,8 +200,8 @@
     --sidebar-foreground: oklch(0 0 0);
     --sidebar-primary: oklch(0.6489 0.2370 26.9728);
     --sidebar-primary-foreground: oklch(1.0000 0 0);
-    --sidebar-accent: oklch(0.5635 0.2408 260.8178);
-    --sidebar-accent-foreground: oklch(1.0000 0 0);
+    --sidebar-accent: oklch(0.8128 0.1687 78.47);
+    --sidebar-accent-foreground: oklch(0 0 0);
     --sidebar-border: oklch(0 0 0);
     --sidebar-ring: oklch(0.6489 0.2370 26.9728);
     --font-sans: Share Tech Mono, DM Sans, sans-serif;
@@ -225,9 +225,9 @@
     --card-foreground: oklch(1.0000 0 0);
     --popover: oklch(0.3211 0 0);
     --popover-foreground: oklch(1.0000 0 0);
-    --primary: oklch(0.7044 0.1872 23.1858);
+    --primary: oklch(0.9691 0.2005 109.6228);
     --primary-foreground: oklch(0 0 0);
-    --secondary: oklch(0.9691 0.2005 109.6228);
+    --secondary: oklch(0.7044 0.1872 23.1858);
     --secondary-foreground: oklch(0 0 0);
     --muted: oklch(0.3211 0 0);
     --muted-foreground: oklch(0.8452 0 0);
@@ -247,7 +247,7 @@
     --sidebar-foreground: oklch(1.0000 0 0);
     --sidebar-primary: oklch(0.7044 0.1872 23.1858);
     --sidebar-primary-foreground: oklch(0 0 0);
-    --sidebar-accent: oklch(0.6755 0.1765 252.2592);
+    --sidebar-accent: oklch(0.9691 0.2005 109.6228);
     --sidebar-accent-foreground: oklch(0 0 0);
     --sidebar-border: oklch(1.0000 0 0);
     --sidebar-ring: oklch(0.7044 0.1872 23.1858);

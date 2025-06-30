@@ -16,7 +16,7 @@ export const UserCard: FC<{ user: User }> = ({ user }) => {
 export const UserAvatar: FC<{ user: User }> = ({ user }) => {
     return (
         <Avatar className={'rounded-none'}>
-            <AvatarFallback className={'rounded-none bg-muted-foreground'}>
+            <AvatarFallback className={'rounded-none bg-muted-foreground text-muted'}>
                 {user.name
                     .split(' ')
                     .map((n) => n.charAt(0))
