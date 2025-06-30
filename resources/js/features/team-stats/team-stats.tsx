@@ -44,7 +44,7 @@ export const TeamStats: FC<LeaderboardProps> = ({ stats }) => {
             accessorKey: 'players',
             header: ({ column }) => <DataTableColumnHeader column={column} title="Players" />,
             cell: ({ row }) => (
-                <div className="flex justify-start gap-4">
+                <div className="flex flex-col justify-start gap-4">
                     {row.original.players.map((p) => (
                         <UserCard key={p.id} user={p} />
                     ))}
