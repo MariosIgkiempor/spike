@@ -156,6 +156,11 @@ class League extends Model
             }
         }
 
+        $stats = collect($stats)
+            ->sortByDesc('won')
+            ->sortBy('played')
+            ->toArray();
+
         // Return a plain Collection (values re-indexed)
         return collect(array_values($stats));
     }

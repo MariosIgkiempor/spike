@@ -56,7 +56,7 @@ export const LeaderboardTable: FC<LeaderboardProps> = ({ leaderboard }) => {
             accessorKey: 'win_rate',
             header: ({ column }) => <DataTableColumnHeader column={column} title="Win Rate" />,
             cell: ({ row }) => (
-                <span className="block text-center">
+                <span>
                     <Badge variant={row.original.win_rate >= 0.5 ? 'success' : 'destructive'}>
                         {Intl.NumberFormat('en-GB', { style: 'percent' }).format(row.original.win_rate)}
                     </Badge>
@@ -67,8 +67,8 @@ export const LeaderboardTable: FC<LeaderboardProps> = ({ leaderboard }) => {
         },
         {
             accessorKey: 'total_games',
-            header: ({ column }) => <DataTableColumnHeader column={column} title="Total Games" />,
-            cell: ({ row }) => <span className="block text-center">{row.original.total_games}</span>,
+            header: ({ column }) => <DataTableColumnHeader column={column} title="# Games" />,
+            cell: ({ row }) => <span className="">{row.original.total_games}</span>,
             enableSorting: true,
             enableHiding: true,
         },
@@ -76,13 +76,13 @@ export const LeaderboardTable: FC<LeaderboardProps> = ({ leaderboard }) => {
             accessorKey: 'wins',
             header: ({ column }) => <DataTableColumnHeader column={column} title="W/L" />,
             cell: ({ row }) => (
-                <div className="gitems-center flex flex-wrap gap-1">
+                <div className="flex flex-wrap items-center gap-1">
                     <span className="block text-center">
                         {row.original.wins}/{row.original.losses}
                     </span>
                     <Badge
                         variant={
-                            row.original.wins > row.original.losses ? 'success' : row.original.wins < row.original.losses ? 'destructive' : 'outline'
+                            row.original.wins > row.original.losses ? 'success' : row.original.wins < row.original.losses ? 'destructive' : 'muted'
                         }
                     >
                         {row.original.wins - row.original.losses > 0 ? '+' : ''}
@@ -95,10 +95,10 @@ export const LeaderboardTable: FC<LeaderboardProps> = ({ leaderboard }) => {
         },
         {
             accessorKey: 'score_diff',
-            header: ({ column }) => <DataTableColumnHeader column={column} title="Score Difference" />,
+            header: ({ column }) => <DataTableColumnHeader column={column} title="Score +-" />,
             cell: ({ row }) => (
-                <span className="flex justify-center">
-                    <Badge variant={row.original.score_diff > 0 ? 'success' : row.original.score_diff < 0 ? 'destructive' : 'outline'}>
+                <span>
+                    <Badge variant={row.original.score_diff > 0 ? 'success' : row.original.score_diff < 0 ? 'destructive' : 'muted'}>
                         {row.original.score_diff}
                     </Badge>
                 </span>
@@ -109,7 +109,7 @@ export const LeaderboardTable: FC<LeaderboardProps> = ({ leaderboard }) => {
         {
             accessorKey: 'mmr',
             header: ({ column }) => <DataTableColumnHeader column={column} title="MMR" />,
-            cell: ({ row }) => <span className="flex justify-center">{row.original.mmr}</span>,
+            cell: ({ row }) => <span className="flex">{row.original.mmr}</span>,
             enableSorting: true,
             enableHiding: true,
         },

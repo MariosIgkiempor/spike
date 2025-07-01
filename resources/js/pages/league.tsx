@@ -244,54 +244,51 @@ const LeaguePage: FC<LeaguePageProps> = ({ league: { data: league }, leaderboard
                             <div>
                                 <Statistic label={'Total games'} value={league.games.length} />
                             </div>
-                            <div className={'flex flex-col gap-8 lg:row-span-2'}>
-                                <SectionHeading>Last week</SectionHeading>
-                                <Statistic
-                                    label={'🔥 MVP 🔥'}
-                                    value={<UserCard user={stats.mvp.user.data} />}
-                                    extra={`${new Intl.NumberFormat('en-GB', {
-                                        style: 'percent',
-                                    }).format(stats.mvp.winRate)} win rate last week`}
-                                />
-                                <Statistic
-                                    label={'🤡 Biggest L 🤡'}
-                                    value={
-                                        <div>
-                                            <UserCard user={stats.biggestL.team.data.players[0]} />
-                                            <UserCard user={stats.biggestL.team.data.players[1]} />
-                                        </div>
-                                    }
-                                    extra={(() => {
-                                        const nonLosingTeams = stats.biggestL.game.data.teams.filter((t) => t.id !== stats.biggestL.team.data.id);
-
-                                        const nonLosingPlayers = nonLosingTeams
-                                            .flatMap((t) => t.players)
-                                            .map((p) => p.name)
-                                            .join(' & ');
-
-                                        return (
-                                            <div>
-                                                Lost to {nonLosingPlayers}
-                                                <br />
-                                                {nonLosingTeams[0].score} - {stats.biggestL.team.data.score} (-
-                                                {stats.biggestL.scoreDifference})
-                                            </div>
-                                        );
-                                    })()}
-                                />
-                                {stats.mostImproved && (
-                                    <Statistic
-                                        label={'📈 Most improved 📈'}
-                                        value={<UserCard user={stats.mostImproved.user.data} />}
-                                        extra={`${new Intl.NumberFormat('en-GB', {
-                                            style: 'percent',
-                                        }).format(stats.mostImproved.improvement)} MMR improvement last week`}
-                                    />
-                                )}
-                            </div>
                             <PageSection title={'Games by week'} className={'lg:col-span-2'}>
                                 <GamesByWeek gamesByWeek={gamesByWeek} />
                             </PageSection>
+                        </div>
+                        <SectionHeading>Last week</SectionHeading>
+                        <div className={'grid gap-8 md:grid-cols-2 lg:row-span-2 lg:grid-cols-3'}>
+                            <Statistic
+                                label={'🔥 MVP 🔥'}
+                                value={<UserCard user={stats.mvp.user.data} />}
+                                extra={`${new Intl.NumberFormat('en-GB', {
+                                    style: 'percent',
+                                }).format(stats.mvp.winRate)} win rate last week`}
+                            />
+                            <Statistic
+                                label={'🤡 Biggest L 🤡'}
+                                value={
+                                    <div>
+                                        <UserCard user={stats.biggestL.team.data.players[0]} />
+                                        <UserCard user={stats.biggestL.team.data.players[1]} />
+                                    </div>
+                                }
+                                extra={(() => {
+                                    const nonLosingTeams = stats.biggestL.game.data.teams.filter((t) => t.id !== stats.biggestL.team.data.id);
+
+                                    const nonLosingPlayers = nonLosingTeams
+                                        .flatMap((t) => t.players)
+                                        .map((p) => p.name)
+                                        .join(' & ');
+
+                                    return (
+                                        <div>
+                                            Lost {nonLosingTeams[0].score} - {stats.biggestL.team.data.score} to {nonLosingPlayers}
+                                        </div>
+                                    );
+                                })()}
+                            />
+                            {stats.mostImproved && (
+                                <Statistic
+                                    label={'📈 Most improved 📈'}
+                                    value={<UserCard user={stats.mostImproved.user.data} />}
+                                    extra={`Win rate went up ${new Intl.NumberFormat('en-GB', {
+                                        style: 'percent',
+                                    }).format(stats.mostImproved.improvement)}`}
+                                />
+                            )}
                         </div>
                         <PageSection title={'Leaderboard'}>
                             <LeaderboardTable leaderboard={leaderboard} />

@@ -75,7 +75,7 @@ const ScoreboardRow: FC<{ game: Game }> = ({ game }) => {
         <li className={'flex justify-between gap-4'}>
             <div className={'flex flex-wrap justify-start gap-2'}>
                 {game.teams.map((team) => (
-                    <div key={team.id} className={'flex items-center gap-4'}>
+                    <div key={team.id} className={'flex gap-4'}>
                         <Badge variant={team.won ? 'success' : 'destructive'} className={'text-md w-8 overflow-hidden font-semibold'}>
                             {team.score}
                         </Badge>

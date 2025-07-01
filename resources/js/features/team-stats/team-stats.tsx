@@ -44,7 +44,7 @@ export const TeamStats: FC<LeaderboardProps> = ({ stats }) => {
             accessorKey: 'players',
             header: ({ column }) => <DataTableColumnHeader column={column} title="Players" />,
             cell: ({ row }) => (
-                <div className="flex flex-col justify-start gap-4">
+                <div className="flex flex-col">
                     {row.original.players.map((p) => (
                         <UserCard key={p.id} user={p} />
                     ))}
@@ -70,7 +70,7 @@ export const TeamStats: FC<LeaderboardProps> = ({ stats }) => {
                 const losses = row.original.played - row.original.won;
                 const { won, played } = row.original;
                 return (
-                    <div className="gitems-center flex flex-wrap gap-1">
+                    <div className="flex flex-wrap gap-1">
                         <span className="block text-center">
                             {won}/{played - won}
                         </span>
