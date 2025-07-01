@@ -55,7 +55,9 @@ export const NewGameForm: FC<NewGameFormProps> = ({ league, teams, onTeamsChange
     const handleTeamChange = (teamIndex: number, playerIndex: number, playerId: number | null) => {
         const newTeams = teams.map((team) => team.map((p) => p));
         if (playerId) {
-            newTeams[teamIndex][playerIndex] = playerId;
+            if (newTeams[teamIndex]?.[playerIndex]) {
+                newTeams[teamIndex][playerIndex] = playerId;
+            }
         } else {
             newTeams[teamIndex].splice(playerIndex);
         }

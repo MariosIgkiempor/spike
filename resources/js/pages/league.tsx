@@ -1,6 +1,5 @@
 import { PlayerInput } from '@/components/PlayerInput';
 import { Button } from '@/components/ui/button';
-import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { ChartContainer, ChartLegend, ChartLegendContent, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
 import { PageContainer } from '@/components/ui/pageContainer';
 import { PageSection } from '@/components/ui/pageSection';
@@ -11,9 +10,10 @@ import { Leaderboard, LeaderboardTable, LeaderboardUser } from '@/features/leade
 import { NewGameForm } from '@/features/new-game/newGameForm';
 import { RecentGames } from '@/features/recent-games/recent-games';
 import { TeamStats } from '@/features/team-stats/team-stats';
+import { UserCard } from '@/features/users/user-card';
 import Layout from '@/layouts/app-layout';
 import { shuffleArray } from '@/lib/shuffle-array';
-import { League, PageProps, Resource, User } from '@/types';
+import { Game, League, PageProps, Resource, Team, User } from '@/types';
 import { Head } from '@inertiajs/react';
 import { format, isWithinInterval, startOfWeek, subWeeks } from 'date-fns';
 import { Trash } from 'lucide-react';
@@ -166,21 +166,25 @@ const GameGenerator: FC<{
     );
 };
 
-const UserCard: FC<{ user: User & { mmr?: number } }> = ({ user }) => {
-    return (
-        <Card className={'p-1.5'}>
-            <CardHeader className={'p-1'}>
-                <CardTitle>{user.name}</CardTitle>
-                {user.mmr && <CardDescription>MMR {user.mmr}</CardDescription>}
-            </CardHeader>
-        </Card>
-    );
-};
-
 type LeaguePageProps = PageProps & {
     league: Resource<League>;
     leaderboard: Leaderboard;
     teamStats: TeamStats[];
+    stats: {
+        mvp: {
+            user: Resource<User>;
+            winRate: number;
+        };
+        biggestL: {
+            team: Resource<Team>;
+            game: Resource<Game>;
+            scoreDifference: number;
+        };
+        mostImproved?: {
+            user: Resource<User>;
+            improvement: number;
+        };
+    };
 };
 
 function lastNWeeks(n: number) {
@@ -192,7 +196,7 @@ function lastNWeeks(n: number) {
     return weeks.reverse();
 }
 
-const LeaguePage: FC<LeaguePageProps> = ({ league: { data: league }, leaderboard, teamStats }) => {
+const LeaguePage: FC<LeaguePageProps> = ({ league: { data: league }, leaderboard, teamStats, stats }) => {
     const gamesByWeek = lastNWeeks(6).map((week, index, weeks) => ({
         week: format(week, 'dd MMM'),
         count: league.games.filter((game) =>
@@ -202,6 +206,8 @@ const LeaguePage: FC<LeaguePageProps> = ({ league: { data: league }, leaderboard
             }),
         ).length,
     }));
+
+    console.log(stats);
 
     return (
         <Layout
@@ -227,16 +233,61 @@ const LeaguePage: FC<LeaguePageProps> = ({ league: { data: league }, leaderboard
                         <TabsTrigger value="history">History</TabsTrigger>
                         <TabsTrigger value="teams">Teams</TabsTrigger>
                     </TabsList>
-                    <TabsContent value={'home'}>
-                        <div className={'grid gap-6 lg:grid-cols-3'}>
+                    <TabsContent value={'home'} className={'space-y-8'}>
+                        <div className={'grid gap-8 lg:grid-cols-3'}>
                             <NewGameSection league={league} leaderboard={leaderboard} />
                         </div>
-                        <div className={'grid gap-6 lg:grid-cols-3'}>
+                        <div className={'grid gap-8 lg:grid-cols-3'}>
                             <div>
                                 <Statistic label={'Total players'} value={league.players.length} />
                             </div>
                             <div>
                                 <Statistic label={'Total games'} value={league.games.length} />
+                            </div>
+                            <div className={'flex flex-col gap-8 lg:row-span-2'}>
+                                <SectionHeading>Last week</SectionHeading>
+                                <Statistic
+                                    label={'🔥 MVP 🔥'}
+                                    value={<UserCard user={stats.mvp.user.data} />}
+                                    extra={`${new Intl.NumberFormat('en-GB', {
+                                        style: 'percent',
+                                    }).format(stats.mvp.winRate)} win rate last week`}
+                                />
+                                <Statistic
+                                    label={'🤡 Biggest L 🤡'}
+                                    value={
+                                        <div>
+                                            <UserCard user={stats.biggestL.team.data.players[0]} />
+                                            <UserCard user={stats.biggestL.team.data.players[1]} />
+                                        </div>
+                                    }
+                                    extra={(() => {
+                                        const nonLosingTeams = stats.biggestL.game.data.teams.filter((t) => t.id !== stats.biggestL.team.data.id);
+
+                                        const nonLosingPlayers = nonLosingTeams
+                                            .flatMap((t) => t.players)
+                                            .map((p) => p.name)
+                                            .join(' & ');
+
+                                        return (
+                                            <div>
+                                                Lost to {nonLosingPlayers}
+                                                <br />
+                                                {nonLosingTeams[0].score} - {stats.biggestL.team.data.score} (-
+                                                {stats.biggestL.scoreDifference})
+                                            </div>
+                                        );
+                                    })()}
+                                />
+                                {stats.mostImproved && (
+                                    <Statistic
+                                        label={'📈 Most improved 📈'}
+                                        value={<UserCard user={stats.mostImproved.user.data} />}
+                                        extra={`${new Intl.NumberFormat('en-GB', {
+                                            style: 'percent',
+                                        }).format(stats.mostImproved.improvement)} MMR improvement last week`}
+                                    />
+                                )}
                             </div>
                             <PageSection title={'Games by week'} className={'lg:col-span-2'}>
                                 <GamesByWeek gamesByWeek={gamesByWeek} />
