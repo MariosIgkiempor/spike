@@ -18,15 +18,15 @@ interface LeagueJoinPageProps extends PageProps {
     league: Resource<League>;
 }
 
-const LeagueJoinPage: FC<LeagueJoinPageProps> = ({ league, auth: { user } }) => {
+const LeagueJoinPage: FC<LeagueJoinPageProps> = ({ league: { data: league }, auth: { user } }) => {
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
-            <Head title={`Join ${league.data.name}`} />
+            <Head title={`Join ${league.name}`} />
             <PageContainer>
                 <SectionHeading>
                     You have been invited to join the
                     <br />
-                    <span className={'text-amber-600'}>{league.data.name}</span>
+                    <span className={'text-amber-600'}>{league.name}</span>
                     <br />
                     league
                 </SectionHeading>

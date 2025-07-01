@@ -207,8 +207,6 @@ const LeaguePage: FC<LeaguePageProps> = ({ league: { data: league }, leaderboard
         ).length,
     }));
 
-    console.log(stats);
-
     return (
         <Layout
             breadcrumbs={[
@@ -219,7 +217,7 @@ const LeaguePage: FC<LeaguePageProps> = ({ league: { data: league }, leaderboard
                 },
             ]}
         >
-            <Head title="league" />
+            <Head title={league.name} />
             <PageContainer>
                 <SectionHeading className={'flex w-full flex-col justify-between gap-2 md:flex-row'}>
                     {league.name}
