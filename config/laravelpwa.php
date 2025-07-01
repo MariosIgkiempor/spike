@@ -4,10 +4,10 @@ return [
     'name' => 'Spiking.me',
     'manifest' => [
         'name' => env('APP_NAME', 'Spiking.me'),
-        'short_name' => 'SME',
+        'short_name' => 'Spike',
         'start_url' => '/',
         'background_color' => '#ffffff',
-        'theme_color' => '#fcb203',
+        'theme_color' => '#ffdd00',
         'display' => 'standalone',
         'orientation' => 'any',
         'status_bar' => 'black',

@@ -5,12 +5,9 @@ use App\Http\Controllers\LeaderboardController;
 use App\Http\Controllers\LeagueController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\WebController;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
-
-Route::get('/', function () {
-    return Inertia::render('welcome');
-})->name('home');
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('dashboard', [WebController::class, 'dashboard'])->name('dashboard');
@@ -27,6 +24,13 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::get('/api/users/search/{league?}', [UserController::class, 'search'])->name('api.users.search');
 });
+
+Route::get('/', function (Request $request) {
+    if ($request->user()) {
+        return redirect()->route('dashboard');
+    }
+    return Inertia::render('welcome');
+})->name('home');
 
 
 require __DIR__ . '/settings.php';
