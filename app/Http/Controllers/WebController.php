@@ -30,6 +30,40 @@ class WebController extends Controller
             return redirect()->route('dashboard');
         }
 
+        // find the player with the longest winstreak
+        $biggestWinStreak = $league->users->map(function ($user) {
+            return [
+                'user' => $user,
+                'winStreak' => $user->games()
+                    ->sortByDesc('created_at')
+                    ->takeWhile(function ($game) use ($user) {
+                        return $game->teams->contains(function ($team) use ($user) {
+                            return $team->players->contains($user) && $team->pivot->won;
+                        });
+                    })->count(),
+            ];
+        })
+            ->sortByDesc('winStreak')
+            ->sortByDesc('games_count')
+            ->first();
+
+        $biggestLoseStreak = $league->users->map(function ($user) {
+            return [
+                'user' => $user,
+                'loseStreak' => $user->games()
+                    ->sortByDesc('created_at')
+                    ->takeWhile(function ($game) use ($user) {
+                        return $game->teams->contains(function ($team) use ($user) {
+                            return $team->players->contains($user) && !$team->pivot->won;
+                        });
+                    })->count(),
+            ];
+        })
+            ->sortByDesc('loseStreak')
+            ->sortByDesc('games_count')
+            ->first();
+
+
         $startOfWeek = now()->startOfWeek();
         $startOfLastWeek = $startOfWeek->subWeek();
         $lastWeeksGames = $league->games()->whereBetween('created_at', [$startOfLastWeek, $startOfWeek])->get();
@@ -101,19 +135,29 @@ class WebController extends Controller
             'leaderboard' => fn() => $league->leaderboard(),
             'teamStats' => fn() => $league->teamStats(),
             'stats' => fn() => [
-                'mvp' => [
-                    'user' => User::find($mvp['user_id'])->toResource(),
-                    'winRate' => $mvp['win_rate'],
+                'biggestWinStreak' => [
+                    ...$biggestWinStreak,
+                    'user' => $biggestWinStreak['user']->toResource(),
                 ],
-                'biggestL' => [
-                    'team' => $biggestL['team']->toResource(),
-                    'game' => $biggestL['game']->toResource(),
-                    'scoreDifference' => $biggestL['score_difference'],
+                'biggestLoseStreak' => [
+                    ...$biggestLoseStreak,
+                    'user' => $biggestLoseStreak['user']->toResource(),
                 ],
-                'mostImproved' => $mostImproved ? [
-                    'user' => User::find($mostImproved['user_id'])->toResource(),
-                    'improvement' => $mostImproved['improvement'],
-                ] : null,
+                'lastWeek' => [
+                    'mvp' => [
+                        'user' => User::find($mvp['user_id'])->toResource(),
+                        'winRate' => $mvp['win_rate'],
+                    ],
+                    'biggestL' => [
+                        'team' => $biggestL['team']->toResource(),
+                        'game' => $biggestL['game']->toResource(),
+                        'scoreDifference' => $biggestL['score_difference'],
+                    ],
+                    'mostImproved' => $mostImproved ? [
+                        'user' => User::find($mostImproved['user_id'])->toResource(),
+                        'improvement' => $mostImproved['improvement'],
+                    ] : null,
+                ]
             ],
         ]);
     }

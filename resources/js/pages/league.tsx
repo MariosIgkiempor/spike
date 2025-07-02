@@ -171,18 +171,28 @@ type LeaguePageProps = PageProps & {
     leaderboard: Leaderboard;
     teamStats: TeamStats[];
     stats: {
-        mvp: {
+        biggestWinStreak: {
             user: Resource<User>;
-            winRate: number;
+            winStreak: number;
         };
-        biggestL: {
-            team: Resource<Team>;
-            game: Resource<Game>;
-            scoreDifference: number;
-        };
-        mostImproved?: {
+        biggestLoseStreak: {
             user: Resource<User>;
-            improvement: number;
+            loseStreak: number;
+        };
+        lastWeek: {
+            mvp: {
+                user: Resource<User>;
+                winRate: number;
+            };
+            biggestL: {
+                team: Resource<Team>;
+                game: Resource<Game>;
+                scoreDifference: number;
+            };
+            mostImproved?: {
+                user: Resource<User>;
+                improvement: number;
+            };
         };
     };
 };
@@ -246,25 +256,39 @@ const LeaguePage: FC<LeaguePageProps> = ({ league: { data: league }, leaderboard
                                 <GamesByWeek gamesByWeek={gamesByWeek} />
                             </PageSection>
                         </div>
+                        <div className={'grid gap-8 lg:grid-cols-2'}>
+                            <Statistic
+                                label={'🥇 Biggest Win Streak 🥇'}
+                                value={<UserCard user={stats.biggestWinStreak.user.data} />}
+                                extra={`${stats.biggestWinStreak.winStreak} games`}
+                            />
+                            <Statistic
+                                label={'🫠 Biggest Lose Streak 🫠'}
+                                value={<UserCard user={stats.biggestLoseStreak.user.data} />}
+                                extra={`${stats.biggestLoseStreak.loseStreak} games`}
+                            />
+                        </div>
                         <SectionHeading>Last week</SectionHeading>
                         <div className={'grid gap-8 md:grid-cols-2 lg:row-span-2 lg:grid-cols-3'}>
                             <Statistic
                                 label={'🔥 MVP 🔥'}
-                                value={<UserCard user={stats.mvp.user.data} />}
+                                value={<UserCard user={stats.lastWeek.mvp.user.data} />}
                                 extra={`${new Intl.NumberFormat('en-GB', {
                                     style: 'percent',
-                                }).format(stats.mvp.winRate)} win rate last week`}
+                                }).format(stats.lastWeek.mvp.winRate)} win rate last week`}
                             />
                             <Statistic
                                 label={'🤡 Biggest L 🤡'}
                                 value={
                                     <div>
-                                        <UserCard user={stats.biggestL.team.data.players[0]} />
-                                        <UserCard user={stats.biggestL.team.data.players[1]} />
+                                        <UserCard user={stats.lastWeek.biggestL.team.data.players[0]} />
+                                        <UserCard user={stats.lastWeek.biggestL.team.data.players[1]} />
                                     </div>
                                 }
                                 extra={(() => {
-                                    const nonLosingTeams = stats.biggestL.game.data.teams.filter((t) => t.id !== stats.biggestL.team.data.id);
+                                    const nonLosingTeams = stats.lastWeek.biggestL.game.data.teams.filter(
+                                        (t) => t.id !== stats.lastWeek.biggestL.team.data.id,
+                                    );
 
                                     const nonLosingPlayers = nonLosingTeams
                                         .flatMap((t) => t.players)
@@ -273,18 +297,18 @@ const LeaguePage: FC<LeaguePageProps> = ({ league: { data: league }, leaderboard
 
                                     return (
                                         <div>
-                                            Lost {nonLosingTeams[0].score} - {stats.biggestL.team.data.score} to {nonLosingPlayers}
+                                            Lost {nonLosingTeams[0].score} - {stats.lastWeek.biggestL.team.data.score} to {nonLosingPlayers}
                                         </div>
                                     );
                                 })()}
                             />
-                            {stats.mostImproved && (
+                            {stats.lastWeek.mostImproved && (
                                 <Statistic
                                     label={'📈 Most improved 📈'}
-                                    value={<UserCard user={stats.mostImproved.user.data} />}
+                                    value={<UserCard user={stats.lastWeek.mostImproved.user.data} />}
                                     extra={`Win rate went up ${new Intl.NumberFormat('en-GB', {
                                         style: 'percent',
-                                    }).format(stats.mostImproved.improvement)}`}
+                                    }).format(stats.lastWeek.mostImproved.improvement)}`}
                                 />
                             )}
                         </div>
