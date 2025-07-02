@@ -30,7 +30,7 @@ const LeagueJoinPage: FC<LeagueJoinPageProps> = ({ league: { data: league }, aut
                     <br />
                     league
                 </SectionHeading>
-                <LeagueJoinForm user={user} league={league.data} />
+                <LeagueJoinForm user={user} league={league} />
             </PageContainer>
         </AppLayout>
     );
