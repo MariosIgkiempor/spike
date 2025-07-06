@@ -156,12 +156,13 @@ class League extends Model
             }
         }
 
-        $stats = collect($stats)
-            ->sortByDesc('won')
-            ->sortBy('played')
-            ->toArray();
-
-        // Return a plain Collection (values re-indexed)
-        return collect(array_values($stats));
+        return collect($stats)
+            ->sort(function ($a, $b) {
+                if ($a['won'] !== $b['won']) {
+                    return $b['won'] <=> $a['won']; // Most wins first
+                }
+                return $a['played'] <=> $b['played']; // Least games played first
+            })
+            ->values();
     }
 }
