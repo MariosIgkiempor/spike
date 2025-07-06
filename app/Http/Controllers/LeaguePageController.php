@@ -4,10 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\League;
 use App\Models\User;
-use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
-use LaravelIdea\Helper\App\Models\_IH_Game_C;
 
 class LeaguePageController extends Controller
 {
@@ -58,8 +56,8 @@ class LeaguePageController extends Controller
         $lastWeeksGames = $league->games()->whereBetween('created_at', [$startOfLastWeek, $startOfWeek])->get();
         $weekBeforeGames = $league->games()->whereBetween('created_at', [$startOfLastWeek->subWeek(), $startOfLastWeek])->get();
 
-        $lastWeekUserStats = $this->collectWeeklyStats($lastWeeksGames);
-        $weekBeforeUserStats = $this->collectWeeklyStats($weekBeforeGames);
+        $lastWeekUserStats = $league->collectStats($lastWeeksGames);
+        $weekBeforeUserStats = $league->collectStats($weekBeforeGames);
 
         // mvp has the best win/played ratio
         $mvp = collect($lastWeekUserStats)
@@ -107,7 +105,10 @@ class LeaguePageController extends Controller
             ->map(function ($stats, $userId) use ($weekBeforeUserStats) {
                 $previousStats = $weekBeforeUserStats[$userId] ?? null;
                 if (!$previousStats || $previousStats['played'] === 0) {
-                    return null; // Skip users who didn't play the week before
+                    return [
+                        'user_id' => $userId,
+                        'improvement' => 0,
+                    ];
                 }
                 $improvement = $stats['played'] > 0 ? ($stats['won'] / $stats['played']) - ($previousStats['won'] / $previousStats['played']) : 0;
                 return [
@@ -115,7 +116,9 @@ class LeaguePageController extends Controller
                     'improvement' => $improvement,
                 ];
             })
-            ->filter()
+            ->filter(function ($stats) {
+                return $stats['improvement'] > 0;
+            })
             ->sortByDesc('improvement')
             ->first();
 
@@ -135,7 +138,7 @@ class LeaguePageController extends Controller
                     ...$biggestLoseStreak,
                     'user' => $biggestLoseStreak['user']->toResource(),
                 ],
-                'lastWeek' => $lastWeeksGames->count() > 0
+                'lastWeek' => $lastWeeksGames->count() > 0 && $weekBeforeGames->count() > 0
                     ? [
                         'mvp' => [
                             'user' => User::find($mvp['user_id'])->toResource(),
@@ -155,31 +158,4 @@ class LeaguePageController extends Controller
             ],
         ]);
     }
-
-    /**
-     * @param Collection|array|_IH_Game_C $lastWeeksGames
-     * @return array
-     */
-    private function collectWeeklyStats(Collection|array|_IH_Game_C $lastWeeksGames): array
-    {
-        $lastWeekUserStats = [];
-        foreach ($lastWeeksGames as $game) {
-            foreach ($game->teams as $team) {
-                foreach ($team->players as $player) {
-                    if (!isset($lastWeekUserStats[$player->id])) {
-                        $lastWeekUserStats[$player->id] = [
-                            'played' => 0,
-                            'won' => 0,
-                        ];
-                    }
-                    $lastWeekUserStats[$player->id]['played']++;
-                    if ($team->pivot->won) {
-                        $lastWeekUserStats[$player->id]['won']++;
-                    }
-                }
-            }
-        }
-        return $lastWeekUserStats;
-    }
-
 }

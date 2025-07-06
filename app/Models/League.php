@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
+use LaravelIdea\Helper\App\Models\_IH_Game_C;
 
 class League extends Model
 {
@@ -165,4 +166,32 @@ class League extends Model
             })
             ->values();
     }
+
+
+    /**
+     * @param \Illuminate\Database\Eloquent\Collection|array|_IH_Game_C $lastWeeksGames
+     * @return array
+     */
+    public function collectStats(Collection|array|_IH_Game_C $lastWeeksGames): array
+    {
+        $stats = [];
+        foreach ($lastWeeksGames as $game) {
+            foreach ($game->teams as $team) {
+                foreach ($team->players as $player) {
+                    if (!isset($stats[$player->id])) {
+                        $stats[$player->id] = [
+                            'played' => 0,
+                            'won' => 0,
+                        ];
+                    }
+                    $stats[$player->id]['played']++;
+                    if ($team->pivot->won) {
+                        $stats[$player->id]['won']++;
+                    }
+                }
+            }
+        }
+        return $stats;
+    }
+
 }
