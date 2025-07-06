@@ -3,6 +3,7 @@
 use App\Http\Controllers\Api\GameController;
 use App\Http\Controllers\LeaderboardController;
 use App\Http\Controllers\LeagueController;
+use App\Http\Controllers\LeaguePageController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\WebController;
 use Illuminate\Http\Request;
@@ -11,11 +12,12 @@ use Inertia\Inertia;
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('dashboard', [WebController::class, 'dashboard'])->name('dashboard');
-    Route::get('/leagues/{league}', [WebController::class, 'league'])->name('web.leagues.show');
+    Route::get('/leagues/{league}', [LeaguePageController::class, 'index'])->name('web.leagues.show');
     Route::get('/leagues/{league}/join', [WebController::class, 'leagueJoin'])->name('web.leagues.join');
 
     Route::get('/api/games/{league?}', [GameController::class, 'index'])->name('api.games.index');
     Route::post('/api/games', [GameController::class, 'store'])->name('api.games.store');
+    Route::delete('/api/games/{game}', [GameController::class, 'destroy'])->name('api.games.destroy');
 
     Route::post('/api/leagues', [LeagueController::class, 'store'])->name('api.leagues.store');
     Route::post('/api/leagues/join/{league}', [LeagueController::class, 'join'])->name('api.leagues.join');

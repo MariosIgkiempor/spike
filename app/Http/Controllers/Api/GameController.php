@@ -10,6 +10,7 @@ use App\Models\Game;
 use App\Models\League;
 use App\Models\Team;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
 
 class GameController extends Controller
 {
@@ -113,6 +114,17 @@ class GameController extends Controller
         } else {
             $team2->players->each->increment('games_won');
         }
+
+        return redirect()->back();
+    }
+
+    public function destroy(Request $request, Game $game)
+    {
+        Gate::authorize('delete-games', $game->league);
+
+        $game->teams()->detach($game->teams->pluck('id'));
+
+        $game->delete();
 
         return redirect()->back();
     }

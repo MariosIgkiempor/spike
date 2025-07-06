@@ -1,42 +1,30 @@
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuGroup,
+    DropdownMenuItem,
+    DropdownMenuLabel,
+    DropdownMenuShortcut,
+    DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
 import { PageSection } from '@/components/ui/pageSection';
-import { Skeleton } from '@/components/ui/skeleton';
 import { UserCard } from '@/features/users/user-card';
-import { useDebounce } from '@/hooks/useDebounce';
-import { Game, League, Paginated } from '@/types';
-import { useQuery } from '@tanstack/react-query';
-import { format } from 'date-fns';
+import { Game, League } from '@/types';
+import { Link, router } from '@inertiajs/react';
+import { format, isBefore } from 'date-fns';
+import { EllipsisVertical, Trash } from 'lucide-react';
 import { FC, useState } from 'react';
-
-const fetchGames = async (leagueId: number, search: string) => {
-    const response = await fetch(
-        route('api.games.index', {
-            league: leagueId,
-            search: search.length > 0 ? search : undefined,
-        }),
-    );
-    if (!response.ok) {
-        throw new Error('Could not fetch recent games');
-    }
-    return response.json();
-};
 
 type RecentGamesProps = {
     league: League;
+    canDeleteGames: boolean;
 };
 
-export const RecentGames: FC<RecentGamesProps> = ({ league }) => {
-    const [searchQuery, setSearchQuery] = useState<string>('');
-    const debouncedSearch = useDebounce(searchQuery, 300);
-    const {
-        data: gamesData,
-        isLoading,
-        error,
-    } = useQuery<Paginated<Game>>({
-        queryKey: ['games', league.id, debouncedSearch],
-        queryFn: async () => fetchGames(league.id, debouncedSearch),
-    });
+export const RecentGames: FC<RecentGamesProps> = ({ league, canDeleteGames }) => {
+    const [searchQuery, setSearchQuery] = useState('');
 
     return (
         <PageSection
@@ -53,24 +41,28 @@ export const RecentGames: FC<RecentGamesProps> = ({ league }) => {
                 </div>
             }
         >
-            {isLoading ? (
-                <Skeleton className={'h-32 w-full'} />
-            ) : error ? (
-                <div className="text-red-500 dark:text-red-400">Error: {error.message}</div>
+            {league.games.length === 0 ? (
+                <div className="py-8 text-center text-muted-foreground">No games found.</div>
             ) : (
-                <>
-                    {gamesData?.data.length === 0 ? (
-                        <div className="py-8 text-center text-muted-foreground">No games found.</div>
-                    ) : (
-                        <ul className={'flex flex-col gap-8'}>{gamesData?.data.map((game: Game) => <ScoreboardRow key={game.id} game={game} />)}</ul>
-                    )}
-                </>
+                <ul className={'flex flex-col gap-8'}>
+                    {league.games
+                        .filter((game) => {
+                            if (searchQuery.length === 0) return true;
+                            return game.teams.some((team) =>
+                                team.players.some((player) => player.name.toLowerCase().includes(searchQuery.toLowerCase())),
+                            );
+                        })
+                        .sort((a, b) => (isBefore(a.createdAt, b.createdAt) ? 1 : 0))
+                        .map((game: Game) => (
+                            <GameRecord key={game.id} game={game} canDeleteGames={canDeleteGames} />
+                        ))}
+                </ul>
             )}
         </PageSection>
     );
 };
 
-const ScoreboardRow: FC<{ game: Game }> = ({ game }) => {
+const GameRecord: FC<{ game: Game; canDeleteGames: boolean }> = ({ game, canDeleteGames }) => {
     return (
         <li className={'flex justify-between gap-4'}>
             <div className={'flex flex-wrap justify-start gap-2'}>
@@ -87,7 +79,51 @@ const ScoreboardRow: FC<{ game: Game }> = ({ game }) => {
                     </div>
                 ))}
             </div>
-            <div className={'w-24 text-xs'}>{format(game.createdAt, 'dd MMM yy')}</div>
+            <div className={'flex w-fit items-center gap-2.5 text-xs'}>
+                <div>{format(game.createdAt, 'dd MMM yy')}</div>
+                <div>
+                    <GameActions game={game} canDeleteGames={canDeleteGames} />
+                </div>
+            </div>
         </li>
+    );
+};
+
+const GameActions: FC<{ game: Game; canDeleteGames: boolean }> = ({ game, canDeleteGames }) => {
+    const handleDelete = () => {
+        router.reload();
+    };
+
+    if (!canDeleteGames) {
+        return null;
+    }
+
+    return (
+        <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+                <Button variant="outline" size={'icon'}>
+                    <EllipsisVertical />
+                </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent className="w-56" align="start">
+                <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                <DropdownMenuGroup>
+                    <DropdownMenuItem variant={'destructive'} asChild>
+                        <Link
+                            method="delete"
+                            href={route('api.games.destroy', { game: game.id })}
+                            as="button"
+                            onSuccess={handleDelete}
+                            className={'w-full'}
+                        >
+                            Delete Game
+                            <DropdownMenuShortcut>
+                                <Trash className={'text-destructive-foreground'} />
+                            </DropdownMenuShortcut>
+                        </Link>
+                    </DropdownMenuItem>
+                </DropdownMenuGroup>
+            </DropdownMenuContent>
+        </DropdownMenu>
     );
 };

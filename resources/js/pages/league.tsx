@@ -167,6 +167,9 @@ const GameGenerator: FC<{
 };
 
 type LeaguePageProps = PageProps & {
+    can: {
+        deleteGames: boolean;
+    };
     league: Resource<League>;
     leaderboard: Leaderboard;
     teamStats: TeamStats[];
@@ -193,7 +196,7 @@ type LeaguePageProps = PageProps & {
                 user: Resource<User>;
                 improvement: number;
             };
-        };
+        } | null;
     };
 };
 
@@ -206,7 +209,7 @@ function lastNWeeks(n: number) {
     return weeks.reverse();
 }
 
-const LeaguePage: FC<LeaguePageProps> = ({ league: { data: league }, leaderboard, teamStats, stats }) => {
+const LeaguePage: FC<LeaguePageProps> = ({ league: { data: league }, leaderboard, teamStats, stats, can }) => {
     const gamesByWeek = lastNWeeks(6).map((week, index, weeks) => ({
         week: format(week, 'dd MMM'),
         count: league.games.filter((game) =>
@@ -252,9 +255,6 @@ const LeaguePage: FC<LeaguePageProps> = ({ league: { data: league }, leaderboard
                             <div>
                                 <Statistic label={'Total games'} value={league.games.length} />
                             </div>
-                            <PageSection title={'Games by week'} className={'lg:col-span-2'}>
-                                <GamesByWeek gamesByWeek={gamesByWeek} />
-                            </PageSection>
                         </div>
                         <div className={'grid gap-8 lg:grid-cols-2'}>
                             <Statistic
@@ -268,56 +268,16 @@ const LeaguePage: FC<LeaguePageProps> = ({ league: { data: league }, leaderboard
                                 extra={`${stats.biggestLoseStreak.loseStreak} games`}
                             />
                         </div>
-                        <SectionHeading>Last week</SectionHeading>
-                        <div className={'grid gap-8 md:grid-cols-2 lg:row-span-2 lg:grid-cols-3'}>
-                            <Statistic
-                                label={'🔥 MVP 🔥'}
-                                value={<UserCard user={stats.lastWeek.mvp.user.data} />}
-                                extra={`${new Intl.NumberFormat('en-GB', {
-                                    style: 'percent',
-                                }).format(stats.lastWeek.mvp.winRate)} win rate last week`}
-                            />
-                            <Statistic
-                                label={'🤡 Biggest L 🤡'}
-                                value={
-                                    <div>
-                                        <UserCard user={stats.lastWeek.biggestL.team.data.players[0]} />
-                                        <UserCard user={stats.lastWeek.biggestL.team.data.players[1]} />
-                                    </div>
-                                }
-                                extra={(() => {
-                                    const nonLosingTeams = stats.lastWeek.biggestL.game.data.teams.filter(
-                                        (t) => t.id !== stats.lastWeek.biggestL.team.data.id,
-                                    );
-
-                                    const nonLosingPlayers = nonLosingTeams
-                                        .flatMap((t) => t.players)
-                                        .map((p) => p.name)
-                                        .join(' & ');
-
-                                    return (
-                                        <div>
-                                            Lost {nonLosingTeams[0].score} - {stats.lastWeek.biggestL.team.data.score} to {nonLosingPlayers}
-                                        </div>
-                                    );
-                                })()}
-                            />
-                            {stats.lastWeek.mostImproved && (
-                                <Statistic
-                                    label={'📈 Most improved 📈'}
-                                    value={<UserCard user={stats.lastWeek.mostImproved.user.data} />}
-                                    extra={`Win rate went up ${new Intl.NumberFormat('en-GB', {
-                                        style: 'percent',
-                                    }).format(stats.lastWeek.mostImproved.improvement)}`}
-                                />
-                            )}
-                        </div>
+                        {stats.lastWeek !== null ? <LastWeekStats lastWeek={stats.lastWeek} /> : null}
+                        <PageSection title={'Games by week'} className={'lg:col-span-2'}>
+                            <GamesByWeek gamesByWeek={gamesByWeek} />
+                        </PageSection>
                         <PageSection title={'Leaderboard'}>
                             <LeaderboardTable leaderboard={leaderboard} />
                         </PageSection>
                     </TabsContent>
                     <TabsContent value={'history'}>
-                        <RecentGames league={league} />
+                        <RecentGames league={league} canDeleteGames={can.deleteGames} />
                     </TabsContent>
                     <TabsContent value={'teams'}>
                         <PageSection title={'Team stats'}>
@@ -331,6 +291,55 @@ const LeaguePage: FC<LeaguePageProps> = ({ league: { data: league }, leaderboard
 };
 
 export default LeaguePage;
+
+const LastWeekStats: FC<{ lastWeek: NonNullable<LeaguePageProps['stats']['lastWeek']> }> = ({ lastWeek }) => {
+    return (
+        <>
+            <SectionHeading>Last week</SectionHeading>
+            <div className={'grid gap-8 md:grid-cols-2 lg:row-span-2 lg:grid-cols-3'}>
+                <Statistic
+                    label={'🔥 MVP 🔥'}
+                    value={<UserCard user={lastWeek.mvp.user.data} />}
+                    extra={`${new Intl.NumberFormat('en-GB', {
+                        style: 'percent',
+                    }).format(lastWeek.mvp.winRate)} win rate last week`}
+                />
+                <Statistic
+                    label={'🤡 Biggest L 🤡'}
+                    value={
+                        <div>
+                            <UserCard user={lastWeek.biggestL.team.data.players[0]} />
+                            <UserCard user={lastWeek.biggestL.team.data.players[1]} />
+                        </div>
+                    }
+                    extra={(() => {
+                        const nonLosingTeams = lastWeek.biggestL.game.data.teams.filter((t) => t.id !== lastWeek.biggestL.team.data.id);
+
+                        const nonLosingPlayers = nonLosingTeams
+                            .flatMap((t) => t.players)
+                            .map((p) => p.name)
+                            .join(' & ');
+
+                        return (
+                            <div>
+                                Lost {nonLosingTeams[0].score} - {lastWeek.biggestL.team.data.score} to {nonLosingPlayers}
+                            </div>
+                        );
+                    })()}
+                />
+                {lastWeek.mostImproved && (
+                    <Statistic
+                        label={'📈 Most improved 📈'}
+                        value={<UserCard user={lastWeek.mostImproved.user.data} />}
+                        extra={`Win rate went up ${new Intl.NumberFormat('en-GB', {
+                            style: 'percent',
+                        }).format(lastWeek.mostImproved.improvement)}`}
+                    />
+                )}
+            </div>
+        </>
+    );
+};
 
 function GamesByWeek({ gamesByWeek }: { gamesByWeek: { week: string; count: number }[] }) {
     return (
