@@ -67,6 +67,13 @@ export const LeaderboardTable: FC<LeaderboardProps> = ({ leaderboard }) => {
             enableHiding: true,
         },
         {
+            accessorKey: 'mmr',
+            header: ({ column }) => <DataTableColumnHeader column={column} title="MMR" />,
+            cell: ({ row }) => <span className="flex">{row.original.mmr}</span>,
+            enableSorting: true,
+            enableHiding: true,
+        },
+        {
             accessorKey: 'total_games',
             header: ({ column }) => <DataTableColumnHeader column={column} title="# Games" />,
             cell: ({ row }) => <span className="">{row.original.total_games}</span>,
@@ -81,14 +88,6 @@ export const LeaderboardTable: FC<LeaderboardProps> = ({ leaderboard }) => {
                     <span className="block text-center">
                         {row.original.wins}/{row.original.losses}
                     </span>
-                    <Badge
-                        variant={
-                            row.original.wins > row.original.losses ? 'success' : row.original.wins < row.original.losses ? 'destructive' : 'outline'
-                        }
-                    >
-                        {row.original.wins - row.original.losses > 0 ? '+' : ''}
-                        {row.original.wins - row.original.losses}
-                    </Badge>
                 </div>
             ),
             enableSorting: true,
@@ -104,13 +103,6 @@ export const LeaderboardTable: FC<LeaderboardProps> = ({ leaderboard }) => {
                     </Badge>
                 </span>
             ),
-            enableSorting: true,
-            enableHiding: true,
-        },
-        {
-            accessorKey: 'mmr',
-            header: ({ column }) => <DataTableColumnHeader column={column} title="MMR" />,
-            cell: ({ row }) => <span className="flex">{row.original.mmr}</span>,
             enableSorting: true,
             enableHiding: true,
         },
