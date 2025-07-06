@@ -44,7 +44,7 @@ export const TeamStats: FC<LeaderboardProps> = ({ stats }) => {
             accessorKey: 'players',
             header: ({ column }) => <DataTableColumnHeader column={column} title="Players" />,
             cell: ({ row }) => (
-                <div className="flex flex-col">
+                <div className="flex flex-col lg:flex-row">
                     {row.original.players.map((p) => (
                         <UserCard key={p.id} user={p} />
                     ))}
@@ -56,13 +56,13 @@ export const TeamStats: FC<LeaderboardProps> = ({ stats }) => {
                 return row.original.players.some((p) => p.name.toLowerCase().includes((filterValue as string).toLowerCase()));
             },
         },
-        {
-            accessorKey: 'played',
-            header: ({ column }) => <DataTableColumnHeader column={column} title="Played" />,
-            cell: ({ row }) => <span className="block text-center">{row.original.played}</span>,
-            enableSorting: true,
-            enableHiding: true,
-        },
+        // {
+        //     accessorKey: 'played',
+        //     header: ({ column }) => <DataTableColumnHeader column={column} title="Played" />,
+        //     cell: ({ row }) => <span className="block text-center">{row.original.played}</span>,
+        //     enableSorting: true,
+        //     enableHiding: true,
+        // },
         {
             accessorKey: 'won',
             header: ({ column }) => <DataTableColumnHeader column={column} title="W/L" />,

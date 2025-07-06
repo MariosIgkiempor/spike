@@ -296,7 +296,7 @@ const LastWeekStats: FC<{ lastWeek: NonNullable<LeaguePageProps['stats']['lastWe
     return (
         <>
             <SectionHeading>Last week</SectionHeading>
-            <div className={'grid gap-8 md:grid-cols-2 lg:row-span-2 lg:grid-cols-3'}>
+            <div className={'grid gap-8 lg:row-span-2 lg:grid-cols-3'}>
                 <Statistic
                     label={'🔥 MVP 🔥'}
                     value={<UserCard user={lastWeek.mvp.user.data} />}
