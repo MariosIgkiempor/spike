@@ -52,8 +52,8 @@ export const RecentGames: FC<RecentGamesProps> = ({ league, canDeleteGames }) =>
                                 team.players.some((player) => player.name.toLowerCase().includes(searchQuery.toLowerCase())),
                             );
                         })
-                        .sort((a, b) => (isBefore(a.createdAt, b.createdAt) ? 1 : 0))
-                        .map((game: Game) => (
+                        .sort((a, b) => (isBefore(a.createdAt, b.createdAt) ? 0 : 1))
+                        .map((game) => (
                             <GameRecord key={game.id} game={game} canDeleteGames={canDeleteGames} />
                         ))}
                 </ul>
