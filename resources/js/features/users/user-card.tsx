@@ -4,7 +4,7 @@ import { FC } from 'react';
 
 export const UserCard: FC<{ user: User }> = ({ user }) => {
     return (
-        <div className={'flex w-40 gap-4'}>
+        <div className={'flex w-40 items-center gap-4'}>
             <UserAvatar user={user} />
             <div>
                 <div className={'font-semibold'}>{user.name}</div>

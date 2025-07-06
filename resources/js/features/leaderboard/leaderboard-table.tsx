@@ -3,6 +3,7 @@ import { Badge } from '@/components/ui/badge';
 import { DataTable } from '@/components/ui/data-table';
 import { DataTableColumnHeader } from '@/components/ui/data-table-column-header';
 import { Input } from '@/components/ui/input';
+import { UserCard } from '@/features/users/user-card';
 import { User } from '@/types';
 import {
     ColumnDef,
@@ -48,7 +49,7 @@ export const LeaderboardTable: FC<LeaderboardProps> = ({ leaderboard }) => {
         {
             accessorKey: 'name',
             header: ({ column }) => <DataTableColumnHeader column={column} title="Player" />,
-            cell: ({ row }) => <span className="font-medium">{row.original.name}</span>,
+            cell: ({ row }) => <UserCard user={row.original} />,
             enableSorting: true,
             enableHiding: true,
         },
@@ -82,7 +83,7 @@ export const LeaderboardTable: FC<LeaderboardProps> = ({ leaderboard }) => {
                     </span>
                     <Badge
                         variant={
-                            row.original.wins > row.original.losses ? 'success' : row.original.wins < row.original.losses ? 'destructive' : 'muted'
+                            row.original.wins > row.original.losses ? 'success' : row.original.wins < row.original.losses ? 'destructive' : 'outline'
                         }
                     >
                         {row.original.wins - row.original.losses > 0 ? '+' : ''}
@@ -98,7 +99,7 @@ export const LeaderboardTable: FC<LeaderboardProps> = ({ leaderboard }) => {
             header: ({ column }) => <DataTableColumnHeader column={column} title="Score +-" />,
             cell: ({ row }) => (
                 <span>
-                    <Badge variant={row.original.score_diff > 0 ? 'success' : row.original.score_diff < 0 ? 'destructive' : 'muted'}>
+                    <Badge variant={row.original.score_diff > 0 ? 'success' : row.original.score_diff < 0 ? 'destructive' : 'outline'}>
                         {row.original.score_diff}
                     </Badge>
                 </span>
