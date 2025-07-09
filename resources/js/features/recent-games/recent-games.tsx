@@ -14,7 +14,7 @@ import { PageSection } from '@/components/ui/pageSection';
 import { UserCard } from '@/features/users/user-card';
 import { Game, League } from '@/types';
 import { Link, router } from '@inertiajs/react';
-import { format, isBefore } from 'date-fns';
+import { format } from 'date-fns';
 import { EllipsisVertical, Trash } from 'lucide-react';
 import { FC, useState } from 'react';
 
@@ -52,7 +52,7 @@ export const RecentGames: FC<RecentGamesProps> = ({ league, canDeleteGames }) =>
                                 team.players.some((player) => player.name.toLowerCase().includes(searchQuery.toLowerCase())),
                             );
                         })
-                        .sort((a, b) => (isBefore(a.createdAt, b.createdAt) ? 0 : 1))
+                        // .sort((a, b) => (isBefore(a.createdAt, b.createdAt) ? 0 : 1))
                         .map((game) => (
                             <GameRecord key={game.id} game={game} canDeleteGames={canDeleteGames} />
                         ))}
