@@ -18,7 +18,7 @@ import { Game, League, PageProps, Resource, Team, User } from '@/types';
 import { Head } from '@inertiajs/react';
 import { format, isWithinInterval, startOfWeek, subWeeks } from 'date-fns';
 import { HelpCircle, Trash } from 'lucide-react';
-import { FC, useState } from 'react';
+import { Dispatch, FC, SetStateAction, useState } from 'react';
 import { Bar, BarChart, CartesianGrid, XAxis } from 'recharts';
 import { toast } from 'sonner';
 
@@ -40,11 +40,12 @@ const CopyLeagueJoinLink: FC<{ league: League }> = ({ league }) => {
 const GameGenerator: FC<{
     leaderboard: LeaderboardUser[];
     players: User[];
+    selectedPlayers: number[];
+    setSelectedPlayers: Dispatch<SetStateAction<number[]>>;
+    generatedTeams: number[][];
     onTeamsGenerated?: (teams: number[][]) => void;
-}> = ({ leaderboard, players, onTeamsGenerated }) => {
-    const [selectedPlayers, setSelectedPlayers] = useState<number[]>([]);
-    const [teams, setTeams] = useState<number[][]>([]);
-
+    onSwitchToForm?: () => void;
+}> = ({ leaderboard, players, selectedPlayers, setSelectedPlayers, generatedTeams, onTeamsGenerated, onSwitchToForm }) => {
     const generateFairTeams = () => {
         // Map selected IDs to full user objects with MMR
         const selectedUsers = selectedPlayers.map((id) => leaderboard.find((u) => u.id === id)).filter((u): u is LeaderboardUser => !!u);
@@ -69,7 +70,6 @@ const GameGenerator: FC<{
         });
 
         const teams = [teamA, teamB];
-        setTeams(teams);
         onTeamsGenerated?.(teams);
     };
 
@@ -88,7 +88,6 @@ const GameGenerator: FC<{
         });
 
         const teams = [teamA, teamB];
-        setTeams(teams);
         onTeamsGenerated?.(teams);
     };
 
@@ -113,13 +112,14 @@ const GameGenerator: FC<{
                 label="Player"
                 value={null}
                 players={players.filter((p) => !selectedPlayers.includes(p.id))}
+                disabled={selectedPlayers.length >= 4}
             />
 
             <div className={'flex flex-col gap-4'}>
                 {selectedPlayers.map((playerId) => {
-                    const player = leaderboard.find((u) => u.id === playerId);
+                    const player = leaderboard.find((u) => u.id === playerId)!;
                     return (
-                        <div className={'flex justify-between gap-2'}>
+                        <div key={player.id} className={'flex justify-between gap-2'}>
                             <div>
                                 <h3 className={'font-semibold'}>{player?.name || playerId}</h3>
                                 <div className={'text-sm text-muted-foreground'}>
@@ -135,32 +135,41 @@ const GameGenerator: FC<{
             </div>
 
             <div className={'flex flex-wrap gap-4'}>
-                <Button onClick={generateFairTeams} disabled={selectedPlayers.length < 2}>
+                <Button onClick={generateFairTeams} disabled={selectedPlayers.length < 4}>
                     Fair Teams
                 </Button>
 
-                <Button onClick={generateRandomTeams} disabled={selectedPlayers.length < 2}>
+                <Button onClick={generateRandomTeams} disabled={selectedPlayers.length < 4}>
                     Random Teams
                 </Button>
             </div>
 
-            {teams.length === 2 && (
-                <div className="mt-6 grid gap-4">
-                    {[teams[0], teams[1]].map((team) => (
-                        <div>
-                            <h3 className="text-lg font-semibold">Team A (MMR: {teamMMR(team)})</h3>
-                            <ul className="grid gap-4 md:grid-cols-2">
-                                {team.map((id) => {
-                                    const user = leaderboard.find((u) => u.id === id)!;
-                                    return (
-                                        <li key={id}>
-                                            <UserCard user={user} />
-                                        </li>
-                                    );
-                                })}
-                            </ul>
-                        </div>
-                    ))}
+            {generatedTeams.length === 2 && (
+                <div className="mt-6 space-y-4">
+                    <div className="grid gap-4">
+                        {[generatedTeams[0], generatedTeams[1]].map((team, index) => (
+                            <div key={index}>
+                                <h3 className="text-lg font-semibold">
+                                    Team {index === 0 ? 'A' : 'B'} (MMR: {teamMMR(team)})
+                                </h3>
+                                <ul className="grid gap-4 md:grid-cols-2">
+                                    {team.map((id) => {
+                                        const user = leaderboard.find((u) => u.id === id)!;
+                                        return (
+                                            <li key={id}>
+                                                <UserCard user={user} />
+                                            </li>
+                                        );
+                                    })}
+                                </ul>
+                            </div>
+                        ))}
+                    </div>
+                    <div className="flex justify-center">
+                        <Button onClick={onSwitchToForm} size="lg">
+                            Record Score
+                        </Button>
+                    </div>
                 </div>
             )}
         </>
@@ -273,7 +282,7 @@ const LeaguePage: FC<LeaguePageProps> = ({ league: { data: league }, leaderboard
                         <PageSection title={'Games by week'} className={'lg:col-span-2'}>
                             <GamesByWeek gamesByWeek={gamesByWeek} />
                         </PageSection>
-                        <PageSection 
+                        <PageSection
                             title={
                                 <div className="flex items-center gap-2">
                                     Leaderboard
@@ -288,13 +297,28 @@ const LeaguePage: FC<LeaguePageProps> = ({ league: { data: league }, leaderboard
                                                 <div className="space-y-2 text-xs">
                                                     <p className="font-semibold">MMR (Match Making Rating) Algorithm:</p>
                                                     <ul className="list-bullet space-y-1 text-left">
-                                                        <li><strong>Base:</strong> Elo rating system starting at 1000</li>
-                                                        <li><strong>New players:</strong> Start at 0 MMR until first game</li>
-                                                        <li><strong>Score difference:</strong> Bigger wins = more MMR</li>
-                                                        <li><strong>Skill gaps:</strong> Beating stronger teams = bonus MMR</li>
-                                                        <li><strong>Win streaks:</strong> 2+ wins = 10-40% MMR bonus</li>
-                                                        <li><strong>Lose streaks:</strong> 2+ losses = 10-40% MMR penalty</li>
-                                                        <li><strong>K-factor:</strong> Controls MMR change rate - higher for new/volatile players, lower for experienced players</li>
+                                                        <li>
+                                                            <strong>Base:</strong> Elo rating system starting at 1000
+                                                        </li>
+                                                        <li>
+                                                            <strong>New players:</strong> Start at 0 MMR until first game
+                                                        </li>
+                                                        <li>
+                                                            <strong>Score difference:</strong> Bigger wins = more MMR
+                                                        </li>
+                                                        <li>
+                                                            <strong>Skill gaps:</strong> Beating stronger teams = bonus MMR
+                                                        </li>
+                                                        <li>
+                                                            <strong>Win streaks:</strong> 2+ wins = 10-40% MMR bonus
+                                                        </li>
+                                                        <li>
+                                                            <strong>Lose streaks:</strong> 2+ losses = 10-40% MMR penalty
+                                                        </li>
+                                                        <li>
+                                                            <strong>K-factor:</strong> Controls MMR change rate - higher for new/volatile players,
+                                                            lower for experienced players
+                                                        </li>
                                                     </ul>
                                                 </div>
                                             </TooltipContent>
@@ -401,15 +425,41 @@ function GamesByWeek({ gamesByWeek }: { gamesByWeek: { week: string; count: numb
 
 function NewGameSection({ league, leaderboard }: { league: League; leaderboard: Leaderboard }) {
     const [teams, setTeams] = useState<number[][] | undefined>(undefined);
+    const [activeTab, setActiveTab] = useState('generator');
+    const [selectedPlayers, setSelectedPlayers] = useState<number[]>([]);
+    const [generatedTeams, setGeneratedTeams] = useState<number[][]>([]);
+
+    const handleTeamsGenerated = (newTeams: number[][]) => {
+        setGeneratedTeams(newTeams);
+        setTeams(newTeams);
+    };
+
+    const handleSwitchToForm = () => {
+        setActiveTab('form');
+    };
 
     return (
-        <>
-            <PageSection title={'Pick teams'}>
-                <GameGenerator leaderboard={leaderboard} players={league.players} onTeamsGenerated={(teams) => setTeams(teams)} />
-            </PageSection>
-            <PageSection title={'Record new game'} className={'col-span-2'}>
-                <NewGameForm teams={teams ?? []} onTeamsChange={(newTeams) => setTeams(newTeams)} league={league} />
-            </PageSection>
-        </>
+        <PageSection title={'New Game'} className={'col-span-3'}>
+            <Tabs value={activeTab} onValueChange={setActiveTab}>
+                <TabsList>
+                    <TabsTrigger value="generator">Pick Teams</TabsTrigger>
+                    <TabsTrigger value="form">Record Game</TabsTrigger>
+                </TabsList>
+                <TabsContent value="generator" className="mt-6">
+                    <GameGenerator
+                        leaderboard={leaderboard}
+                        players={league.players}
+                        selectedPlayers={selectedPlayers}
+                        setSelectedPlayers={setSelectedPlayers}
+                        generatedTeams={generatedTeams}
+                        onTeamsGenerated={handleTeamsGenerated}
+                        onSwitchToForm={handleSwitchToForm}
+                    />
+                </TabsContent>
+                <TabsContent value="form" className="mt-6">
+                    <NewGameForm teams={teams ?? []} onTeamsChange={(newTeams) => setTeams(newTeams)} league={league} />
+                </TabsContent>
+            </Tabs>
+        </PageSection>
     );
 }

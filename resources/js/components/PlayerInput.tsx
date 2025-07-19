@@ -46,7 +46,7 @@ export const PlayerInput: FC<PlayerInputProps> = ({ players, value, onChange, la
         <div className={'space-y-2'}>
             <Drawer open={open} onOpenChange={setOpen}>
                 <DrawerTrigger asChild>
-                    <Button variant="outline" className="w-full justify-start">
+                    <Button variant="outline" className="w-full justify-start" disabled={disabled}>
                         {value ? <>{players.find((p) => p.id === value)!.name}</> : <>{label}</>}
                     </Button>
                 </DrawerTrigger>
