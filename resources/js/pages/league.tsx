@@ -18,6 +18,7 @@ import { Game, League, PageProps, Resource, Team, User } from '@/types';
 import { Head } from '@inertiajs/react';
 import { format, isWithinInterval, startOfWeek, subWeeks } from 'date-fns';
 import { HelpCircle, Trash } from 'lucide-react';
+import { motion, AnimatePresence } from 'motion/react';
 import { Dispatch, FC, SetStateAction, useState } from 'react';
 import { Bar, BarChart, CartesianGrid, XAxis } from 'recharts';
 import { toast } from 'sonner';
@@ -43,9 +44,11 @@ const GameGenerator: FC<{
     selectedPlayers: number[];
     setSelectedPlayers: Dispatch<SetStateAction<number[]>>;
     generatedTeams: number[][];
+    teamGenerationKey: number;
     onTeamsGenerated?: (teams: number[][]) => void;
     onSwitchToForm?: () => void;
-}> = ({ leaderboard, players, selectedPlayers, setSelectedPlayers, generatedTeams, onTeamsGenerated, onSwitchToForm }) => {
+}> = ({ leaderboard, players, selectedPlayers, setSelectedPlayers, generatedTeams, teamGenerationKey, onTeamsGenerated, onSwitchToForm }) => {
+    const [playerInputOpen, setPlayerInputOpen] = useState(false);
     const generateFairTeams = () => {
         // Map selected IDs to full user objects with MMR
         const selectedUsers = selectedPlayers.map((id) => leaderboard.find((u) => u.id === id)).filter((u): u is LeaderboardUser => !!u);
@@ -108,30 +111,48 @@ const GameGenerator: FC<{
     return (
         <>
             <PlayerInput
-                onChange={(playerId) => setSelectedPlayers((prev) => (playerId ? [...prev, playerId] : prev))}
+                onChange={(playerId) => {
+                    if (playerId) {
+                        const newPlayers = [...selectedPlayers, playerId];
+                        setSelectedPlayers(newPlayers);
+                        if (newPlayers.length >= 4) {
+                            setPlayerInputOpen(false);
+                        }
+                    }
+                }}
                 label="Player"
                 value={null}
                 players={players.filter((p) => !selectedPlayers.includes(p.id))}
                 disabled={selectedPlayers.length >= 4}
+                keepOpen={selectedPlayers.length < 3}
             />
 
             <div className={'flex flex-col gap-4'}>
-                {selectedPlayers.map((playerId) => {
-                    const player = leaderboard.find((u) => u.id === playerId)!;
-                    return (
-                        <div key={player.id} className={'flex justify-between gap-2'}>
-                            <div>
-                                <h3 className={'font-semibold'}>{player?.name || playerId}</h3>
-                                <div className={'text-sm text-muted-foreground'}>
-                                    MMR <span className={'font-semibold'}>{player?.mmr}</span>
+                <AnimatePresence>
+                    {selectedPlayers.map((playerId, index) => {
+                        const player = leaderboard.find((u) => u.id === playerId)!;
+                        return (
+                            <motion.div
+                                key={player.id}
+                                initial={{ opacity: 0, x: -20 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                exit={{ opacity: 0, x: 20 }}
+                                transition={{ duration: 0.3, delay: index * 0.1 }}
+                                className={'flex justify-between gap-2'}
+                            >
+                                <div>
+                                    <h3 className={'font-semibold'}>{player?.name || playerId}</h3>
+                                    <div className={'text-sm text-muted-foreground'}>
+                                        MMR <span className={'font-semibold'}>{player?.mmr}</span>
+                                    </div>
                                 </div>
-                            </div>
-                            <Button variant={'destructive'} size={'icon'} onClick={() => handleRemovePlayer(playerId)}>
-                                <Trash />
-                            </Button>
-                        </div>
-                    );
-                })}
+                                <Button variant={'destructive'} size={'icon'} onClick={() => handleRemovePlayer(playerId)}>
+                                    <Trash />
+                                </Button>
+                            </motion.div>
+                        );
+                    })}
+                </AnimatePresence>
             </div>
 
             <div className={'flex flex-wrap gap-4'}>
@@ -144,34 +165,60 @@ const GameGenerator: FC<{
                 </Button>
             </div>
 
-            {generatedTeams.length === 2 && (
-                <div className="mt-6 space-y-4">
-                    <div className="grid gap-4">
-                        {[generatedTeams[0], generatedTeams[1]].map((team, index) => (
-                            <div key={index}>
-                                <h3 className="text-lg font-semibold">
-                                    Team {index === 0 ? 'A' : 'B'} (MMR: {teamMMR(team)})
-                                </h3>
-                                <ul className="grid gap-4 md:grid-cols-2">
-                                    {team.map((id) => {
-                                        const user = leaderboard.find((u) => u.id === id)!;
-                                        return (
-                                            <li key={id}>
-                                                <UserCard user={user} />
-                                            </li>
-                                        );
-                                    })}
-                                </ul>
-                            </div>
-                        ))}
-                    </div>
-                    <div className="flex justify-center">
-                        <Button onClick={onSwitchToForm} size="lg">
-                            Record Score
-                        </Button>
-                    </div>
-                </div>
-            )}
+            <AnimatePresence>
+                {generatedTeams.length === 2 && (
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -20 }}
+                        transition={{ duration: 0.5 }}
+                        className="mt-6 space-y-4"
+                    >
+                        <div className="grid gap-4">
+                            {[generatedTeams[0], generatedTeams[1]].map((team, teamIndex) => (
+                                <motion.div
+                                    key={`team-${teamIndex}-${teamGenerationKey}`}
+                                    initial={{ opacity: 0, scale: 0.9 }}
+                                    animate={{ opacity: 1, scale: 1 }}
+                                    transition={{ duration: 0.4, delay: teamIndex * 0.2 }}
+                                >
+                                    <h3 className="text-lg font-semibold">
+                                        Team {teamIndex === 0 ? 'A' : 'B'} (MMR: {teamMMR(team)})
+                                    </h3>
+                                    <ul className="grid gap-4 md:grid-cols-2">
+                                        {team.map((id, playerIndex) => {
+                                            const user = leaderboard.find((u) => u.id === id)!;
+                                            return (
+                                                <motion.li
+                                                    key={`player-${id}-${teamIndex}-${playerIndex}-${teamGenerationKey}`}
+                                                    initial={{ opacity: 0, y: 10 }}
+                                                    animate={{ opacity: 1, y: 0 }}
+                                                    transition={{ 
+                                                        duration: 0.3, 
+                                                        delay: (teamIndex * 0.2) + (playerIndex * 0.1) + 0.3 
+                                                    }}
+                                                >
+                                                    <UserCard user={user} />
+                                                </motion.li>
+                                            );
+                                        })}
+                                    </ul>
+                                </motion.div>
+                            ))}
+                        </div>
+                        <motion.div
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.4, delay: 0.8 }}
+                            className="flex justify-center"
+                        >
+                            <Button onClick={onSwitchToForm} size="lg">
+                                Record Score
+                            </Button>
+                        </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
         </>
     );
 };
@@ -428,10 +475,12 @@ function NewGameSection({ league, leaderboard }: { league: League; leaderboard: 
     const [activeTab, setActiveTab] = useState('generator');
     const [selectedPlayers, setSelectedPlayers] = useState<number[]>([]);
     const [generatedTeams, setGeneratedTeams] = useState<number[][]>([]);
+    const [teamGenerationKey, setTeamGenerationKey] = useState(0);
 
     const handleTeamsGenerated = (newTeams: number[][]) => {
         setGeneratedTeams(newTeams);
         setTeams(newTeams);
+        setTeamGenerationKey(prev => prev + 1);
     };
 
     const handleSwitchToForm = () => {
@@ -452,6 +501,7 @@ function NewGameSection({ league, leaderboard }: { league: League; leaderboard: 
                         selectedPlayers={selectedPlayers}
                         setSelectedPlayers={setSelectedPlayers}
                         generatedTeams={generatedTeams}
+                        teamGenerationKey={teamGenerationKey}
                         onTeamsGenerated={handleTeamsGenerated}
                         onSwitchToForm={handleSwitchToForm}
                     />

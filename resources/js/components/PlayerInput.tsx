@@ -13,9 +13,10 @@ interface PlayerInputProps {
     error?: string;
     disabled?: boolean;
     players: User[];
+    keepOpen?: boolean;
 }
 
-export const PlayerInput: FC<PlayerInputProps> = ({ players, value, onChange, label, error, disabled }) => {
+export const PlayerInput: FC<PlayerInputProps> = ({ players, value, onChange, label, error, disabled, keepOpen = false }) => {
     const [open, setOpen] = useState(false);
     const isDesktop = useMediaQuery('(min-width: 768px)');
 
@@ -28,12 +29,15 @@ export const PlayerInput: FC<PlayerInputProps> = ({ players, value, onChange, la
                             {value ? <>{players.find((p) => p.id === value)!.name}</> : <>{label}</>}
                         </Button>
                     </PopoverTrigger>
-                    <PopoverContent className="p-0" align="start">
+                    <PopoverContent className="p-0" align="start" alignOffset={80}>
                         <PlayerList
                             players={players}
                             setOpen={setOpen}
                             setSelectedPlayer={(user) => {
                                 onChange(user?.id ?? null);
+                                if (!keepOpen) {
+                                    setOpen(false);
+                                }
                             }}
                         />
                     </PopoverContent>
@@ -57,6 +61,9 @@ export const PlayerInput: FC<PlayerInputProps> = ({ players, value, onChange, la
                             setOpen={setOpen}
                             setSelectedPlayer={(user) => {
                                 onChange(user?.id ?? null);
+                                if (!keepOpen) {
+                                    setOpen(false);
+                                }
                             }}
                         />
                     </div>
@@ -88,7 +95,6 @@ function PlayerList({
                             value={player.id.toString()}
                             onSelect={(value) => {
                                 setSelectedPlayer(players.find((player) => player.id === parseInt(value)) || null);
-                                setOpen(false);
                             }}
                         >
                             {player.name}
