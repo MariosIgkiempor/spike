@@ -6,6 +6,7 @@ import { PageSection } from '@/components/ui/pageSection';
 import { SectionHeading } from '@/components/ui/sectionHeading';
 import { Statistic } from '@/components/ui/statistic';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Leaderboard, LeaderboardTable, LeaderboardUser } from '@/features/leaderboard/leaderboard-table';
 import { NewGameForm } from '@/features/new-game/newGameForm';
 import { RecentGames } from '@/features/recent-games/recent-games';
@@ -16,7 +17,7 @@ import { shuffleArray } from '@/lib/shuffle-array';
 import { Game, League, PageProps, Resource, Team, User } from '@/types';
 import { Head } from '@inertiajs/react';
 import { format, isWithinInterval, startOfWeek, subWeeks } from 'date-fns';
-import { Trash } from 'lucide-react';
+import { HelpCircle, Trash } from 'lucide-react';
 import { FC, useState } from 'react';
 import { Bar, BarChart, CartesianGrid, XAxis } from 'recharts';
 import { toast } from 'sonner';
@@ -272,7 +273,36 @@ const LeaguePage: FC<LeaguePageProps> = ({ league: { data: league }, leaderboard
                         <PageSection title={'Games by week'} className={'lg:col-span-2'}>
                             <GamesByWeek gamesByWeek={gamesByWeek} />
                         </PageSection>
-                        <PageSection title={'Leaderboard'}>
+                        <PageSection 
+                            title={
+                                <div className="flex items-center gap-2">
+                                    Leaderboard
+                                    <TooltipProvider>
+                                        <Tooltip>
+                                            <TooltipTrigger asChild>
+                                                <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
+                                                    <HelpCircle className="h-4 w-4" />
+                                                </Button>
+                                            </TooltipTrigger>
+                                            <TooltipContent className="max-w-sm">
+                                                <div className="space-y-2 text-xs">
+                                                    <p className="font-semibold">MMR (Match Making Rating) Algorithm:</p>
+                                                    <ul className="list-bullet space-y-1 text-left">
+                                                        <li><strong>Base:</strong> Elo rating system starting at 1000</li>
+                                                        <li><strong>New players:</strong> Start at 0 MMR until first game</li>
+                                                        <li><strong>Score difference:</strong> Bigger wins = more MMR</li>
+                                                        <li><strong>Skill gaps:</strong> Beating stronger teams = bonus MMR</li>
+                                                        <li><strong>Win streaks:</strong> 2+ wins = 10-40% MMR bonus</li>
+                                                        <li><strong>Lose streaks:</strong> 2+ losses = 10-40% MMR penalty</li>
+                                                        <li><strong>K-factor:</strong> Controls MMR change rate - higher for new/volatile players, lower for experienced players</li>
+                                                    </ul>
+                                                </div>
+                                            </TooltipContent>
+                                        </Tooltip>
+                                    </TooltipProvider>
+                                </div>
+                            }
+                        >
                             <LeaderboardTable leaderboard={leaderboard} />
                         </PageSection>
                     </TabsContent>
