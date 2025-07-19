@@ -2,11 +2,14 @@
 
 namespace App\Providers;
 
+use App\Listeners\ProcessVideoMetadata;
 use Carbon\Carbon;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Date;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\ServiceProvider;
+use Spatie\MediaLibrary\MediaCollections\Events\MediaHasBeenAddedEvent;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -24,5 +27,11 @@ class AppServiceProvider extends ServiceProvider
         Model::shouldBeStrict();
         Model::automaticallyEagerLoadRelationships();
         Date::use(CarbonImmutable::class);
+
+        // Register video processing listener
+        Event::listen(
+            MediaHasBeenAddedEvent::class,
+            ProcessVideoMetadata::class
+        );
     }
 }
