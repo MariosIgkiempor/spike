@@ -53,13 +53,24 @@ export const NewGameForm: FC<NewGameFormProps> = ({ league, teams, onTeamsChange
     };
 
     const handleTeamChange = (teamIndex: number, playerIndex: number, playerId: number | null) => {
-        const newTeams = teams.map((team) => team.map((p) => p));
+        const newTeams = teams.map((team) => [...team]);
+        
+        // Ensure the team array exists and has enough slots
+        if (!newTeams[teamIndex]) {
+            newTeams[teamIndex] = [];
+        }
+        
         if (playerId) {
-            if (newTeams[teamIndex]?.[playerIndex]) {
-                newTeams[teamIndex][playerIndex] = playerId;
+            // Extend array if needed to accommodate the player index
+            while (newTeams[teamIndex].length <= playerIndex) {
+                newTeams[teamIndex].push(0); // placeholder
             }
+            newTeams[teamIndex][playerIndex] = playerId;
         } else {
-            newTeams[teamIndex].splice(playerIndex);
+            // Remove player
+            if (newTeams[teamIndex]?.[playerIndex]) {
+                newTeams[teamIndex].splice(playerIndex, 1);
+            }
         }
         onTeamsChange(newTeams);
     };
@@ -109,7 +120,7 @@ export const NewGameForm: FC<NewGameFormProps> = ({ league, teams, onTeamsChange
                     <PlayerInput
                         players={league.players}
                         value={teams[1]?.[1] ?? null}
-                        onChange={(value) => handleTeamChange(1, 0, value)}
+                        onChange={(value) => handleTeamChange(1, 1, value)}
                         label="Player 2"
                         error={errors.team2}
                     />
