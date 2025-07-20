@@ -48,7 +48,7 @@ const GameGenerator: FC<{
     onTeamsGenerated?: (teams: number[][]) => void;
     onSwitchToForm?: () => void;
 }> = ({ leaderboard, players, selectedPlayers, setSelectedPlayers, generatedTeams, teamGenerationKey, onTeamsGenerated, onSwitchToForm }) => {
-    const [playerInputOpen, setPlayerInputOpen] = useState(false);
+    const [, setPlayerInputOpen] = useState(false);
     const generateFairTeams = () => {
         // Map selected IDs to full user objects with MMR
         const selectedUsers = selectedPlayers.map((id) => leaderboard.find((u) => u.id === id)).filter((u): u is LeaderboardUser => !!u);

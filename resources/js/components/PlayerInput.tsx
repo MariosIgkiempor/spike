@@ -32,7 +32,6 @@ export const PlayerInput: FC<PlayerInputProps> = ({ players, value, onChange, la
                     <PopoverContent className="p-0" align="start" alignOffset={80}>
                         <PlayerList
                             players={players}
-                            setOpen={setOpen}
                             setSelectedPlayer={(user) => {
                                 onChange(user?.id ?? null);
                                 if (!keepOpen) {
@@ -58,7 +57,6 @@ export const PlayerInput: FC<PlayerInputProps> = ({ players, value, onChange, la
                     <div className="mt-4 border-t">
                         <PlayerList
                             players={players}
-                            setOpen={setOpen}
                             setSelectedPlayer={(user) => {
                                 onChange(user?.id ?? null);
                                 if (!keepOpen) {
@@ -76,11 +74,9 @@ export const PlayerInput: FC<PlayerInputProps> = ({ players, value, onChange, la
 
 function PlayerList({
     players,
-    setOpen,
     setSelectedPlayer,
 }: {
     players: User[];
-    setOpen: (open: boolean) => void;
     setSelectedPlayer: (player: User | null) => void;
 }) {
     return (

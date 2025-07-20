@@ -11,6 +11,7 @@ use App\Models\League;
 use App\Models\Team;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Validation\Rules\File;
 
 class GameController extends Controller
 {
@@ -44,6 +45,12 @@ class GameController extends Controller
             'team1_score' => ['required', 'integer', 'min:0', 'max:100'],
             'team2_score' => ['required', 'integer', 'min:0', 'max:100'],
             'date' => ['required', 'date', 'before:now'],
+            'video' => [
+                'nullable',
+                File::types(['mp4', 'webm', 'mov'])
+                    ->min('1mb')
+                    ->max('500mb'),
+            ]
         ]);
 
         // Custom validation: no draws, winner must win by 2 and have at least 21
@@ -113,6 +120,33 @@ class GameController extends Controller
             $team1->players->each->increment('games_won');
         } else {
             $team2->players->each->increment('games_won');
+        }
+
+        // Handle video upload if present
+        $videoData = null;
+        if ($request->hasFile('video')) {
+            $media = $game
+                ->addMediaFromRequest('video')
+                ->toMediaCollection('videos');
+            
+            $videoData = [
+                'id' => $media->id,
+                'url' => $media->getUrl(),
+                'size' => $media->size,
+                'name' => $media->name,
+            ];
+        }
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'message' => 'Game created successfully',
+                'game' => [
+                    'id' => $game->id,
+                    'league_id' => $game->league_id,
+                    'created_at' => $game->created_at,
+                ],
+                'video' => $videoData,
+            ]);
         }
 
         return redirect()->back();
