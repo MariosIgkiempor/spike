@@ -11,8 +11,6 @@ import { route } from 'ziggy-js';
 
 type NewGameFormData = {
     league_id: number;
-    team1: number[];
-    team2: number[];
     team1_score: number;
     team2_score: number;
     date: Date;
@@ -29,10 +27,8 @@ export const NewGameForm: FC<NewGameFormProps> = ({ league, teams, onTeamsChange
     const [currentStep, setCurrentStep] = useState<'form' | 'video'>('form');
     const [recordedVideoBlob, setRecordedVideoBlob] = useState<Blob | null>(null);
 
-    const { data, setData, post, processing, errors, reset } = useForm<NewGameFormData>({
+    const { data, setData, post, transform, processing, errors, reset } = useForm<NewGameFormData>({
         league_id: league.id,
-        team1: [],
-        team2: [],
         team1_score: 21,
         team2_score: 21,
         date: new Date(),
@@ -65,7 +61,7 @@ export const NewGameForm: FC<NewGameFormProps> = ({ league, teams, onTeamsChange
         e.preventDefault();
 
         // Update teams in data before submitting
-        setData((prevData) => ({
+        transform((prevData) => ({
             ...prevData,
             team1: teams[0],
             team2: teams[1],
@@ -96,17 +92,15 @@ export const NewGameForm: FC<NewGameFormProps> = ({ league, teams, onTeamsChange
         }
 
         if (playerId) {
-            // Extend array if needed to accommodate the player index
-            while (newTeams[teamIndex].length <= playerIndex) {
-                newTeams[teamIndex].push(0); // placeholder
-            }
-            newTeams[teamIndex][playerIndex] = playerId;
-        } else {
-            // Remove player
             if (newTeams[teamIndex]?.[playerIndex]) {
-                newTeams[teamIndex].splice(playerIndex, 1);
+                newTeams[teamIndex][playerIndex] = playerId;
+            } else {
+                newTeams[teamIndex].push(playerId);
             }
+        } else {
+            newTeams[teamIndex].splice(playerIndex);
         }
+
         onTeamsChange(newTeams);
     };
 

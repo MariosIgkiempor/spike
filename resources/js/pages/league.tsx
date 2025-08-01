@@ -18,7 +18,7 @@ import { Game, League, PageProps, Resource, Team, User } from '@/types';
 import { Head } from '@inertiajs/react';
 import { format, isWithinInterval, startOfWeek, subWeeks } from 'date-fns';
 import { HelpCircle, Trash } from 'lucide-react';
-import { motion, AnimatePresence } from 'motion/react';
+import { AnimatePresence, motion } from 'motion/react';
 import { Dispatch, FC, SetStateAction, useState } from 'react';
 import { Bar, BarChart, CartesianGrid, XAxis } from 'recharts';
 import { toast } from 'sonner';
@@ -193,9 +193,9 @@ const GameGenerator: FC<{
                                                     key={`player-${id}-${teamIndex}-${playerIndex}-${teamGenerationKey}`}
                                                     initial={{ opacity: 0, y: 10 }}
                                                     animate={{ opacity: 1, y: 0 }}
-                                                    transition={{ 
-                                                        duration: 0.3, 
-                                                        delay: (teamIndex * 0.2) + (playerIndex * 0.1) + 0.3 
+                                                    transition={{
+                                                        duration: 0.3,
+                                                        delay: teamIndex * 0.2 + playerIndex * 0.1 + 0.3,
                                                     }}
                                                 >
                                                     <UserCard user={user} />
@@ -471,16 +471,14 @@ function GamesByWeek({ gamesByWeek }: { gamesByWeek: { week: string; count: numb
 }
 
 function NewGameSection({ league, leaderboard }: { league: League; leaderboard: Leaderboard }) {
-    const [teams, setTeams] = useState<number[][] | undefined>(undefined);
     const [activeTab, setActiveTab] = useState('generator');
     const [selectedPlayers, setSelectedPlayers] = useState<number[]>([]);
-    const [generatedTeams, setGeneratedTeams] = useState<number[][]>([]);
+    const [generatedTeams, setGeneratedTeams] = useState<number[][]>([[], []]);
     const [teamGenerationKey, setTeamGenerationKey] = useState(0);
 
     const handleTeamsGenerated = (newTeams: number[][]) => {
         setGeneratedTeams(newTeams);
-        setTeams(newTeams);
-        setTeamGenerationKey(prev => prev + 1);
+        setTeamGenerationKey((prev) => prev + 1);
     };
 
     const handleSwitchToForm = () => {
@@ -507,7 +505,7 @@ function NewGameSection({ league, leaderboard }: { league: League; leaderboard: 
                     />
                 </TabsContent>
                 <TabsContent value="form" className="mt-6">
-                    <NewGameForm teams={teams ?? []} onTeamsChange={(newTeams) => setTeams(newTeams)} league={league} />
+                    <NewGameForm teams={generatedTeams ?? []} onTeamsChange={(newTeams) => handleTeamsGenerated(newTeams)} league={league} />
                 </TabsContent>
             </Tabs>
         </PageSection>
