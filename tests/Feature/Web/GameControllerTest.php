@@ -21,7 +21,7 @@ test('store', function () {
         'date' => now()->subHour(),
     ]);
 
-    $response->assertRedirectBack();
+    $response->assertOk();
 
     $this->assertDatabaseCount('games', 1);
     $this->assertDatabaseCount('teams', 2);
