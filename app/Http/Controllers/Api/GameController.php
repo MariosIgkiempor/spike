@@ -9,7 +9,9 @@ use App\Http\Resources\GameResource;
 use App\Models\Game;
 use App\Models\League;
 use App\Models\Team;
+use Exception;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\Rules\File;
 
@@ -40,7 +42,9 @@ class GameController extends Controller
 
         $validated = $request->validate([
             'league_id' => ['required', 'exists:leagues,id'],
+            'team1' => ['required', 'array', 'min:1'],
             'team1.*' => ['required', 'exists:users,id'],
+            'team2' => ['required', 'array', 'min:1'],
             'team2.*' => ['required', 'exists:users,id'],
             'team1_score' => ['required', 'integer', 'min:0', 'max:100'],
             'team2_score' => ['required', 'integer', 'min:0', 'max:100'],
@@ -48,9 +52,9 @@ class GameController extends Controller
             'video' => [
                 'nullable',
                 File::types(['mp4', 'webm', 'mov'])
-                    ->min('1mb')
+                    ->min('1kb')
                     ->max('500mb'),
-            ]
+            ],
         ]);
 
         // Custom validation: no draws, winner must win by 2 and have at least 21
@@ -72,70 +76,81 @@ class GameController extends Controller
             }
         }
 
-        $game = Game::create([
-            'league_id' => $validated['league_id'],
-            'created_at' => $validated['date'],
-        ]);
+        ['game' => $game, 'video' => $video] = DB::transaction(function () use ($t2, $t1, $request, $validated) {
+            $game = Game::create([
+                'league_id' => $validated['league_id'],
+                'created_at' => $validated['date'],
+            ]);
 
-        $team1Player1Id = $validated['team1'][0];
-        $team1Player2Id = $validated['team1'][1];
-        $team1PlayerIds = collect([$team1Player1Id, $team1Player2Id]);
-        $team1 = Team::whereHas('players', function ($query) use ($team1PlayerIds) {
-            $query->whereIn('users.id', $team1PlayerIds);
-        }, '=', $team1PlayerIds->count())
-            ->whereDoesntHave('players', function ($query) use ($team1PlayerIds) {
-                $query->whereNotIn('users.id', $team1PlayerIds);
-            })
-            ->first();
+            $team1Player1Id = $validated['team1'][0];
+            $team1Player2Id = $validated['team1'][1];
+            $team1PlayerIds = collect([$team1Player1Id, $team1Player2Id]);
+            $team1 = Team::whereHas('players', function ($query) use ($team1PlayerIds) {
+                $query->whereIn('users.id', $team1PlayerIds);
+            }, '=', $team1PlayerIds->count())
+                ->whereDoesntHave('players', function ($query) use ($team1PlayerIds) {
+                    $query->whereNotIn('users.id', $team1PlayerIds);
+                })
+                ->first();
 
-        // If no such team exists, create one and attach players
-        if (!$team1) {
-            $team1 = Team::create(); // Or factory(1)->create()->first()
-            $team1->players()->attach($team1PlayerIds);
-        }
+            if (!$team1) {
+                $team1 = Team::create();
+                $team1->players()->attach($team1PlayerIds);
+            }
 
-        $team2Player1Id = $validated['team2'][0];
-        $team2Player2Id = $validated['team2'][1];
-        $team2PlayerIds = collect([$team2Player1Id, $team2Player2Id]);
-        $team2 = Team::whereHas('players', function ($query) use ($team2PlayerIds) {
-            $query->whereIn('users.id', $team2PlayerIds);
-        }, '=', $team1PlayerIds->count())
-            ->whereDoesntHave('players', function ($query) use ($team2PlayerIds) {
-                $query->whereNotIn('users.id', $team2PlayerIds);
-            })
-            ->first();
+            $team2Player1Id = $validated['team2'][0];
+            $team2Player2Id = $validated['team2'][1];
+            $team2PlayerIds = collect([$team2Player1Id, $team2Player2Id]);
+            $team2 = Team::whereHas('players', function ($query) use ($team2PlayerIds) {
+                $query->whereIn('users.id', $team2PlayerIds);
+            }, '=', $team1PlayerIds->count())
+                ->whereDoesntHave('players', function ($query) use ($team2PlayerIds) {
+                    $query->whereNotIn('users.id', $team2PlayerIds);
+                })
+                ->first();
 
-        // If no such team exists, create one and attach players
-        if (!$team2) {
-            $team2 = Team::create(); // Or factory(1)->create()->first()
-            $team2->players()->attach($team2PlayerIds);
-        }
+            if (!$team2) {
+                $team2 = Team::create();
+                $team2->players()->attach($team2PlayerIds);
+            }
 
-        $game->teams()->attach($team1, ['score' => $validated['team1_score'], 'won' => $t1 > $t2]);
-        $game->teams()->attach($team2, ['score' => $validated['team2_score'], 'won' => $t2 > $t1]);
+            $game->teams()->attach($team1, ['score' => $validated['team1_score'], 'won' => $t1 > $t2]);
+            $game->teams()->attach($team2, ['score' => $validated['team2_score'], 'won' => $t2 > $t1]);
 
-        $team1->players->each->increment('games_played');
-        $team2->players->each->increment('games_played');
-        if ($validated['team1_score'] > $validated['team2_score']) {
-            $team1->players->each->increment('games_won');
-        } else {
-            $team2->players->each->increment('games_won');
-        }
+            $team1->players->each->increment('games_played');
+            $team2->players->each->increment('games_played');
+            if ($validated['team1_score'] > $validated['team2_score']) {
+                $team1->players->each->increment('games_won');
+            } else {
+                $team2->players->each->increment('games_won');
+            }
 
-        // Handle video upload if present
-        $videoData = null;
-        if ($request->hasFile('video')) {
-            $media = $game
-                ->addMediaFromRequest('video')
-                ->toMediaCollection('videos');
-            
-            $videoData = [
-                'id' => $media->id,
-                'url' => $media->getUrl(),
-                'size' => $media->size,
-                'name' => $media->name,
+            // Handle video upload if present
+            $videoData = null;
+            if ($request->has('video') && isset($validated['video'])) {
+
+                try {
+                    $media = $game
+                        ->addMediaFromRequest('video')
+                        ->toMediaCollection('videos');
+
+                    $videoData = [
+                        'id' => $media->id,
+                        'url' => $media->getUrl(),
+                        'size' => $media->size,
+                        'name' => $media->name,
+                    ];
+                } catch (Exception $e) {
+                    Log::error('Video upload failed: ' . $e->getMessage());
+                    throw new Exception('The video failed to upload.');
+                }
+            }
+
+            return [
+                'game' => $game,
+                'video' => $videoData,
             ];
-        }
+        });
 
         if ($request->expectsJson()) {
             return response()->json([
@@ -145,7 +160,7 @@ class GameController extends Controller
                     'league_id' => $game->league_id,
                     'created_at' => $game->created_at,
                 ],
-                'video' => $videoData,
+                'video' => $video,
             ]);
         }
 
