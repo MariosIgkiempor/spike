@@ -13,6 +13,7 @@ use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\Rules\File;
 
 class GameController extends Controller
@@ -36,7 +37,7 @@ class GameController extends Controller
 
     public function store(Request $request)
     {
-        if (! $request->user()->leagues->contains($request->league_id)) {
+        if (!$request->user()->leagues->contains($request->league_id)) {
             return response('You do not belong to this league', 403);
         }
 
@@ -93,7 +94,7 @@ class GameController extends Controller
                 })
                 ->first();
 
-            if (! $team1) {
+            if (!$team1) {
                 $team1 = Team::create();
                 $team1->players()->attach($team1PlayerIds);
             }
@@ -109,7 +110,7 @@ class GameController extends Controller
                 })
                 ->first();
 
-            if (! $team2) {
+            if (!$team2) {
                 $team2 = Team::create();
                 $team2->players()->attach($team2PlayerIds);
             }
@@ -141,8 +142,8 @@ class GameController extends Controller
                         'name' => $media->name,
                     ];
                 } catch (Exception $e) {
-                    Log::error('Video upload failed: '.$e->getMessage());
-                    throw new Exception('The video failed to upload.');
+                    Log::error('Video upload failed: ' . $e->getMessage());
+                    throw new Exception('The video failed to upload.', previous: $e);
                 }
             }
 
