@@ -10,5 +10,4 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::delete('/games/{game}/video', [GameVideoController::class, 'destroy'])->name('api.games.video.destroy');
 });
 
-//Route::apiResource('games', GameController::class);
-
+// Route::apiResource('games', GameController::class);

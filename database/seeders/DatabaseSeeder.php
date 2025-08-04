@@ -4,7 +4,6 @@ namespace Database\Seeders;
 
 use App\Models\Game;
 use App\Models\League;
-use App\Models\Player;
 use App\Models\Team;
 use App\Models\User;
 use Illuminate\Database\Seeder;
@@ -22,7 +21,7 @@ class DatabaseSeeder extends Seeder
 
         $you = User::factory()->create([
             'name' => 'Bob',
-            'email' => 'bob@example.com'
+            'email' => 'bob@example.com',
         ]);
 
         $leagues = League::factory(10)->for($me)->create();
@@ -54,7 +53,7 @@ class DatabaseSeeder extends Seeder
                         ->first();
 
                     // If no such team exists, create one and attach players
-                    if (!$team) {
+                    if (! $team) {
                         $team = Team::create(); // Or factory(1)->create()->first()
                         $team->players()->attach($playerIds);
                     }

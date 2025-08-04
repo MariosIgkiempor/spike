@@ -58,7 +58,7 @@ class User extends Authenticatable
             ')
             ->first();
 
-        if (!$stats->played) {
+        if (! $stats->played) {
             return 0.0;
         }
 
@@ -69,7 +69,7 @@ class User extends Authenticatable
     {
         // 1) grab and group your games by “m-Y”
         $games = $this->games();
-        $grouped = $games->groupBy(fn($game) => $game->created_at->format('m-Y'));
+        $grouped = $games->groupBy(fn ($game) => $game->created_at->format('m-Y'));
 
         // 2) build an ordered list of the last 6 months
         $end = Carbon::now();
@@ -81,7 +81,7 @@ class User extends Authenticatable
 
         // 3) map each month to your played/won totals (0 when no games)
         return collect($months)
-            ->map(fn(string $month) => [
+            ->map(fn (string $month) => [
                 'month' => $month,
                 'played' => $grouped->has($month)
                     ? $grouped[$month]->count()
@@ -89,7 +89,7 @@ class User extends Authenticatable
                 'won' => $grouped->has($month)
                     // replace this filter logic with however you detect wins
                     ? $grouped[$month]
-                        ->filter(fn($game) => $game->teams
+                        ->filter(fn ($game) => $game->teams
                             ->where('pivot.won', true)
                             ->flatMap->players
                             ->contains('id', $this->id)

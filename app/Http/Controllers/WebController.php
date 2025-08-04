@@ -14,10 +14,10 @@ class WebController extends Controller
         $leagues = $request->user()->leagues;
 
         return Inertia::render('dashboard', [
-            'leagues' => fn() => LeagueResource::collection($leagues),
-            'gamesByMonth' => Inertia::defer(fn() => $request->user()->gamesByMonth(), 'stats'),
-            'totalGames' => Inertia::defer(fn() => $request->user()->games()->count(), 'stats'),
-            'winRate' => Inertia::defer(fn() => $request->user()->winRate(), 'stats'),
+            'leagues' => fn () => LeagueResource::collection($leagues),
+            'gamesByMonth' => Inertia::defer(fn () => $request->user()->gamesByMonth(), 'stats'),
+            'totalGames' => Inertia::defer(fn () => $request->user()->games()->count(), 'stats'),
+            'winRate' => Inertia::defer(fn () => $request->user()->winRate(), 'stats'),
         ]);
     }
 
@@ -28,7 +28,7 @@ class WebController extends Controller
         }
 
         return Inertia::render('league-join', [
-            'league' => LeagueResource::make($league)
+            'league' => LeagueResource::make($league),
         ]);
     }
 }

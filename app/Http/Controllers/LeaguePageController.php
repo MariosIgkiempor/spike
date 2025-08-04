@@ -41,7 +41,7 @@ class LeaguePageController extends Controller
                         ->sortByDesc('created_at')
                         ->takeWhile(function ($game) use ($user) {
                             return $game->teams->contains(function ($team) use ($user) {
-                                return $team->players->contains($user) && !$team->pivot->won;
+                                return $team->players->contains($user) && ! $team->pivot->won;
                             });
                         })->count(),
                 ];
@@ -49,7 +49,6 @@ class LeaguePageController extends Controller
             ->sortByDesc('loseStreak')
             ->sortByDesc('games_count')
             ->first();
-
 
         $startOfWeek = now()->startOfWeek();
         $startOfLastWeek = $startOfWeek->subWeek();
@@ -71,7 +70,7 @@ class LeaguePageController extends Controller
             ->first();
 
         // biggestL is the team who, in the last week, lost the game with the highest score difference
-        $biggestL = $lastWeeksGames->map(function ($game) use ($weekBeforeGames) {
+        $biggestL = $lastWeeksGames->map(function ($game) {
             $min = $game->teams
                 ->map(function ($team) {
                     return [
@@ -104,13 +103,14 @@ class LeaguePageController extends Controller
         $mostImproved = collect($lastWeekUserStats)
             ->map(function ($stats, $userId) use ($weekBeforeUserStats) {
                 $previousStats = $weekBeforeUserStats[$userId] ?? null;
-                if (!$previousStats || $previousStats['played'] === 0) {
+                if (! $previousStats || $previousStats['played'] === 0) {
                     return [
                         'user_id' => $userId,
                         'improvement' => 0,
                     ];
                 }
                 $improvement = $stats['played'] > 0 ? ($stats['won'] / $stats['played']) - ($previousStats['won'] / $previousStats['played']) : 0;
+
                 return [
                     'user_id' => $userId,
                     'improvement' => $improvement,
@@ -126,10 +126,10 @@ class LeaguePageController extends Controller
             'can' => [
                 'deleteGames' => $request->user()?->can('deleteGames', $league),
             ],
-            'league' => fn() => $league->toResource(),
-            'leaderboard' => fn() => $league->leaderboard(),
-            'teamStats' => fn() => $league->teamStats(),
-            'stats' => fn() => [
+            'league' => fn () => $league->toResource(),
+            'leaderboard' => fn () => $league->leaderboard(),
+            'teamStats' => fn () => $league->teamStats(),
+            'stats' => fn () => [
                 'biggestWinStreak' => [
                     ...$biggestWinStreak,
                     'user' => $biggestWinStreak['user']->toResource(),

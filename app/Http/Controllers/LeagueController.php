@@ -15,7 +15,7 @@ class LeagueController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'name' => ['required', 'string', 'min:1', 'max:255']
+            'name' => ['required', 'string', 'min:1', 'max:255'],
         ]);
 
         $league = League::create([

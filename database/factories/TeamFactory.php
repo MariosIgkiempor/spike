@@ -3,8 +3,6 @@
 namespace Database\Factories;
 
 use App\Models\Team;
-use App\Models\User;
-use Closure;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**

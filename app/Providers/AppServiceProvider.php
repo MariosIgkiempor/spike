@@ -3,7 +3,6 @@
 namespace App\Providers;
 
 use App\Listeners\ProcessVideoMetadata;
-use Carbon\Carbon;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Date;

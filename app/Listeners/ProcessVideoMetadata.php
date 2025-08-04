@@ -2,11 +2,10 @@
 
 namespace App\Listeners;
 
+use FFMpeg\Coordinate\Dimension;
 use FFMpeg\FFMpeg;
 use FFMpeg\FFProbe;
 use FFMpeg\Format\Video\X264;
-use FFMpeg\Coordinate\Dimension;
-use FFMpeg\Exception\InvalidArgumentException;
 use Illuminate\Support\Facades\Log;
 use Spatie\MediaLibrary\MediaCollections\Events\MediaHasBeenAddedEvent;
 
@@ -40,7 +39,7 @@ class ProcessVideoMetadata
 
             // Check if compression is needed (if over 100MB)
             $maxSize = 100 * 1024 * 1024; // 100MB in bytes
-            
+
             if ($originalSize > $maxSize) {
                 $this->compressVideo($media, $originalPath, $duration);
             } else {
@@ -54,9 +53,9 @@ class ProcessVideoMetadata
             $media->save();
 
         } catch (\Exception $e) {
-            Log::error('Failed to process video: ' . $e->getMessage(), [
+            Log::error('Failed to process video: '.$e->getMessage(), [
                 'media_id' => $media->id,
-                'file_path' => $media->getPath()
+                'file_path' => $media->getPath(),
             ]);
         }
     }
@@ -80,7 +79,7 @@ class ProcessVideoMetadata
             // Scale down if necessary (maintain aspect ratio)
             $probe = FFProbe::create();
             $dimensions = $probe->streams($originalPath)->videos()->first()->getDimensions();
-            
+
             if ($dimensions->getWidth() > 854 || $dimensions->getHeight() > 480) {
                 $video->filters()->resize(new Dimension(854, 480));
             }
@@ -92,12 +91,12 @@ class ProcessVideoMetadata
             // Replace original with compressed
             if (file_exists($compressedPath)) {
                 $compressedSize = filesize($compressedPath);
-                
+
                 // Only replace if actually smaller
                 if ($compressedSize < filesize($originalPath)) {
                     unlink($originalPath);
                     rename($compressedPath, $originalPath);
-                    
+
                     // Update metadata
                     $media->setCustomProperty('duration', round($duration));
                     $media->setCustomProperty('width', min(854, $dimensions->getWidth()));
@@ -113,9 +112,9 @@ class ProcessVideoMetadata
             }
 
         } catch (\Exception $e) {
-            Log::error('Failed to compress video: ' . $e->getMessage(), [
+            Log::error('Failed to compress video: '.$e->getMessage(), [
                 'media_id' => $media->id,
-                'original_path' => $originalPath
+                'original_path' => $originalPath,
             ]);
         }
     }
@@ -123,6 +122,7 @@ class ProcessVideoMetadata
     private function getCompressedPath($originalPath): string
     {
         $pathInfo = pathinfo($originalPath);
-        return $pathInfo['dirname'] . '/' . $pathInfo['filename'] . '_compressed.' . $pathInfo['extension'];
+
+        return $pathInfo['dirname'].'/'.$pathInfo['filename'].'_compressed.'.$pathInfo['extension'];
     }
 }

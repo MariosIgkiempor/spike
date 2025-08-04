@@ -11,7 +11,7 @@ test('store', function () {
     $this->actingAs($user);
 
     $response = $this->postJson(route('api.leagues.store'), [
-        'name' => 'Test League'
+        'name' => 'Test League',
     ]);
 
     $response->assertRedirect(route('web.leagues.show', League::where('name', 'Test League')->first()->id));
@@ -27,4 +27,3 @@ test('store - must be authenticated', function () {
 
     $response->assertStatus(401);
 });
-
