@@ -17,11 +17,15 @@ class LeaguePageController extends Controller
 
         // find the player with the longest win streak
         $biggestWinStreak = $league->users
-            ->map(function ($user) {
+            ->map(function ($user) use ($league) {
                 return [
                     'user' => $user,
-                    'winStreak' => $user->games()
-                        ->sortByDesc('created_at')
+                    'winStreak' => $league->games()
+                        ->whereHas('teams.players', function ($query) use ($user) {
+                            $query->where('users.id', $user->id);
+                        })
+                        ->orderByDesc('created_at')
+                        ->get()
                         ->takeWhile(function ($game) use ($user) {
                             return $game->teams->contains(function ($team) use ($user) {
                                 return $team->players->contains($user) && $team->pivot->won;
@@ -34,11 +38,15 @@ class LeaguePageController extends Controller
             ->first();
 
         $biggestLoseStreak = $league->users
-            ->map(function ($user) {
+            ->map(function ($user) use ($league) {
                 return [
                     'user' => $user,
-                    'loseStreak' => $user->games()
-                        ->sortByDesc('created_at')
+                    'loseStreak' => $league->games()
+                        ->whereHas('teams.players', function ($query) use ($user) {
+                            $query->where('users.id', $user->id);
+                        })
+                        ->orderByDesc('created_at')
+                        ->get()
                         ->takeWhile(function ($game) use ($user) {
                             return $game->teams->contains(function ($team) use ($user) {
                                 return $team->players->contains($user) && ! $team->pivot->won;
