@@ -146,7 +146,7 @@ class LeaguePageController extends Controller
                     ...$biggestLoseStreak,
                     'user' => $biggestLoseStreak['user']->toResource(),
                 ],
-                'lastWeek' => $lastWeeksGames->count() > 0 && $weekBeforeGames->count() > 0
+                'lastWeek' => $lastWeeksGames->count() > 0 && $weekBeforeGames->count() > 0 && $mvp && $biggestL && $mostImproved
                     ? [
                         'mvp' => [
                             'user' => User::find($mvp['user_id'])->toResource(),

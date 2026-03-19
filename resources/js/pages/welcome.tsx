@@ -4,38 +4,36 @@ import { type SharedData } from '@/types';
 import { Head, Link, usePage } from '@inertiajs/react';
 import { format } from 'date-fns';
 import { Play } from 'lucide-react';
+import { motion } from 'motion/react';
 
 export default function Welcome() {
     const { auth } = usePage<SharedData>().props;
 
     return (
         <>
-            <Head title="Welcome">
-                <link rel="preconnect" href="https://fonts.bunny.net" />
-                <link href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600" rel="stylesheet" />
-            </Head>
+            <Head title="Welcome" />
             <div className="flex min-h-screen flex-col bg-background">
                 {/* Header */}
-                <header className="sticky top-0 z-50 container mx-auto flex h-24 items-center bg-accent-foreground/80 px-4 backdrop-blur-sm md:px-6">
+                <header className="sticky top-0 z-50 container mx-auto flex h-24 items-center bg-background/80 px-4 backdrop-blur-sm md:px-6">
                     <Link href="/" className="flex items-center justify-center">
                         <div className="size-12">
                             <AppLogoIcon />
                         </div>
-                        <span className="ml-2 bg-gradient-to-r from-primary to-primary/80 bg-clip-text text-xl font-bold text-transparent">
+                        <span className="ml-2 font-display text-2xl uppercase tracking-wider bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
                             Spiking.me
                         </span>
                     </Link>
                     <nav className="ml-auto flex gap-4 sm:gap-6">
                         {auth.user ? (
-                            <Link href={route('dashboard')} className="text-sm font-medium transition-colors hover:text-primary">
+                            <Link href={route('dashboard')} className="text-sm font-semibold transition-colors hover:text-primary">
                                 Dashboard
                             </Link>
                         ) : (
                             <>
-                                <Link href={route('login')} className="text-sm font-medium text-foreground transition-colors hover:text-primary">
+                                <Link href={route('login')} className="text-sm font-semibold text-foreground transition-colors hover:text-primary">
                                     Login
                                 </Link>
-                                <Link href={route('register')} className="text-sm font-medium text-foreground transition-colors hover:text-primary">
+                                <Link href={route('register')} className="text-sm font-semibold text-foreground transition-colors hover:text-primary">
                                     Register
                                 </Link>
                             </>
@@ -45,49 +43,59 @@ export default function Welcome() {
 
                 <main className="flex-1">
                     {/* Hero Section */}
-                    <section className="w-full py-12 md:py-24 lg:py-32">
+                    <section className="w-full bg-athletic-gradient py-12 md:py-24 lg:py-32">
                         <div className="container mx-auto px-4 md:px-6">
                             <div className="grid gap-6 lg:grid-cols-[1fr_400px] lg:gap-12 xl:grid-cols-[1fr_600px]">
-                                <div className="flex flex-col justify-center space-y-4">
-                                    <div className="space-y-2">
-                                        <h1 className="text-3xl font-bold tracking-tighter sm:text-5xl xl:text-6xl/none">
+                                <motion.div
+                                    className="flex flex-col justify-center space-y-4"
+                                    initial={{ opacity: 0, y: 20 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    transition={{ duration: 0.6 }}
+                                >
+                                    <div className="space-y-4">
+                                        <h1 className="font-display uppercase tracking-wider text-4xl sm:text-6xl xl:text-7xl/none">
                                             Track Every{' '}
-                                            <span className="bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">Spike</span>
-                                            <br></br>Master Every Game
+                                            <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">Spike</span>
+                                            <br />Master Every Game
                                         </h1>
-                                        <p className="max-w-[600px] text-gray-600 md:text-xl dark:text-gray-400">
+                                        <p className="max-w-[600px] text-muted-foreground md:text-xl">
                                             The ultimate spike ball tracking companion, definitely not generated by AI...
                                         </p>
                                     </div>
                                     <div className="flex flex-col gap-2 min-[400px]:flex-row">
-                                        <Button size="lg">
+                                        <Button size="lg" className="glow-primary">
                                             <Play className="mr-2 h-4 w-4" />
                                             Start Tracking
                                         </Button>
                                     </div>
-                                </div>
-                                <div className="flex items-center justify-center">
+                                </motion.div>
+                                <motion.div
+                                    className="flex items-center justify-center"
+                                    initial={{ opacity: 0, scale: 0.9 }}
+                                    animate={{ opacity: 1, scale: 1 }}
+                                    transition={{ duration: 0.6, delay: 0.2 }}
+                                >
                                     <div className="relative">
-                                        <div className="absolute inset-0 rounded-3xl bg-gradient-to-r from-primary to-secondary opacity-20 blur-3xl"></div>
+                                        <div className="absolute inset-0 rounded-3xl bg-gradient-to-r from-primary to-accent opacity-20 blur-3xl"></div>
                                         <AppLogoIcon />
                                     </div>
-                                </div>
+                                </motion.div>
                             </div>
                         </div>
                     </section>
                 </main>
 
                 {/* Footer */}
-                <footer className="flex w-full shrink-0 flex-col items-center gap-2 border-t bg-white px-4 py-6 sm:flex-row md:px-6">
-                    <p className="text-xs text-gray-500">© {format(new Date(), 'yyyy')} Spiking.me. All rights reserved.</p>
+                <footer className="flex w-full shrink-0 flex-col items-center gap-2 border-t bg-background px-4 py-6 sm:flex-row md:px-6">
+                    <p className="text-xs text-muted-foreground">© {format(new Date(), 'yyyy')} Spiking.me. All rights reserved.</p>
                     <nav className="flex gap-4 sm:ml-auto sm:gap-6">
-                        <Link href="/terms" className="text-xs underline-offset-4 hover:text-orange-600 hover:underline">
+                        <Link href="/terms" className="text-xs underline-offset-4 hover:text-primary hover:underline">
                             Terms of Service
                         </Link>
-                        <Link href="/privacy" className="text-xs underline-offset-4 hover:text-orange-600 hover:underline">
+                        <Link href="/privacy" className="text-xs underline-offset-4 hover:text-primary hover:underline">
                             Privacy Policy
                         </Link>
-                        <Link href="/support" className="text-xs underline-offset-4 hover:text-orange-600 hover:underline">
+                        <Link href="/support" className="text-xs underline-offset-4 hover:text-primary hover:underline">
                             Support
                         </Link>
                     </nav>

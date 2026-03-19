@@ -68,7 +68,7 @@ const GameRecord: FC<{ game: Game; canDeleteGames: boolean }> = ({ game, canDele
             <div className={'flex flex-wrap justify-start gap-2'}>
                 {game.teams.map((team) => (
                     <div key={team.id} className={'flex gap-4'}>
-                        <Badge variant={team.won ? 'success' : 'destructive'} className={'text-md w-8 overflow-hidden font-semibold'}>
+                        <Badge variant={team.won ? 'success' : 'destructive'} className={'text-lg w-8 overflow-hidden font-display'}>
                             {team.score}
                         </Badge>
                         <ul className={'flex w-32 flex-col'}>

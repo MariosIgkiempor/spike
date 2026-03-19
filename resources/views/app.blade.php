@@ -26,7 +26,7 @@
         }
 
         html.dark {
-            background-color: oklch(0.145 0 0);
+            background-color: oklch(0.16 0.015 260);
         }
     </style>
 
@@ -37,7 +37,7 @@
     <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 
     <link rel="preconnect" href="https://fonts.bunny.net">
-    <link href="https://fonts.bunny.net/css?family=share-tech-mono:400" rel="stylesheet" />
+    <link href="https://fonts.bunny.net/css?family=bebas-neue:400|outfit:300,400,500,600,700" rel="stylesheet" />
 
 
     @routes

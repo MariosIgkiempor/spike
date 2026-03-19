@@ -42,7 +42,15 @@ export const LeaderboardTable: FC<LeaderboardProps> = ({ leaderboard }) => {
         {
             accessorKey: 'rank',
             header: () => null,
-            cell: ({ row }) => <span>{row.original.rank}</span>,
+            cell: ({ row }) => {
+                const rank = row.original.rank;
+                const medalColors: Record<number, string> = {
+                    1: 'text-yellow-500',
+                    2: 'text-gray-400',
+                    3: 'text-amber-700',
+                };
+                return <span className={`font-display text-lg ${medalColors[rank] ?? ''}`}>{rank}</span>;
+            },
             enableSorting: true,
             enableHiding: true,
         },
@@ -69,7 +77,7 @@ export const LeaderboardTable: FC<LeaderboardProps> = ({ leaderboard }) => {
         {
             accessorKey: 'mmr',
             header: ({ column }) => <DataTableColumnHeader column={column} title="MMR" />,
-            cell: ({ row }) => <span className="flex">{row.original.mmr}</span>,
+            cell: ({ row }) => <span className="flex font-semibold tabular-nums">{row.original.mmr}</span>,
             enableSorting: true,
             enableHiding: true,
         },
