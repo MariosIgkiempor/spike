@@ -182,7 +182,7 @@ const GameGenerator: FC<{
                                     animate={{ opacity: 1, scale: 1 }}
                                     transition={{ duration: 0.4, delay: teamIndex * 0.2 }}
                                 >
-                                    <h3 className="text-lg font-semibold">
+                                    <h3 className="text-xl font-display uppercase tracking-wide">
                                         Team {teamIndex === 0 ? 'A' : 'B'} (MMR: {teamMMR(team)})
                                     </h3>
                                     <ul className="grid gap-4 md:grid-cols-2">

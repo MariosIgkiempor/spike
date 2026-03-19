@@ -112,7 +112,7 @@ export const NewGameForm: FC<NewGameFormProps> = ({ league, teams, onTeamsChange
                 </div>
 
                 {/* VS */}
-                <div className="px-4 py-4 text-6xl font-bold text-muted-foreground md:py-0">VS</div>
+                <div className="px-4 py-4 text-6xl font-display tracking-wide text-muted-foreground md:py-0">VS</div>
 
                 {/* Team 2 */}
                 <div className="w-full max-w-sm space-y-4">
@@ -147,7 +147,7 @@ export const NewGameForm: FC<NewGameFormProps> = ({ league, teams, onTeamsChange
             {/* Video Upload Section */}
             <div className="flex flex-col items-center space-y-4">
                 <div className="w-full max-w-md">
-                    <label htmlFor="video-upload" className="mb-2 block text-sm font-medium text-gray-700">
+                    <label htmlFor="video-upload" className="mb-2 block text-sm font-medium text-foreground">
                         Upload Game Video (Optional)
                     </label>
                     <input
@@ -168,7 +168,7 @@ export const NewGameForm: FC<NewGameFormProps> = ({ league, teams, onTeamsChange
                 <Button type="submit" disabled={processing} size="lg">
                     {processing ? (
                         <>
-                            <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                            <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-primary-foreground border-t-transparent" />
                             Creating Game...
                         </>
                     ) : (
