@@ -20,6 +20,8 @@ class LeagueResource extends JsonResource
             'owner' => UserResource::make($this->user),
             'players' => UserResource::collection($this->users),
             'games' => GameResource::collection($this->games->sortByDesc('created_at')),
+            'currentSeason' => $this->activeSeason ? SeasonResource::make($this->activeSeason) : null,
+            'seasons' => SeasonResource::collection($this->seasons),
         ];
     }
 }

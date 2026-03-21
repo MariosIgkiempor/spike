@@ -25,6 +25,12 @@ class LeagueController extends Controller
 
         $request->user()->leagues()->attach($league->id);
 
+        $league->seasons()->create([
+            'number' => 1,
+            'is_active' => true,
+            'started_at' => now(),
+        ]);
+
         return redirect()->route('web.leagues.show', $league->id);
     }
 

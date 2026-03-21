@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use App\Models\Game;
 use App\Models\League;
+use App\Models\Season;
 use App\Models\Team;
 use App\Models\User;
 use Illuminate\Database\Seeder;
@@ -34,7 +35,8 @@ class DatabaseSeeder extends Seeder
             $users = User::factory(10)->create();
             $league->users()->attach($users->pluck('id'));
 
-            $games = Game::factory(10)->for($league)->create();
+            $season = Season::factory()->for($league)->create(['number' => 1]);
+            $games = Game::factory(10)->for($league)->for($season)->create();
 
             $games->each(function ($game) use ($users) {
                 $teamCount = 2;

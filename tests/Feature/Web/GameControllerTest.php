@@ -3,12 +3,14 @@
 declare(strict_types=1);
 
 use App\Models\League;
+use App\Models\Season;
 use App\Models\User;
 
 test('store', function () {
     $user = User::factory()->create();
     $league = League::factory()->create(['user_id' => $user->id]);
     $user->leagues()->attach($league);
+    $season = Season::factory()->for($league)->create(['number' => 1]);
 
     $this->actingAs($user);
 
@@ -25,6 +27,9 @@ test('store', function () {
 
     $this->assertDatabaseCount('games', 1);
     $this->assertDatabaseCount('teams', 2);
+
+    $game = \App\Models\Game::first();
+    expect($game->season_id)->toBe($season->id);
 });
 
 test('store - must be authenticated', function () {

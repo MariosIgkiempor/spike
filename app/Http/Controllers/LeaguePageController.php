@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\SeasonResource;
 use App\Models\League;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -15,12 +16,16 @@ class LeaguePageController extends Controller
             return redirect()->route('dashboard');
         }
 
+        $activeSeason = $league->activeSeason;
+        $isAllTime = $request->query('view') === 'all-time';
+        $statsSeason = $isAllTime ? null : $activeSeason;
+
         // find the player with the longest win streak
         $biggestWinStreak = $league->users
-            ->map(function ($user) use ($league) {
+            ->map(function ($user) use ($league, $statsSeason) {
                 return [
                     'user' => $user,
-                    'winStreak' => $league->games()
+                    'winStreak' => $league->scopedGames($statsSeason)
                         ->whereHas('teams.players', function ($query) use ($user) {
                             $query->where('users.id', $user->id);
                         })
@@ -38,10 +43,10 @@ class LeaguePageController extends Controller
             ->first();
 
         $biggestLoseStreak = $league->users
-            ->map(function ($user) use ($league) {
+            ->map(function ($user) use ($league, $statsSeason) {
                 return [
                     'user' => $user,
-                    'loseStreak' => $league->games()
+                    'loseStreak' => $league->scopedGames($statsSeason)
                         ->whereHas('teams.players', function ($query) use ($user) {
                             $query->where('users.id', $user->id);
                         })
@@ -59,9 +64,10 @@ class LeaguePageController extends Controller
             ->first();
 
         $startOfWeek = now()->startOfWeek();
-        $startOfLastWeek = $startOfWeek->subWeek();
-        $lastWeeksGames = $league->games()->whereBetween('created_at', [$startOfLastWeek, $startOfWeek])->get();
-        $weekBeforeGames = $league->games()->whereBetween('created_at', [$startOfLastWeek->subWeek(), $startOfLastWeek])->get();
+        $startOfLastWeek = now()->startOfWeek()->subWeek();
+        $startOfWeekBefore = now()->startOfWeek()->subWeeks(2);
+        $lastWeeksGames = $league->scopedGames($statsSeason)->whereBetween('created_at', [$startOfLastWeek, $startOfWeek])->get();
+        $weekBeforeGames = $league->scopedGames($statsSeason)->whereBetween('created_at', [$startOfWeekBefore, $startOfLastWeek])->get();
 
         $lastWeekUserStats = $league->collectStats($lastWeeksGames);
         $weekBeforeUserStats = $league->collectStats($weekBeforeGames);
@@ -133,10 +139,13 @@ class LeaguePageController extends Controller
         return Inertia::render('league', [
             'can' => [
                 'deleteGames' => $request->user()?->can('deleteGames', $league),
+                'startSeason' => $request->user()?->can('startSeason', $league),
             ],
             'league' => fn () => $league->toResource(),
-            'leaderboard' => fn () => $league->leaderboard(),
-            'teamStats' => fn () => $league->teamStats(),
+            'currentSeason' => fn () => $activeSeason ? SeasonResource::make($activeSeason) : null,
+            'viewMode' => $isAllTime ? 'all-time' : 'current-season',
+            'leaderboard' => fn () => $league->leaderboard($statsSeason),
+            'teamStats' => fn () => $league->teamStats($statsSeason),
             'stats' => fn () => [
                 'biggestWinStreak' => [
                     ...$biggestWinStreak,

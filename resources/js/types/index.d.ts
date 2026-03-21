@@ -63,12 +63,24 @@ export interface Game {
     updatedAt: string;
 }
 
+export interface Season {
+    id: number;
+    number: number;
+    customName: string | null;
+    displayName: string;
+    isActive: boolean;
+    startedAt: string;
+    endedAt: string | null;
+}
+
 export interface League {
     id: number;
     name: string;
     games: Game[];
     players: User[];
     owner: User;
+    currentSeason: Season | null;
+    seasons: Season[];
 }
 
 export interface Paginated<T> {
