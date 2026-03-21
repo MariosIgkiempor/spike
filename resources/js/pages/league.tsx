@@ -17,6 +17,7 @@ import { RecentGames } from '@/features/recent-games/recent-games';
 import { TeamStats } from '@/features/team-stats/team-stats';
 import { UserAvatar, UserCard } from '@/features/users/user-card';
 import Layout from '@/layouts/app-layout';
+import { Select, SelectContent, SelectItem, SelectSeparator, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { cn } from '@/lib/utils';
 import { shuffleArray } from '@/lib/shuffle-array';
 import { Game, League, PageProps, Resource, Season, Team, User } from '@/types';
@@ -46,9 +47,9 @@ const CopyLeagueJoinLink: FC<{ league: League }> = ({ league }) => {
 const SeasonControl: FC<{
     league: League;
     currentSeason: Resource<Season> | null;
-    viewMode: 'current-season' | 'all-time';
+    selectedSeasonId: string;
     canStartSeason: boolean;
-}> = ({ league, currentSeason, viewMode, canStartSeason }) => {
+}> = ({ league, currentSeason, selectedSeasonId, canStartSeason }) => {
     const [dialogOpen, setDialogOpen] = useState(false);
     const form = useForm({
         custom_name: '',
@@ -65,14 +66,12 @@ const SeasonControl: FC<{
         });
     };
 
-    const toggleView = () => {
+    const handleSeasonChange = (value: string) => {
         const url = route('web.leagues.show', { league: league.id });
-        if (viewMode === 'current-season') {
-            router.visit(`${url}?view=all-time`, { preserveScroll: true });
-        } else {
-            router.visit(url, { preserveScroll: true });
-        }
+        router.visit(`${url}?season=${value}`, { preserveScroll: true });
     };
+
+    const sortedSeasons = [...(league.seasons ?? [])].sort((a, b) => b.number - a.number);
 
     return (
         <div className="flex flex-wrap items-center gap-3">
@@ -82,9 +81,20 @@ const SeasonControl: FC<{
                     {currentSeason.data.displayName}
                 </span>
             )}
-            <Button variant={viewMode === 'all-time' ? 'default' : 'outline'} size="sm" onClick={toggleView}>
-                {viewMode === 'all-time' ? 'Current Season' : 'All Time'}
-            </Button>
+            <Select value={selectedSeasonId} onValueChange={handleSeasonChange}>
+                <SelectTrigger className="w-[180px]">
+                    <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                    {sortedSeasons.map((season) => (
+                        <SelectItem key={season.id} value={String(season.id)}>
+                            {season.displayName}
+                        </SelectItem>
+                    ))}
+                    <SelectSeparator />
+                    <SelectItem value="all">All Time</SelectItem>
+                </SelectContent>
+            </Select>
             {canStartSeason && (
                 <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
                     <DialogTrigger asChild>
@@ -508,18 +518,18 @@ type LeaguePageProps = PageProps & {
     };
     league: Resource<League>;
     currentSeason: Resource<Season> | null;
-    viewMode: 'current-season' | 'all-time';
+    selectedSeasonId: string;
     leaderboard: Leaderboard;
     teamStats: TeamStats[];
     stats: {
         biggestWinStreak: {
             user: Resource<User>;
             winStreak: number;
-        };
+        } | null;
         biggestLoseStreak: {
             user: Resource<User>;
             loseStreak: number;
-        };
+        } | null;
         lastWeek: {
             mvp: {
                 user: Resource<User>;
@@ -547,8 +557,9 @@ function lastNWeeks(n: number) {
     return weeks.reverse();
 }
 
-const LeaguePage: FC<LeaguePageProps> = ({ league: { data: league }, currentSeason, viewMode, leaderboard, teamStats, stats, can }) => {
-    const seasonLabel = viewMode === 'all-time' ? 'All Time' : (currentSeason?.data.displayName ?? 'All Time');
+const LeaguePage: FC<LeaguePageProps> = ({ league: { data: league }, currentSeason, selectedSeasonId, leaderboard, teamStats, stats, can }) => {
+    const selectedSeason = league.seasons?.find((s) => String(s.id) === selectedSeasonId);
+    const seasonLabel = selectedSeasonId === 'all' ? 'All Time' : (selectedSeason?.displayName ?? 'All Time');
 
     const gamesByWeek = lastNWeeks(6).map((week, index, weeks) => ({
         week: format(week, 'dd MMM'),
@@ -581,7 +592,7 @@ const LeaguePage: FC<LeaguePageProps> = ({ league: { data: league }, currentSeas
                 <SeasonControl
                     league={league}
                     currentSeason={currentSeason}
-                    viewMode={viewMode}
+                    selectedSeasonId={selectedSeasonId}
                     canStartSeason={can.startSeason}
                 />
                 <Tabs defaultValue={'home'}>
@@ -602,18 +613,24 @@ const LeaguePage: FC<LeaguePageProps> = ({ league: { data: league }, currentSeas
                                 <Statistic label={'Total games'} value={league.games.length} />
                             </div>
                         </div>
-                        <div className={'grid gap-8 lg:grid-cols-2'}>
-                            <Statistic
-                                label={'🥇 Biggest Win Streak 🥇'}
-                                value={<UserCard user={stats.biggestWinStreak.user.data} />}
-                                extra={`${stats.biggestWinStreak.winStreak} games`}
-                            />
-                            <Statistic
-                                label={'🫠 Biggest Lose Streak 🫠'}
-                                value={<UserCard user={stats.biggestLoseStreak.user.data} />}
-                                extra={`${stats.biggestLoseStreak.loseStreak} games`}
-                            />
-                        </div>
+                        {(stats.biggestWinStreak || stats.biggestLoseStreak) && (
+                            <div className={'grid gap-8 lg:grid-cols-2'}>
+                                {stats.biggestWinStreak && (
+                                    <Statistic
+                                        label={'🥇 Biggest Win Streak 🥇'}
+                                        value={<UserCard user={stats.biggestWinStreak.user.data} />}
+                                        extra={`${stats.biggestWinStreak.winStreak} games`}
+                                    />
+                                )}
+                                {stats.biggestLoseStreak && (
+                                    <Statistic
+                                        label={'🫠 Biggest Lose Streak 🫠'}
+                                        value={<UserCard user={stats.biggestLoseStreak.user.data} />}
+                                        extra={`${stats.biggestLoseStreak.loseStreak} games`}
+                                    />
+                                )}
+                            </div>
+                        )}
                         {stats.lastWeek !== null ? <LastWeekStats lastWeek={stats.lastWeek} /> : null}
                         <PageSection title={'Games by week'} className={'lg:col-span-2'}>
                             <GamesByWeek gamesByWeek={gamesByWeek} />

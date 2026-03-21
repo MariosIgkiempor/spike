@@ -17,8 +17,20 @@ class LeaguePageController extends Controller
         }
 
         $activeSeason = $league->activeSeason;
-        $isAllTime = $request->query('view') === 'all-time';
-        $statsSeason = $isAllTime ? null : $activeSeason;
+        $seasonParam = $request->query('season');
+
+        if ($seasonParam === 'all') {
+            $statsSeason = null;
+            $selectedSeasonId = 'all';
+        } elseif ($seasonParam && is_numeric($seasonParam)) {
+            $statsSeason = $league->seasons()->find((int) $seasonParam) ?? $activeSeason;
+            $selectedSeasonId = $statsSeason ? (string) $statsSeason->id : 'all';
+        } else {
+            $statsSeason = $activeSeason;
+            $selectedSeasonId = $activeSeason ? (string) $activeSeason->id : 'all';
+        }
+
+        $league->setRelation('games', $league->scopedGames($statsSeason)->orderByDesc('created_at')->get());
 
         // find the player with the longest win streak
         $biggestWinStreak = $league->users
@@ -143,18 +155,18 @@ class LeaguePageController extends Controller
             ],
             'league' => fn () => $league->toResource(),
             'currentSeason' => fn () => $activeSeason ? SeasonResource::make($activeSeason) : null,
-            'viewMode' => $isAllTime ? 'all-time' : 'current-season',
+            'selectedSeasonId' => $selectedSeasonId,
             'leaderboard' => fn () => $league->leaderboard($statsSeason),
             'teamStats' => fn () => $league->teamStats($statsSeason),
             'stats' => fn () => [
-                'biggestWinStreak' => [
+                'biggestWinStreak' => $biggestWinStreak ? [
                     ...$biggestWinStreak,
                     'user' => $biggestWinStreak['user']->toResource(),
-                ],
-                'biggestLoseStreak' => [
+                ] : null,
+                'biggestLoseStreak' => $biggestLoseStreak ? [
                     ...$biggestLoseStreak,
                     'user' => $biggestLoseStreak['user']->toResource(),
-                ],
+                ] : null,
                 'lastWeek' => $lastWeeksGames->count() > 0 && $weekBeforeGames->count() > 0 && $mvp && $biggestL && $mostImproved
                     ? [
                         'mvp' => [

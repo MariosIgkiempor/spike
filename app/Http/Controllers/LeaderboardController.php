@@ -14,9 +14,15 @@ class LeaderboardController extends Controller
      */
     public function show(Request $request, League $league): JsonResponse
     {
-        $season = $request->query('view') === 'all-time'
-            ? null
-            : $league->activeSeason;
+        $seasonParam = $request->query('season');
+
+        if ($seasonParam === 'all') {
+            $season = null;
+        } elseif ($seasonParam && is_numeric($seasonParam)) {
+            $season = $league->seasons()->find((int) $seasonParam) ?? $league->activeSeason;
+        } else {
+            $season = $league->activeSeason;
+        }
 
         $leaderboard = $league->leaderboard($season);
 
