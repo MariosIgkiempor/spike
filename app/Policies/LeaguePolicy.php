@@ -67,4 +67,9 @@ class LeaguePolicy
     {
         return $user->id === $league->user_id;
     }
+
+    public function startSeason(User $user, League $league): bool
+    {
+        return $user->id === $league->user_id;
+    }
 }

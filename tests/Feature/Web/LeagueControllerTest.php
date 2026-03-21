@@ -20,6 +20,13 @@ test('store', function () {
     $league = League::first();
     expect($league->users()->count())->toBe(1);
     expect($user->leagues()->count())->toBe(1);
+
+    // Season 1 should be auto-created
+    expect($league->seasons()->count())->toBe(1);
+    $season = $league->activeSeason;
+    expect($season)->not->toBeNull();
+    expect($season->number)->toBe(1);
+    expect($season->is_active)->toBeTrue();
 });
 
 test('store - must be authenticated', function () {

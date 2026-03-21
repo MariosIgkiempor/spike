@@ -27,6 +27,11 @@ class Game extends Model implements HasMedia
         return $this->belongsTo(League::class);
     }
 
+    public function season(): BelongsTo
+    {
+        return $this->belongsTo(Season::class);
+    }
+
     public function registerMediaCollections(): void
     {
         $this->addMediaCollection('videos')

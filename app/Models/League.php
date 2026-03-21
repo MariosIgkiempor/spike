@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use LaravelIdea\Helper\App\Models\_IH_Game_C;
@@ -25,9 +26,9 @@ class League extends Model
     /**
      * Check if a player has played any games in this league
      */
-    private function hasPlayedGames($userId): bool
+    private function hasPlayedGames($userId, ?Season $season = null): bool
     {
-        return $this->games()
+        return $this->scopedGames($season)
             ->whereHas('teams.players', function ($query) use ($userId) {
                 $query->where('users.id', $userId);
             })
@@ -76,21 +77,21 @@ class League extends Model
         return 1.0 + ($absStreak - 1) * 0.1;
     }
 
-    public function leaderboard()
+    public function leaderboard(?Season $season = null)
     {
         // Elo parameters
         $baseRating = 1000;
 
         // Initialize all users' ratings - new players start at 0
         $ratings = [];
-        $this->users->each(function ($user) use (&$ratings, $baseRating) {
-            $ratings[$user->id] = $this->hasPlayedGames($user->id) ? $baseRating : 0;
+        $this->users->each(function ($user) use (&$ratings, $baseRating, $season) {
+            $ratings[$user->id] = $this->hasPlayedGames($user->id, $season) ? $baseRating : 0;
         });
 
         // Process games chronologically to update Elo
         $gameCount = 0;
         $streaks = []; // Track win/loss streaks for each player
-        $this->games()
+        $this->scopedGames($season)
             ->with(['teams.players'])
             ->orderBy('created_at')
             ->get()
@@ -181,13 +182,14 @@ class League extends Model
                 DB::raw('COALESCE(SUM(game_team.score - opponent.score),0)             as score_diff')
             )
             ->leftJoin('team_user', 'users.id', '=', 'team_user.user_id')
-            ->leftJoin('game_team', function ($join) {
+            ->leftJoin('game_team', function ($join) use ($season) {
                 $join->on('team_user.team_id', '=', 'game_team.team_id')
                     // only include game_team rows whose game belongs to this league
-                    ->whereIn('game_team.game_id', function ($query) {
+                    ->whereIn('game_team.game_id', function ($query) use ($season) {
                         $query->select('id')
                             ->from('games')
-                            ->where('league_id', $this->id);
+                            ->where('league_id', $this->id)
+                            ->when($season, fn ($q) => $q->where('season_id', $season->id));
                     });
             })
             ->leftJoin('game_team as opponent', function ($j) {
@@ -231,17 +233,32 @@ class League extends Model
         return $this->hasMany(Game::class);
     }
 
+    public function seasons(): HasMany
+    {
+        return $this->hasMany(Season::class);
+    }
+
+    public function activeSeason(): HasOne
+    {
+        return $this->hasOne(Season::class)->where('is_active', true);
+    }
+
+    public function scopedGames(?Season $season = null): HasMany
+    {
+        return $this->games()->when($season, fn ($query) => $query->where('season_id', $season->id));
+    }
+
     public function users(): BelongsToMany
     {
         return $this->belongsToMany(User::class);
     }
 
-    public function teamStats(): Collection
+    public function teamStats(?Season $season = null): Collection
     {
         $stats = [];
 
-        // Eager-load teams and their players for all games in this league
-        $games = $this->games()
+        // Eager-load teams and their players for scoped games
+        $games = $this->scopedGames($season)
             ->with('teams.players')
             ->get();
 

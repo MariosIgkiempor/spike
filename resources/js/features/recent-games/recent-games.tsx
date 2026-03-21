@@ -70,9 +70,9 @@ const GameRecord: FC<{ game: Game; index: number; canDeleteGames: boolean }> = (
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95 }}
             transition={{ duration: 0.3, delay: Math.min(index * 0.05, 0.5) }}
-            className="bg-card p-4"
+            className="bg-card py-4"
         >
-            <div className="mb-3 flex items-center justify-between text-xs text-muted-foreground">
+            <div className="mb-3 flex items-center justify-center gap-4 text-xs text-muted-foreground">
                 <time>{format(game.createdAt, 'd MMM yyyy')}</time>
                 <GameActions game={game} canDeleteGames={canDeleteGames} />
             </div>

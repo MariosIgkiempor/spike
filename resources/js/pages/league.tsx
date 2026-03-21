@@ -6,16 +6,22 @@ import { SectionHeading } from '@/components/ui/sectionHeading';
 import { Statistic } from '@/components/ui/statistic';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { FormError } from '@/components/ui/formError';
+import { FormField } from '@/components/ui/formField';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { Leaderboard, LeaderboardTable, LeaderboardUser } from '@/features/leaderboard/leaderboard-table';
 import { NewGameForm } from '@/features/new-game/newGameForm';
 import { RecentGames } from '@/features/recent-games/recent-games';
 import { TeamStats } from '@/features/team-stats/team-stats';
 import { UserAvatar, UserCard } from '@/features/users/user-card';
 import Layout from '@/layouts/app-layout';
+import { Select, SelectContent, SelectItem, SelectSeparator, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { cn } from '@/lib/utils';
 import { shuffleArray } from '@/lib/shuffle-array';
-import { Game, League, PageProps, Resource, Team, User } from '@/types';
-import { Head } from '@inertiajs/react';
+import { Game, League, PageProps, Resource, Season, Team, User } from '@/types';
+import { Head, router, useForm } from '@inertiajs/react';
 import { format, isWithinInterval, startOfWeek, subWeeks } from 'date-fns';
 import { ArrowRight, Check, HelpCircle, Plus, Scale, Shuffle, Users, X } from 'lucide-react';
 import { AnimatePresence, motion } from 'motion/react';
@@ -36,6 +42,102 @@ const CopyLeagueJoinLink: FC<{ league: League }> = ({ league }) => {
     };
 
     return <Button onClick={copyLink}>Copy join link</Button>;
+};
+
+const SeasonBadge: FC<{
+    league: League;
+    currentSeason: Resource<Season> | null;
+    canStartSeason: boolean;
+}> = ({ league, currentSeason, canStartSeason }) => {
+    const [dialogOpen, setDialogOpen] = useState(false);
+    const form = useForm({
+        custom_name: '',
+    });
+
+    const handleStartSeason = (e: React.FormEvent) => {
+        e.preventDefault();
+        form.post(route('api.seasons.store', { league: league.id }), {
+            preserveScroll: true,
+            onSuccess: () => {
+                form.reset();
+                setDialogOpen(false);
+            },
+        });
+    };
+
+    return (
+        <div className="flex flex-wrap items-center gap-3">
+            {currentSeason && (
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-3 py-1 text-sm font-semibold text-primary">
+                    <span className="size-2 rounded-full bg-primary animate-pulse" />
+                    {currentSeason.data.displayName}
+                </span>
+            )}
+            {canStartSeason && (
+                <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+                    <DialogTrigger asChild>
+                        <Button variant="secondary" size="sm" className="gap-1.5">
+                            <Plus className="size-3.5" />
+                            New Season
+                        </Button>
+                    </DialogTrigger>
+                    <DialogContent>
+                        <DialogHeader>
+                            <DialogTitle>Start New Season</DialogTitle>
+                        </DialogHeader>
+                        <p className="text-sm text-muted-foreground">
+                            This will end the current season and start a new one. All new games will be recorded under the new season.
+                        </p>
+                        <form onSubmit={handleStartSeason} className="space-y-4">
+                            <FormField>
+                                <Label htmlFor="custom_name">Season Name (optional)</Label>
+                                <Input
+                                    value={form.data.custom_name}
+                                    onChange={(e) => form.setData('custom_name', e.target.value)}
+                                    name="custom_name"
+                                    placeholder={`Season ${(league.seasons?.length ?? 0) + 1}`}
+                                />
+                                <FormError>{form.errors.custom_name}</FormError>
+                            </FormField>
+                            <Button type="submit" disabled={form.processing}>
+                                Start Season
+                            </Button>
+                        </form>
+                    </DialogContent>
+                </Dialog>
+            )}
+        </div>
+    );
+};
+
+const SeasonSelector: FC<{
+    league: League;
+    selectedSeasonId: string;
+    activeTab: string;
+}> = ({ league, selectedSeasonId, activeTab }) => {
+    const handleSeasonChange = (value: string) => {
+        const url = route('web.leagues.show', { league: league.id });
+        router.visit(`${url}?season=${value}&tab=${activeTab}`, { preserveScroll: true });
+    };
+
+    const sortedSeasons = [...(league.seasons ?? [])].sort((a, b) => b.number - a.number);
+
+    return (
+        <Select value={selectedSeasonId} onValueChange={handleSeasonChange}>
+            <SelectTrigger className="w-[180px]">
+                <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+                {sortedSeasons.map((season) => (
+                    <SelectItem key={season.id} value={String(season.id)}>
+                        {season.displayName}
+                    </SelectItem>
+                ))}
+                <SelectSeparator />
+                <SelectItem value="all">All Time</SelectItem>
+            </SelectContent>
+        </Select>
+    );
 };
 
 const GameGenerator: FC<{
@@ -420,19 +522,22 @@ const GameGenerator: FC<{
 type LeaguePageProps = PageProps & {
     can: {
         deleteGames: boolean;
+        startSeason: boolean;
     };
     league: Resource<League>;
+    currentSeason: Resource<Season> | null;
+    selectedSeasonId: string;
     leaderboard: Leaderboard;
     teamStats: TeamStats[];
     stats: {
         biggestWinStreak: {
             user: Resource<User>;
             winStreak: number;
-        };
+        } | null;
         biggestLoseStreak: {
             user: Resource<User>;
             loseStreak: number;
-        };
+        } | null;
         lastWeek: {
             mvp: {
                 user: Resource<User>;
@@ -460,7 +565,26 @@ function lastNWeeks(n: number) {
     return weeks.reverse();
 }
 
-const LeaguePage: FC<LeaguePageProps> = ({ league: { data: league }, leaderboard, teamStats, stats, can }) => {
+const VALID_TABS = ['new-game', 'stats', 'history', 'teams'];
+
+const LeaguePage: FC<LeaguePageProps> = ({ league: { data: league }, currentSeason, selectedSeasonId, leaderboard, teamStats, stats, can }) => {
+    const initialTab = (() => {
+        const params = new URLSearchParams(window.location.search);
+        const tab = params.get('tab');
+        return tab && VALID_TABS.includes(tab) ? tab : 'new-game';
+    })();
+    const [activeTab, setActiveTab] = useState(initialTab);
+
+    const handleTabChange = (value: string) => {
+        setActiveTab(value);
+        const params = new URLSearchParams(window.location.search);
+        params.set('tab', value);
+        window.history.replaceState({}, '', `${window.location.pathname}?${params.toString()}`);
+    };
+
+    const selectedSeason = league.seasons?.find((s) => String(s.id) === selectedSeasonId);
+    const seasonLabel = selectedSeasonId === 'all' ? 'All Time' : (selectedSeason?.displayName ?? 'All Time');
+
     const gamesByWeek = lastNWeeks(6).map((week, index, weeks) => ({
         week: format(week, 'dd MMM'),
         count: league.games.filter((game) =>
@@ -485,20 +609,33 @@ const LeaguePage: FC<LeaguePageProps> = ({ league: { data: league }, leaderboard
             <PageContainer>
                 <SectionHeading className={'flex w-full flex-col justify-between gap-2 md:flex-row'}>
                     {league.name}
-                    <div>
+                    <div className="flex items-center gap-3">
+                        <SeasonBadge
+                            league={league}
+                            currentSeason={currentSeason}
+                            canStartSeason={can.startSeason}
+                        />
                         <CopyLeagueJoinLink league={league} />
                     </div>
                 </SectionHeading>
-                <Tabs defaultValue={'home'}>
-                    <TabsList>
-                        <TabsTrigger value="home">Home</TabsTrigger>
-                        <TabsTrigger value="history">History</TabsTrigger>
-                        <TabsTrigger value="teams">Teams</TabsTrigger>
-                    </TabsList>
-                    <TabsContent value={'home'} className={'space-y-8'}>
+                <Tabs value={activeTab} onValueChange={handleTabChange}>
+                    <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                        <TabsList>
+                            <TabsTrigger value="new-game">New Game</TabsTrigger>
+                            <TabsTrigger value="stats">Stats</TabsTrigger>
+                            <TabsTrigger value="history">History</TabsTrigger>
+                            <TabsTrigger value="teams">Teams</TabsTrigger>
+                        </TabsList>
+                        {activeTab !== 'new-game' && (
+                            <SeasonSelector league={league} selectedSeasonId={selectedSeasonId} activeTab={activeTab} />
+                        )}
+                    </div>
+                    <TabsContent value={'new-game'} className={'space-y-8'}>
                         <div className={'grid gap-8 lg:grid-cols-3'}>
                             <NewGameSection league={league} leaderboard={leaderboard} />
                         </div>
+                    </TabsContent>
+                    <TabsContent value={'stats'} className={'space-y-8'}>
                         <div className={'grid gap-8 lg:grid-cols-3'}>
                             <div>
                                 <Statistic label={'Total players'} value={league.players.length} />
@@ -507,18 +644,24 @@ const LeaguePage: FC<LeaguePageProps> = ({ league: { data: league }, leaderboard
                                 <Statistic label={'Total games'} value={league.games.length} />
                             </div>
                         </div>
-                        <div className={'grid gap-8 lg:grid-cols-2'}>
-                            <Statistic
-                                label={'🥇 Biggest Win Streak 🥇'}
-                                value={<UserCard user={stats.biggestWinStreak.user.data} />}
-                                extra={`${stats.biggestWinStreak.winStreak} games`}
-                            />
-                            <Statistic
-                                label={'🫠 Biggest Lose Streak 🫠'}
-                                value={<UserCard user={stats.biggestLoseStreak.user.data} />}
-                                extra={`${stats.biggestLoseStreak.loseStreak} games`}
-                            />
-                        </div>
+                        {(stats.biggestWinStreak || stats.biggestLoseStreak) && (
+                            <div className={'grid gap-8 lg:grid-cols-2'}>
+                                {stats.biggestWinStreak && (
+                                    <Statistic
+                                        label={'🥇 Biggest Win Streak 🥇'}
+                                        value={<UserCard user={stats.biggestWinStreak.user.data} />}
+                                        extra={`${stats.biggestWinStreak.winStreak} games`}
+                                    />
+                                )}
+                                {stats.biggestLoseStreak && (
+                                    <Statistic
+                                        label={'🫠 Biggest Lose Streak 🫠'}
+                                        value={<UserCard user={stats.biggestLoseStreak.user.data} />}
+                                        extra={`${stats.biggestLoseStreak.loseStreak} games`}
+                                    />
+                                )}
+                            </div>
+                        )}
                         {stats.lastWeek !== null ? <LastWeekStats lastWeek={stats.lastWeek} /> : null}
                         <PageSection title={'Games by week'} className={'lg:col-span-2'}>
                             <GamesByWeek gamesByWeek={gamesByWeek} />
@@ -526,7 +669,7 @@ const LeaguePage: FC<LeaguePageProps> = ({ league: { data: league }, leaderboard
                         <PageSection
                             title={
                                 <div className="flex items-center gap-2">
-                                    Leaderboard
+                                    Leaderboard ({seasonLabel})
                                     <TooltipProvider>
                                         <Tooltip>
                                             <TooltipTrigger asChild>

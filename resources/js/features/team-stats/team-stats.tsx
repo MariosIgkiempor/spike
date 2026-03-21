@@ -138,13 +138,42 @@ const TeamStatsCard: FC<{ team: TeamStats; rank: number; index: number }> = ({ t
             exit={{ opacity: 0, scale: 0.95 }}
             transition={{ duration: 0.3, delay: Math.min(index * 0.05, 0.5) }}
             className={cn(
-                'grid grid-cols-[auto_1fr_auto_auto] items-center gap-4 rounded-xl border bg-card p-4 shadow-xs transition-shadow hover:shadow-md',
+                'grid grid-cols-[1fr_1fr_1fr_6fr] items-center gap-4 bg-card py-4',
                 rank <= 3 && 'border-primary/20',
             )}
         >
-            <RankBadge rank={rank} />
+            <div>
+                <RankBadge rank={rank} />
+            </div>
 
-            <div className="flex min-w-0 flex-col gap-1">
+            <div className="hidden flex-col gap-0.5 sm:flex">
+                <span className="text-xs text-muted-foreground">
+                    {Intl.NumberFormat('en-GB', { style: 'percent' }).format(winRate)}
+                </span>
+                <div className="h-1.5 w-16 overflow-hidden rounded-full bg-muted">
+                    <div
+                        className={cn(
+                            'h-full rounded-full transition-all',
+                            winRate >= 0.5 ? 'bg-success' : 'bg-destructive',
+                        )}
+                        style={{ width: `${winRate * 100}%` }}
+                    />
+                </div>
+            </div>
+
+            <div className="flex flex-col gap-0.5">
+                <span className="font-display text-xl leading-none tabular-nums">
+                    {team.won}/{losses}
+                </span>
+                <Badge
+                    variant={differential > 0 ? 'success' : differential < 0 ? 'destructive' : 'outline'}
+                    className="w-8"
+                >
+                    {differential > 0 ? '+' : ''}
+                    {differential}
+                </Badge>
+            </div>
+            <div className="flex flex-col gap-1">
                 <div className="flex -space-x-2">
                     {team.players.map((player) => (
                         <Avatar key={player.id} className="size-7 ring-2 ring-card sm:size-8">
@@ -162,33 +191,6 @@ const TeamStatsCard: FC<{ team: TeamStats; rank: number; index: number }> = ({ t
                 </p>
             </div>
 
-            <div className="hidden flex-col items-end gap-0.5 sm:flex">
-                <span className="text-xs text-muted-foreground">
-                    {Intl.NumberFormat('en-GB', { style: 'percent' }).format(winRate)}
-                </span>
-                <div className="h-1.5 w-16 overflow-hidden rounded-full bg-muted">
-                    <div
-                        className={cn(
-                            'h-full rounded-full transition-all',
-                            winRate >= 0.5 ? 'bg-success' : 'bg-destructive',
-                        )}
-                        style={{ width: `${winRate * 100}%` }}
-                    />
-                </div>
-            </div>
-
-            <div className="flex flex-col items-end gap-0.5">
-                <span className="font-display text-xl leading-none tabular-nums">
-                    {team.won}/{losses}
-                </span>
-                <Badge
-                    variant={differential > 0 ? 'success' : differential < 0 ? 'destructive' : 'outline'}
-                    className="w-8"
-                >
-                    {differential > 0 ? '+' : ''}
-                    {differential}
-                </Badge>
-            </div>
         </motion.li>
     );
 };

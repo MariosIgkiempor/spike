@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\GameController;
+use App\Http\Controllers\Api\SeasonController;
 use App\Http\Controllers\LeaderboardController;
 use App\Http\Controllers\LeagueController;
 use App\Http\Controllers\LeaguePageController;
@@ -21,6 +22,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::post('/api/leagues', [LeagueController::class, 'store'])->name('api.leagues.store');
     Route::post('/api/leagues/join/{league}', [LeagueController::class, 'join'])->name('api.leagues.join');
+    Route::post('/api/leagues/{league}/seasons', [SeasonController::class, 'store'])->name('api.seasons.store');
 
     Route::get('/api/leaderboard/{league}', [LeaderboardController::class, 'show'])->name('api.leaderboard.show');
 
