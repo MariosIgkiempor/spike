@@ -44,12 +44,11 @@ const CopyLeagueJoinLink: FC<{ league: League }> = ({ league }) => {
     return <Button onClick={copyLink}>Copy join link</Button>;
 };
 
-const SeasonControl: FC<{
+const SeasonBadge: FC<{
     league: League;
     currentSeason: Resource<Season> | null;
-    selectedSeasonId: string;
     canStartSeason: boolean;
-}> = ({ league, currentSeason, selectedSeasonId, canStartSeason }) => {
+}> = ({ league, currentSeason, canStartSeason }) => {
     const [dialogOpen, setDialogOpen] = useState(false);
     const form = useForm({
         custom_name: '',
@@ -66,13 +65,6 @@ const SeasonControl: FC<{
         });
     };
 
-    const handleSeasonChange = (value: string) => {
-        const url = route('web.leagues.show', { league: league.id });
-        router.visit(`${url}?season=${value}`, { preserveScroll: true });
-    };
-
-    const sortedSeasons = [...(league.seasons ?? [])].sort((a, b) => b.number - a.number);
-
     return (
         <div className="flex flex-wrap items-center gap-3">
             {currentSeason && (
@@ -81,20 +73,6 @@ const SeasonControl: FC<{
                     {currentSeason.data.displayName}
                 </span>
             )}
-            <Select value={selectedSeasonId} onValueChange={handleSeasonChange}>
-                <SelectTrigger className="w-[180px]">
-                    <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                    {sortedSeasons.map((season) => (
-                        <SelectItem key={season.id} value={String(season.id)}>
-                            {season.displayName}
-                        </SelectItem>
-                    ))}
-                    <SelectSeparator />
-                    <SelectItem value="all">All Time</SelectItem>
-                </SelectContent>
-            </Select>
             {canStartSeason && (
                 <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
                     <DialogTrigger asChild>
@@ -129,6 +107,36 @@ const SeasonControl: FC<{
                 </Dialog>
             )}
         </div>
+    );
+};
+
+const SeasonSelector: FC<{
+    league: League;
+    selectedSeasonId: string;
+    activeTab: string;
+}> = ({ league, selectedSeasonId, activeTab }) => {
+    const handleSeasonChange = (value: string) => {
+        const url = route('web.leagues.show', { league: league.id });
+        router.visit(`${url}?season=${value}&tab=${activeTab}`, { preserveScroll: true });
+    };
+
+    const sortedSeasons = [...(league.seasons ?? [])].sort((a, b) => b.number - a.number);
+
+    return (
+        <Select value={selectedSeasonId} onValueChange={handleSeasonChange}>
+            <SelectTrigger className="w-[180px]">
+                <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+                {sortedSeasons.map((season) => (
+                    <SelectItem key={season.id} value={String(season.id)}>
+                        {season.displayName}
+                    </SelectItem>
+                ))}
+                <SelectSeparator />
+                <SelectItem value="all">All Time</SelectItem>
+            </SelectContent>
+        </Select>
     );
 };
 
@@ -557,7 +565,23 @@ function lastNWeeks(n: number) {
     return weeks.reverse();
 }
 
+const VALID_TABS = ['new-game', 'stats', 'history', 'teams'];
+
 const LeaguePage: FC<LeaguePageProps> = ({ league: { data: league }, currentSeason, selectedSeasonId, leaderboard, teamStats, stats, can }) => {
+    const initialTab = (() => {
+        const params = new URLSearchParams(window.location.search);
+        const tab = params.get('tab');
+        return tab && VALID_TABS.includes(tab) ? tab : 'new-game';
+    })();
+    const [activeTab, setActiveTab] = useState(initialTab);
+
+    const handleTabChange = (value: string) => {
+        setActiveTab(value);
+        const params = new URLSearchParams(window.location.search);
+        params.set('tab', value);
+        window.history.replaceState({}, '', `${window.location.pathname}?${params.toString()}`);
+    };
+
     const selectedSeason = league.seasons?.find((s) => String(s.id) === selectedSeasonId);
     const seasonLabel = selectedSeasonId === 'all' ? 'All Time' : (selectedSeason?.displayName ?? 'All Time');
 
@@ -585,26 +609,33 @@ const LeaguePage: FC<LeaguePageProps> = ({ league: { data: league }, currentSeas
             <PageContainer>
                 <SectionHeading className={'flex w-full flex-col justify-between gap-2 md:flex-row'}>
                     {league.name}
-                    <div>
+                    <div className="flex items-center gap-3">
+                        <SeasonBadge
+                            league={league}
+                            currentSeason={currentSeason}
+                            canStartSeason={can.startSeason}
+                        />
                         <CopyLeagueJoinLink league={league} />
                     </div>
                 </SectionHeading>
-                <SeasonControl
-                    league={league}
-                    currentSeason={currentSeason}
-                    selectedSeasonId={selectedSeasonId}
-                    canStartSeason={can.startSeason}
-                />
-                <Tabs defaultValue={'home'}>
-                    <TabsList>
-                        <TabsTrigger value="home">Home</TabsTrigger>
-                        <TabsTrigger value="history">History</TabsTrigger>
-                        <TabsTrigger value="teams">Teams</TabsTrigger>
-                    </TabsList>
-                    <TabsContent value={'home'} className={'space-y-8'}>
+                <Tabs value={activeTab} onValueChange={handleTabChange}>
+                    <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                        <TabsList>
+                            <TabsTrigger value="new-game">New Game</TabsTrigger>
+                            <TabsTrigger value="stats">Stats</TabsTrigger>
+                            <TabsTrigger value="history">History</TabsTrigger>
+                            <TabsTrigger value="teams">Teams</TabsTrigger>
+                        </TabsList>
+                        {activeTab !== 'new-game' && (
+                            <SeasonSelector league={league} selectedSeasonId={selectedSeasonId} activeTab={activeTab} />
+                        )}
+                    </div>
+                    <TabsContent value={'new-game'} className={'space-y-8'}>
                         <div className={'grid gap-8 lg:grid-cols-3'}>
                             <NewGameSection league={league} leaderboard={leaderboard} />
                         </div>
+                    </TabsContent>
+                    <TabsContent value={'stats'} className={'space-y-8'}>
                         <div className={'grid gap-8 lg:grid-cols-3'}>
                             <div>
                                 <Statistic label={'Total players'} value={league.players.length} />

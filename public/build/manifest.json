@@ -152,7 +152,7 @@
     "src": "resources/images/app-icon.png"
   },
   "resources/js/app.tsx": {
-    "file": "assets/app-Cc0PCkTs.js",
+    "file": "assets/app-Bq2EJU72.js",
     "name": "app",
     "src": "resources/js/app.tsx",
     "isEntry": true,
@@ -176,7 +176,7 @@
       "resources/js/pages/welcome.tsx"
     ],
     "css": [
-      "assets/app-CxvqnzzY.css"
+      "assets/app-Dc1IcuFP.css"
     ]
   },
   "resources/js/pages/auth/confirm-password.tsx": {
@@ -308,7 +308,7 @@
     ]
   },
   "resources/js/pages/league.tsx": {
-    "file": "assets/league-D1dsD1Ef.js",
+    "file": "assets/league-D2imjct7.js",
     "name": "league",
     "src": "resources/js/pages/league.tsx",
     "isEntry": true,
@@ -330,7 +330,7 @@
     ]
   },
   "resources/js/pages/settings/appearance.tsx": {
-    "file": "assets/appearance-DVWIlV2S.js",
+    "file": "assets/appearance-CMLWllhO.js",
     "name": "appearance",
     "src": "resources/js/pages/settings/appearance.tsx",
     "isDynamicEntry": true,
