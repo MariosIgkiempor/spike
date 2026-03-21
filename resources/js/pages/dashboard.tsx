@@ -54,11 +54,11 @@ const GamesByMonth: FC<{ gamesByMonth: GamesPerMonth[] }> = ({ gamesByMonth }) =
                     config={{
                         played: {
                             label: 'Played',
-                            color: 'var(--chart-3)',
+                            color: 'var(--chart-2)',
                         },
                         won: {
                             label: 'Won',
-                            color: 'var(--chart-2)',
+                            color: 'var(--chart-1)',
                         },
                     }}
                     className="min-h-[200px] w-full"

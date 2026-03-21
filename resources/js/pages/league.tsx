@@ -642,7 +642,7 @@ function GamesByWeek({ gamesByWeek }: { gamesByWeek: { week: string; count: numb
             config={{
                 count: {
                     label: 'W/C',
-                    color: 'var(--chart-3)',
+                    color: 'var(--chart-1)',
                 },
             }}
             className="max-h-[300px] min-h-[200px] w-full"
@@ -658,7 +658,7 @@ function GamesByWeek({ gamesByWeek }: { gamesByWeek: { week: string; count: numb
                 />
                 <ChartTooltip content={<ChartTooltipContent />} />
                 <ChartLegend content={<ChartLegendContent payload={undefined} />} />
-                <Bar dataKey="count" fill="var(--color-played)" radius={4} />
+                <Bar dataKey="count" fill="var(--color-count)" radius={4} />
             </BarChart>
         </ChartContainer>
     );
