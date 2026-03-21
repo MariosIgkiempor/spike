@@ -1,9 +1,14 @@
 import { PlayerInput } from '@/components/PlayerInput';
-import { Button, buttonVariants } from '@/components/ui/button';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
 import { DatePicker } from '@/components/ui/date-picker';
 import { NumberInput } from '@/components/ui/number-input';
+import { UserAvatar } from '@/features/users/user-card';
+import { cn } from '@/lib/utils';
 import { League } from '@/types';
 import { router, useForm } from '@inertiajs/react';
+import { Calendar, Video } from 'lucide-react';
+import { motion } from 'motion/react';
 import { FC, FormEvent } from 'react';
 import { toast } from 'sonner';
 import { route } from 'ziggy-js';
@@ -81,101 +86,221 @@ export const NewGameForm: FC<NewGameFormProps> = ({ league, teams, onTeamsChange
         onTeamsChange(newTeams);
     };
 
-    // Default game creation form
+    const getPlayer = (playerId: number | null) =>
+        playerId ? league.players.find((p) => p.id === playerId) ?? null : null;
+
     return (
-        <form onSubmit={handleSubmit} className="space-y-8">
-            <div className="grid grid-cols-1 justify-items-center gap-8 lg:grid-cols-[_1fr_100px__1fr]">
-                {/* Team 1 */}
-                <div className="w-full max-w-sm space-y-4">
-                    {team1Error && <div className="mb-2 text-sm text-red-500">{team1Error}</div>}
-                    <PlayerInput
-                        players={league.players}
-                        value={teams[0]?.[0] ?? null}
-                        onChange={(value) => handleTeamChange(0, 0, value)}
-                        label="Player 1"
-                        error={errors.team1}
-                    />
-                    <PlayerInput
-                        players={league.players}
-                        value={teams[0]?.[1] ?? null}
-                        onChange={(value) => handleTeamChange(0, 1, value)}
-                        label="Player 2"
-                        error={errors.team1}
-                    />
-                    <NumberInput
-                        value={data.team1_score}
-                        onChange={(value) => setData('team1_score', value)}
-                        min={0}
-                        max={100}
-                        className="w-full text-4xl"
-                    />
+        <form onSubmit={handleSubmit} className="space-y-6">
+            {/* Section 1: Team Matchup Scoreboard */}
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
+                <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-[1fr_auto_1fr]">
+                    {/* Team A */}
+                    <Card className="border-primary/20">
+                        <div className="h-1 bg-gradient-to-r from-primary to-primary/50" />
+                        <CardContent className="space-y-4 pt-2">
+                            <h3 className="font-display text-xl uppercase tracking-wider text-primary">Team A</h3>
+
+                            <div className="space-y-3">
+                                <div className="flex items-center gap-3">
+                                    {getPlayer(teams[0]?.[0] ?? null) ? (
+                                        <UserAvatar user={getPlayer(teams[0][0])!} />
+                                    ) : (
+                                        <div className="flex size-8 shrink-0 items-center justify-center rounded-full border-2 border-dashed border-muted-foreground/30">
+                                            <span className="text-xs text-muted-foreground">?</span>
+                                        </div>
+                                    )}
+                                    <div className="flex-1">
+                                        <PlayerInput
+                                            players={league.players}
+                                            value={teams[0]?.[0] ?? null}
+                                            onChange={(value) => handleTeamChange(0, 0, value)}
+                                            label="Player 1"
+                                            error={errors.team1}
+                                        />
+                                    </div>
+                                </div>
+
+                                <div className="flex items-center gap-3">
+                                    {getPlayer(teams[0]?.[1] ?? null) ? (
+                                        <UserAvatar user={getPlayer(teams[0][1])!} />
+                                    ) : (
+                                        <div className="flex size-8 shrink-0 items-center justify-center rounded-full border-2 border-dashed border-muted-foreground/30">
+                                            <span className="text-xs text-muted-foreground">?</span>
+                                        </div>
+                                    )}
+                                    <div className="flex-1">
+                                        <PlayerInput
+                                            players={league.players}
+                                            value={teams[0]?.[1] ?? null}
+                                            onChange={(value) => handleTeamChange(0, 1, value)}
+                                            label="Player 2"
+                                            error={errors.team1}
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="flex flex-col items-center gap-2">
+                                <span className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Score</span>
+                                <div className="w-full font-display [&_input]:font-display [&_input]:text-4xl">
+                                    <NumberInput
+                                        value={data.team1_score}
+                                        onChange={(value) => setData('team1_score', value)}
+                                        min={0}
+                                        max={100}
+                                        className="w-full"
+                                    />
+                                </div>
+                            </div>
+
+                            {team1Error && (
+                                <div className="rounded-md bg-destructive/10 px-3 py-2 text-sm font-semibold text-destructive">
+                                    {team1Error}
+                                </div>
+                            )}
+                        </CardContent>
+                    </Card>
+
+                    {/* VS Badge */}
+                    <motion.div
+                        initial={{ opacity: 0, scale: 0.5 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ duration: 0.4, delay: 0.15, type: 'spring', stiffness: 200 }}
+                        className="flex items-center justify-center self-center"
+                    >
+                        <div className="flex size-16 items-center justify-center rounded-full bg-gradient-to-br from-secondary to-secondary/80 shadow-lg lg:size-20">
+                            <span className="font-display text-3xl tracking-wider text-secondary-foreground lg:text-4xl">VS</span>
+                        </div>
+                    </motion.div>
+
+                    {/* Team B */}
+                    <Card className="border-accent/20">
+                        <div className="h-1 bg-gradient-to-r from-accent/50 to-accent" />
+                        <CardContent className="space-y-4 pt-2">
+                            <h3 className="font-display text-xl uppercase tracking-wider text-accent">Team B</h3>
+
+                            <div className="space-y-3">
+                                <div className="flex items-center gap-3">
+                                    {getPlayer(teams[1]?.[0] ?? null) ? (
+                                        <UserAvatar user={getPlayer(teams[1][0])!} />
+                                    ) : (
+                                        <div className="flex size-8 shrink-0 items-center justify-center rounded-full border-2 border-dashed border-muted-foreground/30">
+                                            <span className="text-xs text-muted-foreground">?</span>
+                                        </div>
+                                    )}
+                                    <div className="flex-1">
+                                        <PlayerInput
+                                            players={league.players}
+                                            value={teams[1]?.[0] ?? null}
+                                            onChange={(value) => handleTeamChange(1, 0, value)}
+                                            label="Player 1"
+                                            error={errors.team2}
+                                        />
+                                    </div>
+                                </div>
+
+                                <div className="flex items-center gap-3">
+                                    {getPlayer(teams[1]?.[1] ?? null) ? (
+                                        <UserAvatar user={getPlayer(teams[1][1])!} />
+                                    ) : (
+                                        <div className="flex size-8 shrink-0 items-center justify-center rounded-full border-2 border-dashed border-muted-foreground/30">
+                                            <span className="text-xs text-muted-foreground">?</span>
+                                        </div>
+                                    )}
+                                    <div className="flex-1">
+                                        <PlayerInput
+                                            players={league.players}
+                                            value={teams[1]?.[1] ?? null}
+                                            onChange={(value) => handleTeamChange(1, 1, value)}
+                                            label="Player 2"
+                                            error={errors.team2}
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="flex flex-col items-center gap-2">
+                                <span className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Score</span>
+                                <div className="w-full font-display [&_input]:font-display [&_input]:text-4xl">
+                                    <NumberInput
+                                        value={data.team2_score}
+                                        onChange={(value) => setData('team2_score', value)}
+                                        min={0}
+                                        max={100}
+                                        className="w-full"
+                                    />
+                                </div>
+                            </div>
+
+                            {team2Error && (
+                                <div className="rounded-md bg-destructive/10 px-3 py-2 text-sm font-semibold text-destructive">
+                                    {team2Error}
+                                </div>
+                            )}
+                        </CardContent>
+                    </Card>
                 </div>
+            </motion.div>
 
-                {/* VS */}
-                <div className="px-4 py-4 text-6xl font-display tracking-wide text-muted-foreground md:py-0">VS</div>
+            {/* Section 2: Game Details */}
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.3 }}>
+                <Card className="bg-athletic-gradient">
+                    <CardContent className="grid grid-cols-1 gap-6 pt-6 sm:grid-cols-2">
+                        <div className="space-y-2">
+                            <span className="flex items-center gap-2 text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+                                <Calendar className="size-4" />
+                                Game Date
+                            </span>
+                            <DatePicker value={data.date} onChange={(value) => setData('date', value!)} />
+                        </div>
 
-                {/* Team 2 */}
-                <div className="w-full max-w-sm space-y-4">
-                    {team2Error && <div className="mb-2 text-sm text-red-500">{team2Error}</div>}
-                    <PlayerInput
-                        players={league.players}
-                        value={teams[1]?.[0] ?? null}
-                        onChange={(value) => handleTeamChange(1, 0, value)}
-                        label="Player 1"
-                        error={errors.team2}
-                    />
-                    <PlayerInput
-                        players={league.players}
-                        value={teams[1]?.[1] ?? null}
-                        onChange={(value) => handleTeamChange(1, 1, value)}
-                        label="Player 2"
-                        error={errors.team2}
-                    />
-                    <NumberInput
-                        value={data.team2_score}
-                        onChange={(value) => setData('team2_score', value)}
-                        min={0}
-                        max={100}
-                        className="w-full text-4xl"
-                    />
-                </div>
+                        <div className="space-y-2">
+                            <span className="flex items-center gap-2 text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+                                <Video className="size-4" />
+                                Game Video
+                            </span>
+                            <label
+                                htmlFor="video-upload"
+                                className={cn(
+                                    'flex cursor-pointer items-center justify-center rounded-lg border-2 border-dashed border-muted-foreground/30 px-4 py-6 text-sm text-muted-foreground transition-colors hover:border-primary/50 hover:text-foreground',
+                                    data.video && 'border-primary/50 bg-primary/5 text-foreground',
+                                )}
+                            >
+                                {data.video ? (
+                                    <span className="font-semibold">{data.video.name}</span>
+                                ) : (
+                                    <span>Click to upload (.mp4, .webm, .mov)</span>
+                                )}
+                                <input
+                                    id="video-upload"
+                                    type="file"
+                                    accept=".mp4,.webm,.mov"
+                                    onChange={(e) => {
+                                        const file = e.target.files?.[0] || null;
+                                        setData('video', file);
+                                    }}
+                                    className="sr-only"
+                                />
+                            </label>
+                            <p className="text-xs text-muted-foreground">Optional</p>
+                        </div>
+                    </CardContent>
+                </Card>
+            </motion.div>
 
-                <div></div>
-                <DatePicker value={data.date} onChange={(value) => setData('date', value!)} />
-            </div>
-
-            {/* Video Upload Section */}
-            <div className="flex flex-col items-center space-y-4">
-                <div className="w-full max-w-md">
-                    <label htmlFor="video-upload" className="mb-2 block text-sm font-medium text-foreground">
-                        Upload Game Video (Optional)
-                    </label>
-                    <input
-                        id="video-upload"
-                        type="file"
-                        accept=".mp4,.webm,.mov"
-                        onChange={(e) => {
-                            const file = e.target.files?.[0] || null;
-                            console.log('Selected file:', file?.name, file?.type);
-                            setData('video', file);
-                        }}
-                        className={buttonVariants({ variant: 'default' })}
-                    />
-                </div>
-            </div>
-
-            <div className="flex justify-center">
-                <Button type="submit" disabled={processing} size="lg">
+            {/* Section 3: Submit */}
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.45 }}>
+                <Button type="submit" disabled={processing} size="lg" className="w-full">
                     {processing ? (
                         <>
-                            <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-primary-foreground border-t-transparent" />
+                            <div className="mr-2 size-4 animate-spin rounded-full border-2 border-primary-foreground border-t-transparent" />
                             Creating Game...
                         </>
                     ) : (
-                        'Create Game'
+                        <span className="font-display text-lg uppercase tracking-wider">Record Game</span>
                     )}
                 </Button>
-            </div>
+            </motion.div>
         </form>
     );
 };

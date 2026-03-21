@@ -37,18 +37,16 @@ export const RecentGames: FC<RecentGamesProps> = ({ league, canDeleteGames }) =>
     return (
         <PageSection
             title={'Recent Games'}
-            extra={
-                <div>
-                    <Input
-                        type="search"
-                        placeholder="Search by user name..."
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        className="max-w-sm"
-                    />
-                </div>
-            }
         >
+            <div>
+                <Input
+                    type="search"
+                    placeholder="Search by user name..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="max-w-sm"
+                />
+            </div>
             {league.games.length === 0 ? (
                 <div className="py-8 text-center text-muted-foreground">No games found.</div>
             ) : (
@@ -72,7 +70,7 @@ const GameRecord: FC<{ game: Game; index: number; canDeleteGames: boolean }> = (
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95 }}
             transition={{ duration: 0.3, delay: Math.min(index * 0.05, 0.5) }}
-            className="rounded-xl border bg-card p-4 shadow-xs"
+            className="bg-card p-4"
         >
             <div className="mb-3 flex items-center justify-between text-xs text-muted-foreground">
                 <time>{format(game.createdAt, 'd MMM yyyy')}</time>

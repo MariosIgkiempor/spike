@@ -1,4 +1,3 @@
-import { PlayerInput } from '@/components/PlayerInput';
 import { Button } from '@/components/ui/button';
 import { ChartContainer, ChartLegend, ChartLegendContent, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
 import { PageContainer } from '@/components/ui/pageContainer';
@@ -11,13 +10,14 @@ import { Leaderboard, LeaderboardTable, LeaderboardUser } from '@/features/leade
 import { NewGameForm } from '@/features/new-game/newGameForm';
 import { RecentGames } from '@/features/recent-games/recent-games';
 import { TeamStats } from '@/features/team-stats/team-stats';
-import { UserCard } from '@/features/users/user-card';
+import { UserAvatar, UserCard } from '@/features/users/user-card';
 import Layout from '@/layouts/app-layout';
+import { cn } from '@/lib/utils';
 import { shuffleArray } from '@/lib/shuffle-array';
 import { Game, League, PageProps, Resource, Team, User } from '@/types';
 import { Head } from '@inertiajs/react';
 import { format, isWithinInterval, startOfWeek, subWeeks } from 'date-fns';
-import { HelpCircle, Trash } from 'lucide-react';
+import { ArrowRight, Check, HelpCircle, Plus, Scale, Shuffle, Users, X } from 'lucide-react';
 import { AnimatePresence, motion } from 'motion/react';
 import { Dispatch, FC, SetStateAction, useState } from 'react';
 import { Bar, BarChart, CartesianGrid, XAxis } from 'recharts';
@@ -48,7 +48,6 @@ const GameGenerator: FC<{
     onTeamsGenerated?: (teams: number[][]) => void;
     onSwitchToForm?: () => void;
 }> = ({ leaderboard, players, selectedPlayers, setSelectedPlayers, generatedTeams, teamGenerationKey, onTeamsGenerated, onSwitchToForm }) => {
-    const [, setPlayerInputOpen] = useState(false);
     const generateFairTeams = () => {
         // Map selected IDs to full user objects with MMR
         const selectedUsers = selectedPlayers.map((id) => leaderboard.find((u) => u.id === id)).filter((u): u is LeaderboardUser => !!u);
@@ -102,124 +101,319 @@ const GameGenerator: FC<{
         return players.reduce((a, b) => a + b, 0);
     };
 
-    const handleRemovePlayer = (playerId: number) => {
-        const newList = selectedPlayers.filter((p) => p !== playerId);
-
-        setSelectedPlayers(newList);
-    };
+    const outPlayers = players.filter((p) => !selectedPlayers.includes(p.id));
+    const inPlayers = selectedPlayers
+        .map((id) => leaderboard.find((u) => u.id === id))
+        .filter((u): u is LeaderboardUser => !!u);
+    const isFull = selectedPlayers.length >= 4;
+    const hasTeams = generatedTeams.length === 2 && generatedTeams[0].length > 0;
 
     return (
-        <>
-            <PlayerInput
-                onChange={(playerId) => {
-                    if (playerId) {
-                        const newPlayers = [...selectedPlayers, playerId];
-                        setSelectedPlayers(newPlayers);
-                        if (newPlayers.length >= 4) {
-                            setPlayerInputOpen(false);
-                        }
-                    }
-                }}
-                label="Player"
-                value={null}
-                players={players.filter((p) => !selectedPlayers.includes(p.id))}
-                disabled={selectedPlayers.length >= 4}
-                keepOpen={selectedPlayers.length < 3}
-            />
-
-            <div className={'flex flex-col gap-4'}>
-                <AnimatePresence>
-                    {selectedPlayers.map((playerId, index) => {
-                        const player = leaderboard.find((u) => u.id === playerId)!;
-                        return (
-                            <motion.div
-                                key={player.id}
-                                initial={{ opacity: 0, x: -20 }}
-                                animate={{ opacity: 1, x: 0 }}
-                                exit={{ opacity: 0, x: 20 }}
-                                transition={{ duration: 0.3, delay: index * 0.1 }}
-                                className={'flex justify-between gap-2'}
+        <div className="space-y-6">
+            {/* Top: Controls + Generated Teams */}
+            <motion.div
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.4 }}
+                className="overflow-hidden rounded-2xl border bg-card shadow-sm"
+            >
+                <div className="h-1.5 bg-gradient-to-r from-primary via-secondary to-accent" />
+                <div className="flex flex-col gap-4 p-5 sm:flex-row sm:items-center sm:justify-between">
+                    <div className="flex items-center gap-4">
+                        <div className="relative">
+                            <div
+                                className={cn(
+                                    'flex size-12 items-center justify-center rounded-xl transition-colors duration-300',
+                                    isFull ? 'bg-primary/15' : 'bg-muted',
+                                )}
                             >
-                                <div>
-                                    <h3 className={'font-semibold'}>{player?.name || playerId}</h3>
-                                    <div className={'text-sm text-muted-foreground'}>
-                                        MMR <span className={'font-semibold'}>{player?.mmr}</span>
-                                    </div>
-                                </div>
-                                <Button variant={'destructive'} size={'icon'} onClick={() => handleRemovePlayer(playerId)}>
-                                    <Trash />
-                                </Button>
-                            </motion.div>
-                        );
-                    })}
-                </AnimatePresence>
-            </div>
-
-            <div className={'flex flex-wrap gap-4'}>
-                <Button onClick={generateFairTeams} disabled={selectedPlayers.length < 4}>
-                    Fair Teams
-                </Button>
-
-                <Button onClick={generateRandomTeams} disabled={selectedPlayers.length < 4}>
-                    Random Teams
-                </Button>
-            </div>
-
-            <AnimatePresence>
-                {generatedTeams.length === 2 && (
-                    <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -20 }}
-                        transition={{ duration: 0.5 }}
-                        className="mt-6 space-y-4"
-                    >
-                        <div className="grid gap-4">
-                            {[generatedTeams[0], generatedTeams[1]].map((team, teamIndex) => (
+                                <Users
+                                    className={cn(
+                                        'size-6 transition-colors duration-300',
+                                        isFull ? 'text-primary' : 'text-muted-foreground',
+                                    )}
+                                />
+                            </div>
+                            {isFull && (
                                 <motion.div
-                                    key={`team-${teamIndex}-${teamGenerationKey}`}
-                                    initial={{ opacity: 0, scale: 0.9 }}
-                                    animate={{ opacity: 1, scale: 1 }}
-                                    transition={{ duration: 0.4, delay: teamIndex * 0.2 }}
+                                    initial={{ scale: 0 }}
+                                    animate={{ scale: 1 }}
+                                    className="absolute -right-1 -top-1 flex size-5 items-center justify-center rounded-full bg-primary text-primary-foreground"
                                 >
-                                    <h3 className="text-xl font-display uppercase tracking-wide">
-                                        Team {teamIndex === 0 ? 'A' : 'B'} (MMR: {teamMMR(team)})
-                                    </h3>
-                                    <ul className="grid gap-4 md:grid-cols-2">
-                                        {team.map((id, playerIndex) => {
+                                    <Check className="size-3" />
+                                </motion.div>
+                            )}
+                        </div>
+                        <div>
+                            <h3 className="font-display text-xl uppercase tracking-wider">
+                                {isFull ? 'Ready to Draft' : `Pick ${4 - selectedPlayers.length} More`}
+                            </h3>
+                            <div className="mt-1 flex gap-1.5">
+                                {[0, 1, 2, 3].map((i) => (
+                                    <motion.div
+                                        key={i}
+                                        initial={false}
+                                        animate={{
+                                            backgroundColor:
+                                                i < selectedPlayers.length ? 'var(--primary)' : 'var(--muted)',
+                                        }}
+                                        className="h-1.5 w-8 rounded-full"
+                                        transition={{ duration: 0.3, type: 'spring' }}
+                                    />
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+                    <div className="flex gap-3">
+                        <Button onClick={generateFairTeams} disabled={!isFull} size="lg" className="gap-2">
+                            <Scale className="size-4" />
+                            Fair Teams
+                        </Button>
+                        <Button
+                            onClick={generateRandomTeams}
+                            disabled={!isFull}
+                            variant="secondary"
+                            size="lg"
+                            className="gap-2"
+                        >
+                            <Shuffle className="size-4" />
+                            Random
+                        </Button>
+                    </div>
+                </div>
+            </motion.div>
+
+            {/* Generated Teams */}
+            <AnimatePresence>
+                {hasTeams && (
+                    <motion.div
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: 'auto' }}
+                        exit={{ opacity: 0, height: 0 }}
+                        transition={{ duration: 0.5, type: 'spring', bounce: 0.15 }}
+                        className="overflow-hidden"
+                    >
+                        <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-3 sm:gap-5">
+                            {/* Team A */}
+                            <motion.div
+                                key={`teamA-${teamGenerationKey}`}
+                                initial={{ opacity: 0, x: -30 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                transition={{ duration: 0.5, delay: 0.1 }}
+                                className="overflow-hidden rounded-2xl border border-primary/25 bg-card shadow-sm"
+                            >
+                                <div className="h-1 bg-gradient-to-r from-primary to-primary/40" />
+                                <div className="p-4">
+                                    <div className="mb-3 flex items-center justify-between">
+                                        <h4 className="font-display text-lg uppercase tracking-wider text-primary">
+                                            Team A
+                                        </h4>
+                                        <span className="rounded-md bg-primary/10 px-2 py-0.5 text-xs font-bold text-primary">
+                                            {teamMMR(generatedTeams[0])} MMR
+                                        </span>
+                                    </div>
+                                    <div className="space-y-2">
+                                        {generatedTeams[0].map((id, i) => {
                                             const user = leaderboard.find((u) => u.id === id)!;
                                             return (
-                                                <motion.li
-                                                    key={`player-${id}-${teamIndex}-${playerIndex}-${teamGenerationKey}`}
-                                                    initial={{ opacity: 0, y: 10 }}
-                                                    animate={{ opacity: 1, y: 0 }}
-                                                    transition={{
-                                                        duration: 0.3,
-                                                        delay: teamIndex * 0.2 + playerIndex * 0.1 + 0.3,
-                                                    }}
+                                                <motion.div
+                                                    key={`${id}-a-${teamGenerationKey}`}
+                                                    initial={{ opacity: 0, x: -15 }}
+                                                    animate={{ opacity: 1, x: 0 }}
+                                                    transition={{ duration: 0.3, delay: 0.3 + i * 0.1 }}
+                                                    className="flex items-center gap-3"
                                                 >
-                                                    <UserCard user={user} />
-                                                </motion.li>
+                                                    <UserAvatar user={user} />
+                                                    <div>
+                                                        <div className="font-semibold leading-tight">{user.name}</div>
+                                                        <div className="text-xs text-muted-foreground">
+                                                            {user.mmr} MMR
+                                                        </div>
+                                                    </div>
+                                                </motion.div>
                                             );
                                         })}
-                                    </ul>
-                                </motion.div>
-                            ))}
+                                    </div>
+                                </div>
+                            </motion.div>
+
+                            {/* VS Badge */}
+                            <motion.div
+                                key={`vs-${teamGenerationKey}`}
+                                initial={{ opacity: 0, scale: 0 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                transition={{ duration: 0.4, delay: 0.2, type: 'spring', stiffness: 250 }}
+                            >
+                                <div className="flex size-14 items-center justify-center rounded-full bg-gradient-to-br from-secondary to-secondary/80 shadow-lg sm:size-16">
+                                    <span className="font-display text-2xl tracking-wider text-secondary-foreground sm:text-3xl">
+                                        VS
+                                    </span>
+                                </div>
+                            </motion.div>
+
+                            {/* Team B */}
+                            <motion.div
+                                key={`teamB-${teamGenerationKey}`}
+                                initial={{ opacity: 0, x: 30 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                transition={{ duration: 0.5, delay: 0.1 }}
+                                className="overflow-hidden rounded-2xl border border-accent/25 bg-card shadow-sm"
+                            >
+                                <div className="h-1 bg-gradient-to-r from-accent/40 to-accent" />
+                                <div className="p-4">
+                                    <div className="mb-3 flex items-center justify-between">
+                                        <h4 className="font-display text-lg uppercase tracking-wider text-accent">
+                                            Team B
+                                        </h4>
+                                        <span className="rounded-md bg-accent/10 px-2 py-0.5 text-xs font-bold text-accent">
+                                            {teamMMR(generatedTeams[1])} MMR
+                                        </span>
+                                    </div>
+                                    <div className="space-y-2">
+                                        {generatedTeams[1].map((id, i) => {
+                                            const user = leaderboard.find((u) => u.id === id)!;
+                                            return (
+                                                <motion.div
+                                                    key={`${id}-b-${teamGenerationKey}`}
+                                                    initial={{ opacity: 0, x: 15 }}
+                                                    animate={{ opacity: 1, x: 0 }}
+                                                    transition={{ duration: 0.3, delay: 0.3 + i * 0.1 }}
+                                                    className="flex items-center gap-3"
+                                                >
+                                                    <UserAvatar user={user} />
+                                                    <div>
+                                                        <div className="font-semibold leading-tight">{user.name}</div>
+                                                        <div className="text-xs text-muted-foreground">
+                                                            {user.mmr} MMR
+                                                        </div>
+                                                    </div>
+                                                </motion.div>
+                                            );
+                                        })}
+                                    </div>
+                                </div>
+                            </motion.div>
                         </div>
+
                         <motion.div
-                            initial={{ opacity: 0, y: 20 }}
+                            initial={{ opacity: 0, y: 10 }}
                             animate={{ opacity: 1, y: 0 }}
-                            transition={{ duration: 0.4, delay: 0.8 }}
-                            className="flex justify-center"
+                            transition={{ duration: 0.4, delay: 0.7 }}
+                            className="mt-4 flex justify-center"
                         >
-                            <Button onClick={onSwitchToForm} size="lg">
+                            <Button onClick={onSwitchToForm} size="lg" className="gap-2">
+                                <ArrowRight className="size-4" />
                                 Record Score
                             </Button>
                         </motion.div>
                     </motion.div>
                 )}
             </AnimatePresence>
-        </>
+
+            {/* Player Selection Lists */}
+            <div className="grid grid-cols-2 gap-5">
+                {/* Available players */}
+                <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                        <h3 className="font-display text-lg uppercase tracking-wider text-muted-foreground">
+                            Available
+                        </h3>
+                        <span className="text-sm font-medium text-muted-foreground">{outPlayers.length}</span>
+                    </div>
+                    <div className="flex flex-col gap-2">
+                        <AnimatePresence mode="popLayout">
+                            {outPlayers.map((player, index) => {
+                                const lbUser = leaderboard.find((u) => u.id === player.id);
+                                return (
+                                    <motion.button
+                                        key={player.id}
+                                        layout
+                                        initial={{ opacity: 0, y: 12 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        exit={{ opacity: 0, scale: 0.95 }}
+                                        transition={{ duration: 0.3, delay: Math.min(index * 0.05, 0.5) }}
+                                        onClick={() => setSelectedPlayers((prev) => [...prev, player.id])}
+                                        disabled={isFull}
+                                        className="group flex items-center gap-3 rounded-xl border border-transparent bg-muted/50 p-3 text-left transition-all hover:border-primary/20 hover:bg-card hover:shadow-sm disabled:cursor-not-allowed disabled:opacity-40"
+                                    >
+                                        <div className="relative">
+                                            <UserAvatar user={player} />
+                                            <div className="absolute inset-0 flex items-center justify-center rounded-full bg-primary/0 transition-colors group-hover:bg-primary/10">
+                                                <Plus className="size-4 text-primary opacity-0 transition-opacity group-hover:opacity-100" />
+                                            </div>
+                                        </div>
+                                        <div className="min-w-0 flex-1">
+                                            <div className="truncate font-semibold">{player.name}</div>
+                                            {lbUser && (
+                                                <div className="text-xs text-muted-foreground">{lbUser.mmr} MMR</div>
+                                            )}
+                                        </div>
+                                    </motion.button>
+                                );
+                            })}
+                        </AnimatePresence>
+                        {outPlayers.length === 0 && (
+                            <div className="rounded-xl border border-dashed border-muted-foreground/20 py-8 text-center text-sm text-muted-foreground">
+                                All players selected
+                            </div>
+                        )}
+                    </div>
+                </div>
+
+                {/* Playing */}
+                <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                        <h3 className="font-display text-lg uppercase tracking-wider text-primary">Playing</h3>
+                        <span
+                            className={cn(
+                                'rounded-full px-2.5 py-0.5 text-xs font-bold transition-colors',
+                                isFull ? 'bg-primary/15 text-primary' : 'bg-muted text-muted-foreground',
+                            )}
+                        >
+                            {selectedPlayers.length}/4
+                        </span>
+                    </div>
+                    <div className="flex flex-col gap-2">
+                        <AnimatePresence mode="popLayout">
+                            {inPlayers.map((player, index) => (
+                                <motion.button
+                                    key={player.id}
+                                    layout
+                                    initial={{ opacity: 0, y: 12 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    exit={{ opacity: 0, scale: 0.95 }}
+                                    transition={{ duration: 0.3, delay: Math.min(index * 0.05, 0.5) }}
+                                    onClick={() => setSelectedPlayers((prev) => prev.filter((id) => id !== player.id))}
+                                    className="group flex items-center gap-3 rounded-xl border border-primary/20 bg-card p-3 text-left shadow-xs transition-all hover:border-destructive/30 hover:shadow-sm"
+                                >
+                                    <div className="relative">
+                                        <UserAvatar user={player} />
+                                        <div className="absolute inset-0 flex items-center justify-center rounded-full bg-destructive/0 transition-colors group-hover:bg-destructive/10">
+                                            <X className="size-4 text-destructive opacity-0 transition-opacity group-hover:opacity-100" />
+                                        </div>
+                                    </div>
+                                    <div className="min-w-0 flex-1">
+                                        <div className="truncate font-semibold">{player.name}</div>
+                                        <div className="text-xs text-muted-foreground">{player.mmr} MMR</div>
+                                    </div>
+                                </motion.button>
+                            ))}
+                        </AnimatePresence>
+                        {Array.from({ length: Math.max(0, 4 - selectedPlayers.length) }).map((_, i) => (
+                            <div
+                                key={`empty-${i}`}
+                                className="flex items-center gap-3 rounded-xl border border-dashed border-muted-foreground/15 p-3"
+                            >
+                                <div className="flex size-10 items-center justify-center rounded-full border-2 border-dashed border-muted-foreground/20">
+                                    <span className="text-xs text-muted-foreground">?</span>
+                                </div>
+                                <span className="text-sm text-muted-foreground/50">Select a player</span>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            </div>
+        </div>
     );
 };
 
@@ -460,7 +654,7 @@ function GamesByWeek({ gamesByWeek }: { gamesByWeek: { week: string; count: numb
                     tickLine={false}
                     tickMargin={10}
                     axisLine={false}
-                    // tickFormatter={(value) => value.slice(0, 3)}
+                // tickFormatter={(value) => value.slice(0, 3)}
                 />
                 <ChartTooltip content={<ChartTooltipContent />} />
                 <ChartLegend content={<ChartLegendContent payload={undefined} />} />
