@@ -1,21 +1,12 @@
-// TeamStats UI
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
-import { DataTable } from '@/components/ui/data-table';
-import { DataTableColumnHeader } from '@/components/ui/data-table-column-header';
+import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { UserCard } from '@/features/users/user-card';
+import { cn } from '@/lib/utils';
 import { User } from '@/types';
-import {
-    ColumnDef,
-    ColumnFiltersState,
-    getCoreRowModel,
-    getFilteredRowModel,
-    getSortedRowModel,
-    SortingState,
-    useReactTable,
-} from '@tanstack/react-table';
 import { X } from 'lucide-react';
-import { FC, useState } from 'react';
+import { AnimatePresence, motion } from 'motion/react';
+import { FC, useMemo, useState } from 'react';
 
 export type TeamStats = {
     players: User[];
@@ -23,120 +14,204 @@ export type TeamStats = {
     won: number;
 };
 
-interface LeaderboardProps {
+type SortKey = 'wins' | 'winRate' | 'played';
+
+interface TeamStatsProps {
     stats: TeamStats[];
 }
 
-export const TeamStats: FC<LeaderboardProps> = ({ stats }) => {
-    const [sorting, setSorting] = useState<SortingState>([]);
-    const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
+export const TeamStats: FC<TeamStatsProps> = ({ stats }) => {
     const [search, setSearch] = useState('');
+    const [sortKey, setSortKey] = useState<SortKey | null>(null);
+    const [sortDesc, setSortDesc] = useState(true);
 
-    const columns: ColumnDef<TeamStats>[] = [
-        {
-            accessorKey: 'rank',
-            header: () => null,
-            cell: ({ row }) => <span>{row.index}</span>,
-            enableSorting: true,
-            enableHiding: true,
-        },
-        {
-            accessorKey: 'players',
-            header: ({ column }) => <DataTableColumnHeader column={column} title="Players" />,
-            cell: ({ row }) => (
-                <div className="flex flex-col lg:flex-row">
-                    {row.original.players.map((p) => (
-                        <UserCard key={p.id} user={p} />
-                    ))}
-                </div>
-            ),
-            enableSorting: true,
-            enableHiding: true,
-            filterFn: (row, columnId, filterValue) => {
-                return row.original.players.some((p) => p.name.toLowerCase().includes((filterValue as string).toLowerCase()));
-            },
-        },
-        // {
-        //     accessorKey: 'played',
-        //     header: ({ column }) => <DataTableColumnHeader column={column} title="Played" />,
-        //     cell: ({ row }) => <span className="block text-center">{row.original.played}</span>,
-        //     enableSorting: true,
-        //     enableHiding: true,
-        // },
-        {
-            accessorKey: 'won',
-            header: ({ column }) => <DataTableColumnHeader column={column} title="W/L" />,
-            cell: ({ row }) => {
-                const losses = row.original.played - row.original.won;
-                const { won, played } = row.original;
-                return (
-                    <div className="flex flex-wrap gap-1">
-                        <span className="block text-center">
-                            {won}/{played - won}
-                        </span>
-                        <Badge variant={won > losses ? 'success' : won < losses ? 'destructive' : 'outline'} className={'w-8'}>
-                            {won - losses > 0 ? '+' : ''}
-                            {won - losses}
-                        </Badge>
-                    </div>
-                );
-            },
-            enableSorting: true,
-            enableHiding: true,
-        },
-    ];
+    const filteredStats = useMemo(() => {
+        let result = stats;
 
-    const columnNames: Record<string, string> = {
-        rank: 'Rank',
-        players: 'Players',
-        played: 'Played',
-        won: 'Won',
-    };
+        if (search.length > 0) {
+            result = result.filter((team) =>
+                team.players.some((p) => p.name.toLowerCase().includes(search.toLowerCase())),
+            );
+        }
 
-    const table = useReactTable({
-        data: stats,
-        columns,
-        state: {
-            sorting,
-            columnFilters,
-        },
-        onSortingChange: setSorting,
-        onColumnFiltersChange: setColumnFilters,
-        getCoreRowModel: getCoreRowModel(),
-        getSortedRowModel: getSortedRowModel(),
-        getFilteredRowModel: getFilteredRowModel(),
-    });
+        if (sortKey) {
+            result = [...result].sort((a, b) => {
+                let aVal: number;
+                let bVal: number;
 
-    const onSearchChange = (value: string) => {
-        setSearch(value);
-        if (value.length === 0) table.getColumn('players')?.setFilterValue(undefined);
-        else table.getColumn('players')?.setFilterValue(() => search);
+                switch (sortKey) {
+                    case 'wins':
+                        aVal = a.won;
+                        bVal = b.won;
+                        break;
+                    case 'winRate':
+                        aVal = a.played > 0 ? a.won / a.played : 0;
+                        bVal = b.played > 0 ? b.won / b.played : 0;
+                        break;
+                    case 'played':
+                        aVal = a.played;
+                        bVal = b.played;
+                        break;
+                }
+
+                return sortDesc ? bVal - aVal : aVal - bVal;
+            });
+        }
+
+        return result;
+    }, [stats, search, sortKey, sortDesc]);
+
+    const toggleSort = (key: SortKey) => {
+        if (sortKey === key) {
+            setSortDesc(!sortDesc);
+        } else {
+            setSortKey(key);
+            setSortDesc(true);
+        }
     };
 
     return (
-        <>
-            <div className={'flex flex-col items-baseline gap-2 sm:flex-row'}>
+        <div className="space-y-4">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
                 <Input
                     type="search"
                     placeholder="Search by player name..."
                     value={search}
-                    onChange={({ target }) => onSearchChange(target.value)}
+                    onChange={({ target }) => setSearch(target.value)}
                     className="max-w-md"
                 />
-                {sorting.length > 0 && (
-                    <Badge variant="outline" className="h-8">
-                        {sorting.map((sort) => (
-                            <span key={sort.id} className="flex items-center gap-1">
-                                {columnNames[sort.id]} {sort.desc ? '↓' : '↑'}
-                            </span>
-                        ))}
-                        <button onClick={() => setSorting([])} className="ml-2 rounded-sm p-0.5 hover:bg-muted">
+                <div className="flex items-center gap-2">
+                    <span className="text-xs text-muted-foreground">Sort:</span>
+                    {([
+                        { key: 'wins', label: 'Wins' },
+                        { key: 'winRate', label: 'Win %' },
+                        { key: 'played', label: 'Played' },
+                    ] as const).map(({ key, label }) => (
+                        <Button
+                            key={key}
+                            variant={sortKey === key ? 'default' : 'outline'}
+                            size="sm"
+                            onClick={() => toggleSort(key)}
+                        >
+                            {label}
+                            {sortKey === key && <span className="ml-1">{sortDesc ? '↓' : '↑'}</span>}
+                        </Button>
+                    ))}
+                    {sortKey && (
+                        <button onClick={() => setSortKey(null)} className="rounded-sm p-0.5 hover:bg-muted">
                             <X className="h-3 w-3" />
                         </button>
-                    </Badge>
-                )}
+                    )}
+                </div>
             </div>
-            <DataTable table={table} />
-        </>
+
+            {filteredStats.length === 0 ? (
+                <div className="py-8 text-center text-muted-foreground">No teams found.</div>
+            ) : (
+                <ul className="flex flex-col gap-3">
+                    <AnimatePresence mode="popLayout">
+                        {filteredStats.map((team, index) => (
+                            <TeamStatsCard
+                                key={team.players.map((p) => p.id).sort().join('-')}
+                                team={team}
+                                rank={index + 1}
+                                index={index}
+                            />
+                        ))}
+                    </AnimatePresence>
+                </ul>
+            )}
+        </div>
     );
+};
+
+const TeamStatsCard: FC<{ team: TeamStats; rank: number; index: number }> = ({ team, rank, index }) => {
+    const losses = team.played - team.won;
+    const differential = team.won - losses;
+    const winRate = team.played > 0 ? team.won / team.played : 0;
+
+    return (
+        <motion.li
+            layout
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.95 }}
+            transition={{ duration: 0.3, delay: Math.min(index * 0.05, 0.5) }}
+            className={cn(
+                'grid grid-cols-[auto_1fr_auto_auto] items-center gap-4 rounded-xl border bg-card p-4 shadow-xs transition-shadow hover:shadow-md',
+                rank <= 3 && 'border-primary/20',
+            )}
+        >
+            <RankBadge rank={rank} />
+
+            <div className="flex min-w-0 flex-col gap-1">
+                <div className="flex -space-x-2">
+                    {team.players.map((player) => (
+                        <Avatar key={player.id} className="size-7 ring-2 ring-card sm:size-8">
+                            <AvatarFallback className="bg-primary/15 text-xs font-semibold text-primary">
+                                {player.name
+                                    .split(' ')
+                                    .map((n) => n.charAt(0))
+                                    .join('')}
+                            </AvatarFallback>
+                        </Avatar>
+                    ))}
+                </div>
+                <p className="max-w-full truncate text-xs text-muted-foreground">
+                    {team.players.map((p) => p.name.split(' ')[0]).join(' & ')}
+                </p>
+            </div>
+
+            <div className="hidden flex-col items-end gap-0.5 sm:flex">
+                <span className="text-xs text-muted-foreground">
+                    {Intl.NumberFormat('en-GB', { style: 'percent' }).format(winRate)}
+                </span>
+                <div className="h-1.5 w-16 overflow-hidden rounded-full bg-muted">
+                    <div
+                        className={cn(
+                            'h-full rounded-full transition-all',
+                            winRate >= 0.5 ? 'bg-success' : 'bg-destructive',
+                        )}
+                        style={{ width: `${winRate * 100}%` }}
+                    />
+                </div>
+            </div>
+
+            <div className="flex flex-col items-end gap-0.5">
+                <span className="font-display text-xl leading-none tabular-nums">
+                    {team.won}/{losses}
+                </span>
+                <Badge
+                    variant={differential > 0 ? 'success' : differential < 0 ? 'destructive' : 'outline'}
+                    className="w-8"
+                >
+                    {differential > 0 ? '+' : ''}
+                    {differential}
+                </Badge>
+            </div>
+        </motion.li>
+    );
+};
+
+const RankBadge: FC<{ rank: number }> = ({ rank }) => {
+    const medalStyles: Record<number, string> = {
+        1: 'bg-yellow-500/15 text-yellow-500 ring-yellow-500/30',
+        2: 'bg-gray-400/15 text-gray-400 ring-gray-400/30',
+        3: 'bg-amber-700/15 text-amber-700 ring-amber-700/30',
+    };
+
+    if (rank <= 3) {
+        return (
+            <div
+                className={cn(
+                    'flex size-9 items-center justify-center rounded-full font-display text-lg ring-1',
+                    medalStyles[rank],
+                )}
+            >
+                {rank}
+            </div>
+        );
+    }
+
+    return <div className="flex size-9 items-center justify-center text-sm text-muted-foreground">{rank}</div>;
 };
