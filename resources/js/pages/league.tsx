@@ -20,7 +20,7 @@ import { UserAvatar, UserCard } from '@/features/users/user-card';
 import Layout from '@/layouts/app-layout';
 import { Select, SelectContent, SelectItem, SelectSeparator, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { cn } from '@/lib/utils';
-import { shuffleArray } from '@/lib/shuffle-array';
+import { generateFairTeamsFromPool, generateRandomTeamsFromPool } from '@/lib/team-generator';
 import { Game, League, PageProps, Resource, Season, Team, User } from '@/types';
 import { Head, router, useForm } from '@inertiajs/react';
 import { format, isWithinInterval, startOfWeek, subWeeks } from 'date-fns';
@@ -149,55 +149,30 @@ const GameGenerator: FC<{
     onTeamsGenerated?: (teams: number[][]) => void;
 }> = ({ leaderboard, players, selectedPlayers, setSelectedPlayers, onTeamsGenerated }) => {
     const generateFairTeams = () => {
-        // Map selected IDs to full user objects with MMR
-        const selectedUsers = selectedPlayers.map((id) => leaderboard.find((u) => u.id === id)).filter((u): u is LeaderboardUser => !!u);
-
-        // Sort by descending MMR
-        const sorted = [...selectedUsers].sort((a, b) => b.mmr - a.mmr);
-
-        // Greedy partition for balance
-        const teamA: number[] = [];
-        const teamB: number[] = [];
-        let sumA = 0;
-        let sumB = 0;
-
-        sorted.forEach((user) => {
-            if (sumA < sumB || (sumA === sumB && teamA.length <= teamB.length)) {
-                teamA.push(user.id);
-                sumA += user.mmr;
-            } else {
-                teamB.push(user.id);
-                sumB += user.mmr;
-            }
-        });
-
-        const teams = [teamA, teamB];
-        onTeamsGenerated?.(teams);
+        const selectedUsers = selectedPlayers
+            .map((id) => leaderboard.find((u) => u.id === id))
+            .filter((u): u is LeaderboardUser => !!u);
+        const [teamA, teamB] = generateFairTeamsFromPool(selectedUsers);
+        onTeamsGenerated?.([teamA, teamB]);
     };
 
     const generateRandomTeams = () => {
-        const indexes = [...Array(selectedPlayers.length).keys()];
-        shuffleArray(indexes);
-
-        const teamA: number[] = [];
-        const teamB: number[] = [];
-        indexes.forEach((index) => {
-            if (teamA.length > teamB.length) {
-                teamB.push(selectedPlayers[index]);
-            } else {
-                teamA.push(selectedPlayers[index]);
-            }
-        });
-
-        const teams = [teamA, teamB];
-        onTeamsGenerated?.(teams);
+        const selectedUsers = selectedPlayers
+            .map((id) => leaderboard.find((u) => u.id === id))
+            .filter((u): u is LeaderboardUser => !!u);
+        const [teamA, teamB] = generateRandomTeamsFromPool(selectedUsers);
+        onTeamsGenerated?.([teamA, teamB]);
     };
 
-    const outPlayers = players.filter((p) => !selectedPlayers.includes(p.id));
+    const [searchQuery, setSearchQuery] = useState('');
+
+    const outPlayers = players
+        .filter((p) => !selectedPlayers.includes(p.id))
+        .filter((p) => searchQuery.length === 0 || p.name.toLowerCase().includes(searchQuery.toLowerCase()));
     const inPlayers = selectedPlayers
         .map((id) => leaderboard.find((u) => u.id === id))
         .filter((u): u is LeaderboardUser => !!u);
-    const isFull = selectedPlayers.length >= 4;
+    const isReady = selectedPlayers.length >= 4;
 
     return (
         <div className="space-y-6">
@@ -216,17 +191,17 @@ const GameGenerator: FC<{
                                 <div
                                     className={cn(
                                         'flex size-12 items-center justify-center rounded-xl transition-colors duration-300',
-                                        isFull ? 'bg-primary/15' : 'bg-muted',
+                                        isReady ? 'bg-primary/15' : 'bg-muted',
                                     )}
                                 >
                                     <Users
                                         className={cn(
                                             'size-6 transition-colors duration-300',
-                                            isFull ? 'text-primary' : 'text-muted-foreground',
+                                            isReady ? 'text-primary' : 'text-muted-foreground',
                                         )}
                                     />
                                 </div>
-                                {isFull && (
+                                {isReady && (
                                     <motion.div
                                         initial={{ scale: 0 }}
                                         animate={{ scale: 1 }}
@@ -237,17 +212,21 @@ const GameGenerator: FC<{
                                 )}
                             </div>
                             <h3 className="font-display text-xl uppercase tracking-wider">
-                                {isFull ? 'Ready to Draft' : `Pick ${4 - selectedPlayers.length} More`}
+                                {isReady
+                                    ? selectedPlayers.length === 4
+                                        ? 'Ready to Draft'
+                                        : `${selectedPlayers.length} Selected`
+                                    : `Pick ${4 - selectedPlayers.length} More`}
                             </h3>
                         </div>
                         <div className="flex gap-3">
-                            <Button onClick={generateFairTeams} disabled={!isFull} size="lg" className="gap-2">
+                            <Button onClick={generateFairTeams} disabled={!isReady} size="lg" className="gap-2">
                                 <Scale className="size-4" />
                                 Fair Teams
                             </Button>
                             <Button
                                 onClick={generateRandomTeams}
-                                disabled={!isFull}
+                                disabled={!isReady}
                                 variant="secondary"
                                 size="lg"
                                 className="gap-2"
@@ -259,7 +238,7 @@ const GameGenerator: FC<{
                     </div>
 
                     {/* Avatar Lineup */}
-                    <div className="flex items-start gap-4">
+                    <div className="flex flex-wrap items-start gap-4">
                         <AnimatePresence mode="popLayout">
                             {inPlayers.map((player) => (
                                 <motion.button
@@ -317,27 +296,32 @@ const GameGenerator: FC<{
 
             {/* Available Players */}
             <div className="space-y-3">
-                <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
                     <h3 className="font-display text-lg uppercase tracking-wider text-muted-foreground">
                         Available
                     </h3>
-                    <span className="text-sm font-medium text-muted-foreground">{outPlayers.length}</span>
+                    <Input
+                        type="search"
+                        placeholder="Search..."
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        className="h-8 max-w-48"
+                    />
+                    <span className="ml-auto text-sm font-medium text-muted-foreground">{outPlayers.length}</span>
                 </div>
                 <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-                    <AnimatePresence mode="popLayout">
-                        {outPlayers.map((player, index) => {
+                    <AnimatePresence>
+                        {outPlayers.map((player) => {
                             const lbUser = leaderboard.find((u) => u.id === player.id);
                             return (
                                 <motion.button
                                     key={player.id}
-                                    layout
-                                    initial={{ opacity: 0, y: 12 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    exit={{ opacity: 0, scale: 0.95 }}
-                                    transition={{ duration: 0.3, delay: Math.min(index * 0.05, 0.5) }}
+                                    initial={{ opacity: 0 }}
+                                    animate={{ opacity: 1 }}
+                                    exit={{ opacity: 0 }}
+                                    transition={{ duration: 0.15 }}
                                     onClick={() => setSelectedPlayers((prev) => [...prev, player.id])}
-                                    disabled={isFull}
-                                    className="group flex items-center gap-3 rounded-xl border border-transparent bg-muted/50 p-3 text-left transition-all hover:border-primary/20 hover:bg-card hover:shadow-sm disabled:cursor-not-allowed disabled:opacity-40"
+                                    className="group flex items-center gap-3 rounded-xl border border-transparent bg-muted/50 p-3 text-left transition-all hover:border-primary/20 hover:bg-card hover:shadow-sm"
                                 >
                                     <div className="relative">
                                         <UserAvatar user={player} />
@@ -357,7 +341,7 @@ const GameGenerator: FC<{
                     </AnimatePresence>
                     {outPlayers.length === 0 && (
                         <div className="col-span-full rounded-xl border border-dashed border-muted-foreground/20 py-8 text-center text-sm text-muted-foreground">
-                            All players selected
+                            {searchQuery.length > 0 ? 'No players found' : 'All players selected'}
                         </div>
                     )}
                 </div>

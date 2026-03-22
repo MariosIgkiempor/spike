@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
 import { User } from '@/types';
-import { X } from 'lucide-react';
+import { Search, Users, X } from 'lucide-react';
 import { AnimatePresence, motion } from 'motion/react';
 import { FC, useMemo, useState } from 'react';
 
@@ -105,8 +105,33 @@ export const TeamStats: FC<TeamStatsProps> = ({ stats }) => {
                 </div>
             </div>
 
-            {filteredStats.length === 0 ? (
-                <div className="py-8 text-center text-muted-foreground">No teams found.</div>
+            {stats.length === 0 ? (
+                <motion.div
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.4 }}
+                    className="flex flex-col items-center gap-4 py-16"
+                >
+                    <div className="flex size-16 items-center justify-center rounded-2xl bg-muted">
+                        <Users className="size-8 text-muted-foreground" />
+                    </div>
+                    <div className="text-center">
+                        <h3 className="font-display text-lg uppercase tracking-wider">No team stats yet</h3>
+                        <p className="mt-1 text-sm text-muted-foreground">Play some games and team combinations will appear here</p>
+                    </div>
+                </motion.div>
+            ) : filteredStats.length === 0 ? (
+                <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ duration: 0.3 }}
+                    className="flex flex-col items-center gap-3 py-12"
+                >
+                    <div className="flex size-12 items-center justify-center rounded-xl bg-muted">
+                        <Search className="size-5 text-muted-foreground" />
+                    </div>
+                    <p className="text-sm text-muted-foreground">No teams match your search</p>
+                </motion.div>
             ) : (
                 <ul className="flex flex-col gap-3">
                     <AnimatePresence mode="popLayout">

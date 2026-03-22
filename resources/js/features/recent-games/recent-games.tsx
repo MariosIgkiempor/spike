@@ -15,7 +15,7 @@ import { cn } from '@/lib/utils';
 import { Game, League, Team } from '@/types';
 import { Link, router } from '@inertiajs/react';
 import { format } from 'date-fns';
-import { EllipsisVertical, Trash } from 'lucide-react';
+import { EllipsisVertical, Search, Swords, Trash } from 'lucide-react';
 import { AnimatePresence, motion } from 'motion/react';
 import { FC, useState } from 'react';
 
@@ -46,7 +46,32 @@ export const RecentGames: FC<RecentGamesProps> = ({ league, canDeleteGames }) =>
                 />
             </div>
             {league.games.length === 0 ? (
-                <div className="py-8 text-center text-muted-foreground">No games found.</div>
+                <motion.div
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.4 }}
+                    className="flex flex-col items-center gap-4 py-16"
+                >
+                    <div className="flex size-16 items-center justify-center rounded-2xl bg-muted">
+                        <Swords className="size-8 text-muted-foreground" />
+                    </div>
+                    <div className="text-center">
+                        <h3 className="font-display text-lg uppercase tracking-wider">No games yet</h3>
+                        <p className="mt-1 text-sm text-muted-foreground">Record your first match to get started</p>
+                    </div>
+                </motion.div>
+            ) : filteredGames.length === 0 ? (
+                <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ duration: 0.3 }}
+                    className="flex flex-col items-center gap-3 py-12"
+                >
+                    <div className="flex size-12 items-center justify-center rounded-xl bg-muted">
+                        <Search className="size-5 text-muted-foreground" />
+                    </div>
+                    <p className="text-sm text-muted-foreground">No games match your search</p>
+                </motion.div>
             ) : (
                 <ul className="flex flex-col items-center w-fit gap-4">
                     <AnimatePresence mode="popLayout">
