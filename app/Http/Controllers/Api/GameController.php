@@ -58,6 +58,12 @@ class GameController extends Controller
             ],
         ]);
 
+        // Ensure no player appears more than once across both teams
+        $allPlayerIds = array_merge($validated['team1'], $validated['team2']);
+        if (count($allPlayerIds) !== count(array_unique($allPlayerIds))) {
+            return back()->withErrors(['team1' => 'A player cannot appear more than once.'])->withInput();
+        }
+
         // Custom validation: no draws, winner must win by 2 and have at least 21
         $t1 = $validated['team1_score'];
         $t2 = $validated['team2_score'];

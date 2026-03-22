@@ -93,6 +93,11 @@ export const NewGameForm: FC<NewGameFormProps> = ({ league, leaderboard, teams, 
         onTeamsChange(newTeams);
     };
 
+    const allSelectedPlayerIds = [teams[0]?.[0], teams[0]?.[1], teams[1]?.[0], teams[1]?.[1]].filter((id): id is number => id != null);
+
+    const disabledPlayerIdsFor = (teamIndex: number, playerIndex: number) =>
+        allSelectedPlayerIds.filter((id) => id !== teams[teamIndex]?.[playerIndex]);
+
     const getPlayer = (playerId: number | null) => (playerId ? (league.players.find((p) => p.id === playerId) ?? null) : null);
 
     const getLeaderboardUser = (playerId: number | null) => (playerId ? (leaderboard.find((u) => u.id === playerId) ?? null) : null);
@@ -133,6 +138,7 @@ export const NewGameForm: FC<NewGameFormProps> = ({ league, leaderboard, teams, 
                                         label="Player 1"
                                         error={errors.team1}
                                         mirrored
+                                        disabledPlayerIds={disabledPlayerIdsFor(0, 0)}
                                     />
                                 </PlayerRow>
 
@@ -151,6 +157,7 @@ export const NewGameForm: FC<NewGameFormProps> = ({ league, leaderboard, teams, 
                                         label="Player 2"
                                         error={errors.team1}
                                         mirrored
+                                        disabledPlayerIds={disabledPlayerIdsFor(0, 1)}
                                     />
                                 </PlayerRow>
                             </div>
@@ -209,6 +216,7 @@ export const NewGameForm: FC<NewGameFormProps> = ({ league, leaderboard, teams, 
                                         onChange={(value) => handleTeamChange(1, 0, value)}
                                         label="Player 1"
                                         error={errors.team2}
+                                        disabledPlayerIds={disabledPlayerIdsFor(1, 0)}
                                     />
                                 </PlayerRow>
 
@@ -225,6 +233,7 @@ export const NewGameForm: FC<NewGameFormProps> = ({ league, leaderboard, teams, 
                                         onChange={(value) => handleTeamChange(1, 1, value)}
                                         label="Player 2"
                                         error={errors.team2}
+                                        disabledPlayerIds={disabledPlayerIdsFor(1, 1)}
                                     />
                                 </PlayerRow>
                             </div>

@@ -16,9 +16,10 @@ interface PlayerInputProps {
     players: User[];
     keepOpen?: boolean;
     mirrored?: boolean;
+    disabledPlayerIds?: number[];
 }
 
-export const PlayerInput: FC<PlayerInputProps> = ({ players, value, onChange, label, error, disabled, keepOpen = false, mirrored = false }) => {
+export const PlayerInput: FC<PlayerInputProps> = ({ players, value, onChange, label, error, disabled, keepOpen = false, mirrored = false, disabledPlayerIds = [] }) => {
     const [open, setOpen] = useState(false);
     const isDesktop = useMediaQuery('(min-width: 768px)');
 
@@ -34,6 +35,7 @@ export const PlayerInput: FC<PlayerInputProps> = ({ players, value, onChange, la
                     <PopoverContent className="p-0" align="start" alignOffset={80}>
                         <PlayerList
                             players={players}
+                            disabledPlayerIds={disabledPlayerIds}
                             setSelectedPlayer={(user) => {
                                 onChange(user?.id ?? null);
                                 if (!keepOpen) {
@@ -59,6 +61,7 @@ export const PlayerInput: FC<PlayerInputProps> = ({ players, value, onChange, la
                     <div className="mt-4 border-t">
                         <PlayerList
                             players={players}
+                            disabledPlayerIds={disabledPlayerIds}
                             setSelectedPlayer={(user) => {
                                 onChange(user?.id ?? null);
                                 if (!keepOpen) {
@@ -74,7 +77,15 @@ export const PlayerInput: FC<PlayerInputProps> = ({ players, value, onChange, la
     );
 };
 
-function PlayerList({ players, setSelectedPlayer }: { players: User[]; setSelectedPlayer: (player: User | null) => void }) {
+function PlayerList({
+    players,
+    disabledPlayerIds = [],
+    setSelectedPlayer,
+}: {
+    players: User[];
+    disabledPlayerIds?: number[];
+    setSelectedPlayer: (player: User | null) => void;
+}) {
     return (
         <Command>
             <CommandInput placeholder="Search players..." />
@@ -85,6 +96,7 @@ function PlayerList({ players, setSelectedPlayer }: { players: User[]; setSelect
                         <CommandItem
                             key={player.id}
                             value={player.id.toString()}
+                            disabled={disabledPlayerIds.includes(player.id)}
                             onSelect={(value) => {
                                 setSelectedPlayer(players.find((player) => player.id === parseInt(value)) || null);
                             }}
