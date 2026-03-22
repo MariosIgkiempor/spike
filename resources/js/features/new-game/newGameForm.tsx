@@ -117,7 +117,7 @@ export const NewGameForm: FC<NewGameFormProps> = ({ league, leaderboard, teams, 
                         <div className="h-1 bg-gradient-to-r from-primary to-primary/50" />
                         <CardContent className="space-y-4 pt-2">
                             <div className="flex items-center justify-end gap-2">
-                                {teamAvgMMR(0) !== null && <span className="text-xs text-muted-foreground">Avg {teamAvgMMR(0)} MMR</span>}
+                                {teamAvgMMR(0) !== null && <span className="text-sm text-muted-foreground">Avg {teamAvgMMR(0)} MMR</span>}
                                 <h3 className="font-display text-xl tracking-wider text-primary uppercase">Team A</h3>
                             </div>
 
@@ -160,7 +160,7 @@ export const NewGameForm: FC<NewGameFormProps> = ({ league, leaderboard, teams, 
                             </div>
 
                             <div className="flex flex-col items-center gap-2">
-                                <span className="text-xs font-semibold tracking-widest text-muted-foreground uppercase">Score</span>
+                                <span className="text-sm font-semibold tracking-widest text-muted-foreground uppercase">Score</span>
                                 <div className="w-full font-display [&_input]:font-display [&_input]:text-4xl">
                                     <NumberInput
                                         value={data.team1_score}
@@ -196,7 +196,7 @@ export const NewGameForm: FC<NewGameFormProps> = ({ league, leaderboard, teams, 
                         <CardContent className="space-y-4 pt-2">
                             <div className="flex items-center gap-2">
                                 <h3 className="font-display text-xl tracking-wider text-accent uppercase">Team B</h3>
-                                {teamAvgMMR(1) !== null && <span className="text-xs text-muted-foreground">Avg {teamAvgMMR(1)} MMR</span>}
+                                {teamAvgMMR(1) !== null && <span className="text-sm text-muted-foreground">Avg {teamAvgMMR(1)} MMR</span>}
                             </div>
 
                             <div className="space-y-3">
@@ -236,7 +236,7 @@ export const NewGameForm: FC<NewGameFormProps> = ({ league, leaderboard, teams, 
                             </div>
 
                             <div className="flex flex-col items-center gap-2">
-                                <span className="text-xs font-semibold tracking-widest text-muted-foreground uppercase">Score</span>
+                                <span className="text-sm font-semibold tracking-widest text-muted-foreground uppercase">Score</span>
                                 <div className="w-full font-display [&_input]:font-display [&_input]:text-4xl">
                                     <NumberInput
                                         value={data.team2_score}
@@ -296,7 +296,7 @@ export const NewGameForm: FC<NewGameFormProps> = ({ league, leaderboard, teams, 
                                     className="sr-only"
                                 />
                             </label>
-                            <p className="text-xs text-muted-foreground">Optional</p>
+                            <p className="text-sm text-muted-foreground">Optional</p>
                         </div>
                     </CardContent>
                 </Card>

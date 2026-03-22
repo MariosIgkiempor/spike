@@ -217,7 +217,7 @@ export const VideoPlayer = ({ gameId, className = '' }: VideoPlayerProps) => {
             {/* Video Preview Thumbnail (if available) */}
             {video.preview && (
                 <div className="text-center">
-                    <p className="mb-2 text-xs text-gray-500">Preview thumbnail:</p>
+                    <p className="mb-2 text-sm text-gray-500">Preview thumbnail:</p>
                     <img src={video.preview} alt="Video preview" className="mx-auto max-w-xs rounded border" />
                 </div>
             )}

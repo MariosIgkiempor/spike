@@ -34,7 +34,7 @@ const PlayerTrigger: FC<{ player: User | null; leaderboardUser: LeaderboardUser 
             <div className={cn('min-w-0 flex-1 text-left', mirrored && 'text-right')}>
                 <div className="truncate text-sm font-semibold">{player ? player.name : label}</div>
                 {leaderboardUser && (
-                    <div className="text-xs text-muted-foreground">
+                    <div className="text-sm text-muted-foreground">
                         {leaderboardUser.mmr} MMR &middot; {leaderboardUser.total_games} games
                     </div>
                 )}
@@ -147,7 +147,7 @@ function PlayerList({
                                 <UserAvatar user={player} size="sm" />
                                 <span className="flex-1 truncate font-medium">{player.name}</span>
                                 {lb && (
-                                    <span className="shrink-0 text-xs opacity-70">
+                                    <span className="shrink-0 text-sm opacity-70">
                                         {lb.mmr} MMR &middot; {lb.total_games} games
                                     </span>
                                 )}

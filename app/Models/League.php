@@ -258,12 +258,16 @@ class League extends Model
         return $this->belongsToMany(User::class);
     }
 
+    /**
+     * @return Collection<int, array{players: \Illuminate\Support\Collection, played: int, won: int, recent_results: bool[]}>
+     */
     public function teamStats(?Season $season = null): Collection
     {
         $stats = [];
 
-        // Eager-load teams and their players for scoped games
+        // Eager-load teams and their players for scoped games, ordered chronologically
         $games = $this->scopedGames($season)
+            ->orderBy('created_at')
             ->with('teams.players')
             ->get();
 
@@ -277,15 +281,20 @@ class League extends Model
                         'players' => $team->players,
                         'played' => 0,
                         'won' => 0,
+                        'recent_results' => [],
                     ];
                 }
 
-                // Increment games played for this team
                 $stats[$teamId]['played']++;
 
-                // Increment wins if this team won in this game
-                if ($team->pivot->won) {
+                $won = (bool) $team->pivot->won;
+                if ($won) {
                     $stats[$teamId]['won']++;
+                }
+
+                $stats[$teamId]['recent_results'][] = $won;
+                if (count($stats[$teamId]['recent_results']) > 5) {
+                    array_shift($stats[$teamId]['recent_results']);
                 }
             }
         }
@@ -293,10 +302,10 @@ class League extends Model
         return collect($stats)
             ->sort(function ($a, $b) {
                 if ($a['won'] !== $b['won']) {
-                    return $b['won'] <=> $a['won']; // Most wins first
+                    return $b['won'] <=> $a['won'];
                 }
 
-                return $a['played'] <=> $b['played']; // Least games played first
+                return $a['played'] <=> $b['played'];
             })
             ->values();
     }

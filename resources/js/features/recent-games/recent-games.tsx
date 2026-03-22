@@ -96,7 +96,7 @@ const GameRecord: FC<{ game: Game; index: number; canDeleteGames: boolean }> = (
             className="overflow-hidden rounded-xl border bg-card shadow-sm"
         >
             <div className="flex items-center justify-between border-b bg-muted/40 px-4 py-2">
-                <time className="text-xs font-medium text-foreground/60">{format(game.createdAt, 'd MMM yyyy')}</time>
+                <time className="text-sm font-medium text-foreground/60">{format(game.createdAt, 'd MMM yyyy')}</time>
                 <div className="flex items-center gap-2">
                     {isBlowout && (
                         <span className="inline-flex items-center gap-1 rounded-full bg-accent/15 px-2 py-0.5 text-[10px] font-bold tracking-wide text-accent uppercase">
@@ -156,7 +156,7 @@ const TeamSide: FC<{ team: Team; align: 'left' | 'right' }> = ({ team, align }) 
             </div>
             <p
                 className={cn(
-                    'max-w-full truncate text-xs font-medium',
+                    'max-w-full truncate text-sm font-medium',
                     team.won ? 'text-foreground' : 'text-muted-foreground',
                     isRight && 'text-right',
                 )}

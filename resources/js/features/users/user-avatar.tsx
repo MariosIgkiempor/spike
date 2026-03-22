@@ -7,11 +7,11 @@ import { FC } from 'react';
 const avatarVariants = cva('', {
     variants: {
         size: {
-            xs: 'size-6',
-            sm: 'size-7',
-            md: 'size-8',
-            lg: 'size-9',
-            xl: 'size-11',
+            xs: 'size-7',
+            sm: 'size-8',
+            md: 'size-9',
+            lg: 'size-10',
+            xl: 'size-12',
         },
     },
     defaultVariants: {
@@ -22,16 +22,16 @@ const avatarVariants = cva('', {
 const fallbackVariants = cva('font-bold', {
     variants: {
         variant: {
-            default: 'bg-primary/25 text-primary-foreground',
+            default: 'bg-primary/25 text-primary',
             success: 'bg-success text-success-foreground',
             muted: 'bg-muted text-muted-foreground',
         },
         size: {
-            xs: 'text-[10px]',
+            xs: 'text-xs',
             sm: 'text-xs',
-            md: 'text-xs',
+            md: 'text-sm',
             lg: 'text-sm',
-            xl: 'text-sm',
+            xl: 'text-base',
         },
     },
     defaultVariants: {

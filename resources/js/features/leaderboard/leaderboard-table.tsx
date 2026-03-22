@@ -275,7 +275,7 @@ const ExpandedPlayerStats: FC<{
         <div className="grid gap-6 px-6 py-4 sm:grid-cols-2">
             {opponents.length > 0 && (
                 <div>
-                    <h4 className="mb-2 text-xs font-semibold tracking-wider text-muted-foreground uppercase">vs Opponents</h4>
+                    <h4 className="mb-2 text-sm font-semibold tracking-wider text-muted-foreground uppercase">vs Opponents</h4>
                     <div className="space-y-1.5">
                         {opponents.map(({ opponent, wins, losses, winRate }) => (
                             <div key={opponent.id} className="flex items-center gap-2 text-sm">
@@ -294,7 +294,7 @@ const ExpandedPlayerStats: FC<{
             )}
             {teammates.length > 0 && (
                 <div>
-                    <h4 className="mb-2 text-xs font-semibold tracking-wider text-muted-foreground uppercase">with Teammates</h4>
+                    <h4 className="mb-2 text-sm font-semibold tracking-wider text-muted-foreground uppercase">with Teammates</h4>
                     <div className="space-y-1.5">
                         {teammates.map(({ teammate, games, wins, winRate }, index) => {
                             const isBest = index === 0 && games >= 3;

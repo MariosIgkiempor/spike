@@ -12,6 +12,7 @@ export type TeamStats = {
     players: User[];
     played: number;
     won: number;
+    recent_results: boolean[];
 };
 
 type SortKey = 'wins' | 'winRate' | 'played';
@@ -79,7 +80,7 @@ export const TeamStats: FC<TeamStatsProps> = ({ stats }) => {
                     className="max-w-md"
                 />
                 <div className="flex items-center gap-2">
-                    <span className="text-xs text-muted-foreground">Sort:</span>
+                    <span className="text-sm text-muted-foreground">Sort:</span>
                     {(
                         [
                             { key: 'wins', label: 'Wins' },
@@ -177,7 +178,7 @@ const TeamStatsCard: FC<{ team: TeamStats; rank: number; index: number }> = ({ t
                         <UserAvatar key={player.id} user={player} size="sm" className="ring-2 ring-card sm:size-8" />
                     ))}
                 </div>
-                <p className="max-w-full truncate text-xs font-medium text-foreground">{team.players.map((p) => p.name.split(' ')[0]).join(' & ')}</p>
+                <p className="max-w-full truncate text-sm font-medium text-foreground">{team.players.map((p) => p.name.split(' ')[0]).join(' & ')}</p>
             </div>
 
             <div className="flex flex-col gap-0.5">
@@ -190,14 +191,25 @@ const TeamStatsCard: FC<{ team: TeamStats; rank: number; index: number }> = ({ t
                 </Badge>
             </div>
 
-            <div className="hidden flex-col gap-0.5 sm:flex">
-                <span className={cn('text-xs font-medium', winRate >= 0.5 ? 'text-success-foreground' : 'text-destructive-foreground')}>{Intl.NumberFormat('en-GB', { style: 'percent' }).format(winRate)}</span>
-                <div className="h-2.5 overflow-hidden rounded-full bg-muted">
-                    <div
-                        className={cn('h-full rounded-full transition-all', winRate >= 0.5 ? 'bg-success-foreground' : 'bg-destructive-foreground')}
-                        style={{ width: `${winRate * 100}%` }}
-                    />
-                </div>
+            <div className="hidden flex-col items-end gap-1 sm:flex">
+                <span className={cn('text-sm font-medium', winRate >= 0.5 ? 'text-success-foreground' : 'text-destructive-foreground')}>
+                    {Intl.NumberFormat('en-GB', { style: 'percent' }).format(winRate)}
+                </span>
+                {team.recent_results.length > 0 && (
+                    <div className="flex items-center gap-1">
+                        {team.recent_results.map((won, i) => (
+                            <div
+                                key={i}
+                                className={cn(
+                                    'flex size-5 items-center justify-center rounded text-[10px] font-bold',
+                                    won ? 'bg-success text-success-foreground' : 'bg-destructive text-destructive-foreground',
+                                )}
+                            >
+                                {won ? 'W' : 'L'}
+                            </div>
+                        ))}
+                    </div>
+                )}
             </div>
         </motion.li>
     );

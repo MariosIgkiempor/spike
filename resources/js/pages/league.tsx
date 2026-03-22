@@ -248,7 +248,7 @@ const GameGenerator: FC<{
                                         </div>
                                     </div>
                                     <div className="text-center">
-                                        <div className="max-w-16 truncate text-xs font-semibold">{player.name}</div>
+                                        <div className="max-w-16 truncate text-sm font-semibold">{player.name}</div>
                                         <div className="text-[10px] text-muted-foreground">{player.mmr} MMR</div>
                                     </div>
                                 </motion.button>
@@ -262,10 +262,10 @@ const GameGenerator: FC<{
                                         i === 0 && 'animate-pulse',
                                     )}
                                 >
-                                    <span className="text-xs text-muted-foreground">?</span>
+                                    <span className="text-sm text-muted-foreground">?</span>
                                 </div>
                                 <div className="text-center">
-                                    <div className="text-xs text-muted-foreground/40">&nbsp;</div>
+                                    <div className="text-sm text-muted-foreground/40">&nbsp;</div>
                                     <div className="text-[10px] text-muted-foreground/0">&nbsp;</div>
                                 </div>
                             </div>
@@ -309,7 +309,7 @@ const GameGenerator: FC<{
                                     </div>
                                     <div className="min-w-0 flex-1">
                                         <div className="truncate font-semibold">{player.name}</div>
-                                        {lbUser && <div className="text-xs text-muted-foreground">{lbUser.mmr} MMR</div>}
+                                        {lbUser && <div className="text-sm text-muted-foreground">{lbUser.mmr} MMR</div>}
                                     </div>
                                 </motion.button>
                             );
@@ -589,7 +589,7 @@ const LeaguePage: FC<LeaguePageProps> = ({
                                                 </Button>
                                             </TooltipTrigger>
                                             <TooltipContent className="max-w-sm">
-                                                <div className="space-y-2 text-xs">
+                                                <div className="space-y-2 text-sm">
                                                     <p className="font-semibold">MMR (Match Making Rating) Algorithm:</p>
                                                     <ul className="list-bullet space-y-1 text-left">
                                                         <li>
