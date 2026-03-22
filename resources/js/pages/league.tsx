@@ -542,15 +542,21 @@ const LeaguePage: FC<LeaguePageProps> = ({
                                     <Statistic
                                         label={'Closest Rivalry'}
                                         value={
-                                            <div className="flex items-center gap-3">
-                                                <UserAvatar user={closestRivalry.playerA} />
+                                            <div className="flex flex-col items-start gap-2 sm:flex-row sm:items-center sm:gap-3">
+                                                <div className="flex items-center gap-4">
+                                                    <div className="font-semibold">{closestRivalry.playerA.name}</div>
+                                                    <UserAvatar user={closestRivalry.playerA} />
+                                                </div>
                                                 <span className="text-sm text-muted-foreground">vs</span>
-                                                <UserAvatar user={closestRivalry.playerB} />
+                                                <div className="flex items-center gap-4">
+                                                    <UserAvatar user={closestRivalry.playerB} />
+                                                    <div className="font-semibold">{closestRivalry.playerB.name}</div>
+                                                </div>
                                             </div>
                                         }
                                         extra={
                                             <span>
-                                                {closestRivalry.playerA.name} {closestRivalry.wins}W - {closestRivalry.losses}L {closestRivalry.playerB.name}
+                                                {closestRivalry.wins}W - {closestRivalry.losses}L
                                             </span>
                                         }
                                     />
@@ -566,10 +572,16 @@ const LeaguePage: FC<LeaguePageProps> = ({
                                     <Statistic
                                         label={'Best Duo'}
                                         value={
-                                            <div className="flex items-center gap-3">
-                                                <UserAvatar user={bestDuo.playerA} />
+                                            <div className="flex flex-col items-start gap-2 sm:flex-row sm:items-center sm:gap-3">
+                                                <div className="flex items-center gap-4">
+                                                    <UserAvatar user={bestDuo.playerA} />
+                                                    <div className="font-semibold">{bestDuo.playerA.name}</div>
+                                                </div>
                                                 <span className="text-sm text-muted-foreground">&</span>
-                                                <UserAvatar user={bestDuo.playerB} />
+                                                <div className="flex items-center gap-4">
+                                                    <UserAvatar user={bestDuo.playerB} />
+                                                    <div className="font-semibold">{bestDuo.playerB.name}</div>
+                                                </div>
                                             </div>
                                         }
                                         extra={`${bestDuo.wins}W from ${bestDuo.games} games (${Math.round(bestDuo.winRate * 100)}%)`}
