@@ -209,156 +209,85 @@ const GameGenerator: FC<{
                 className="overflow-hidden rounded-2xl border bg-card shadow-sm"
             >
                 <div className="h-1.5 bg-gradient-to-r from-primary via-secondary to-accent" />
-                <div className="flex flex-col gap-4 p-5 sm:flex-row sm:items-center sm:justify-between">
-                    <div className="flex items-center gap-4">
-                        <div className="relative">
-                            <div
-                                className={cn(
-                                    'flex size-12 items-center justify-center rounded-xl transition-colors duration-300',
-                                    isFull ? 'bg-primary/15' : 'bg-muted',
-                                )}
-                            >
-                                <Users
+                <div className="space-y-4 p-5">
+                    <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                        <div className="flex items-center gap-4">
+                            <div className="relative">
+                                <div
                                     className={cn(
-                                        'size-6 transition-colors duration-300',
-                                        isFull ? 'text-primary' : 'text-muted-foreground',
+                                        'flex size-12 items-center justify-center rounded-xl transition-colors duration-300',
+                                        isFull ? 'bg-primary/15' : 'bg-muted',
                                     )}
-                                />
-                            </div>
-                            {isFull && (
-                                <motion.div
-                                    initial={{ scale: 0 }}
-                                    animate={{ scale: 1 }}
-                                    className="absolute -right-1 -top-1 flex size-5 items-center justify-center rounded-full bg-primary text-primary-foreground"
                                 >
-                                    <Check className="size-3" />
-                                </motion.div>
-                            )}
-                        </div>
-                        <div>
+                                    <Users
+                                        className={cn(
+                                            'size-6 transition-colors duration-300',
+                                            isFull ? 'text-primary' : 'text-muted-foreground',
+                                        )}
+                                    />
+                                </div>
+                                {isFull && (
+                                    <motion.div
+                                        initial={{ scale: 0 }}
+                                        animate={{ scale: 1 }}
+                                        className="absolute -right-1 -top-1 flex size-5 items-center justify-center rounded-full bg-primary text-primary-foreground"
+                                    >
+                                        <Check className="size-3" />
+                                    </motion.div>
+                                )}
+                            </div>
                             <h3 className="font-display text-xl uppercase tracking-wider">
                                 {isFull ? 'Ready to Draft' : `Pick ${4 - selectedPlayers.length} More`}
                             </h3>
-                            <div className="mt-1 flex gap-1.5">
-                                {[0, 1, 2, 3].map((i) => (
-                                    <motion.div
-                                        key={i}
-                                        initial={false}
-                                        animate={{
-                                            backgroundColor:
-                                                i < selectedPlayers.length ? 'var(--primary)' : 'var(--muted)',
-                                        }}
-                                        className="h-1.5 w-8 rounded-full"
-                                        transition={{ duration: 0.3, type: 'spring' }}
-                                    />
-                                ))}
-                            </div>
+                        </div>
+                        <div className="flex gap-3">
+                            <Button onClick={generateFairTeams} disabled={!isFull} size="lg" className="gap-2">
+                                <Scale className="size-4" />
+                                Fair Teams
+                            </Button>
+                            <Button
+                                onClick={generateRandomTeams}
+                                disabled={!isFull}
+                                variant="secondary"
+                                size="lg"
+                                className="gap-2"
+                            >
+                                <Shuffle className="size-4" />
+                                Random
+                            </Button>
                         </div>
                     </div>
-                    <div className="flex gap-3">
-                        <Button onClick={generateFairTeams} disabled={!isFull} size="lg" className="gap-2">
-                            <Scale className="size-4" />
-                            Fair Teams
-                        </Button>
-                        <Button
-                            onClick={generateRandomTeams}
-                            disabled={!isFull}
-                            variant="secondary"
-                            size="lg"
-                            className="gap-2"
-                        >
-                            <Shuffle className="size-4" />
-                            Random
-                        </Button>
-                    </div>
-                </div>
-            </motion.div>
 
-            {/* Player Selection Lists */}
-            <div className="grid grid-cols-2 gap-5">
-                {/* Available players */}
-                <div className="space-y-3">
-                    <div className="flex items-center justify-between">
-                        <h3 className="font-display text-lg uppercase tracking-wider text-muted-foreground">
-                            Available
-                        </h3>
-                        <span className="text-sm font-medium text-muted-foreground">{outPlayers.length}</span>
-                    </div>
-                    <div className="flex flex-col gap-2">
+                    {/* Avatar Lineup */}
+                    <div className="flex items-start gap-4">
                         <AnimatePresence mode="popLayout">
-                            {outPlayers.map((player, index) => {
-                                const lbUser = leaderboard.find((u) => u.id === player.id);
-                                return (
-                                    <motion.button
-                                        key={player.id}
-                                        layout
-                                        initial={{ opacity: 0, y: 12 }}
-                                        animate={{ opacity: 1, y: 0 }}
-                                        exit={{ opacity: 0, scale: 0.95 }}
-                                        transition={{ duration: 0.3, delay: Math.min(index * 0.05, 0.5) }}
-                                        onClick={() => setSelectedPlayers((prev) => [...prev, player.id])}
-                                        disabled={isFull}
-                                        className="group flex items-center gap-3 rounded-xl border border-transparent bg-muted/50 p-3 text-left transition-all hover:border-primary/20 hover:bg-card hover:shadow-sm disabled:cursor-not-allowed disabled:opacity-40"
-                                    >
-                                        <div className="relative">
-                                            <UserAvatar user={player} />
-                                            <div className="absolute inset-0 flex items-center justify-center rounded-full bg-primary/0 transition-colors group-hover:bg-primary/10">
-                                                <Plus className="size-4 text-primary opacity-0 transition-opacity group-hover:opacity-100" />
-                                            </div>
-                                        </div>
-                                        <div className="min-w-0 flex-1">
-                                            <div className="truncate font-semibold">{player.name}</div>
-                                            {lbUser && (
-                                                <div className="text-xs text-muted-foreground">{lbUser.mmr} MMR</div>
-                                            )}
-                                        </div>
-                                    </motion.button>
-                                );
-                            })}
-                        </AnimatePresence>
-                        {outPlayers.length === 0 && (
-                            <div className="rounded-xl border border-dashed border-muted-foreground/20 py-8 text-center text-sm text-muted-foreground">
-                                All players selected
-                            </div>
-                        )}
-                    </div>
-                </div>
-
-                {/* Playing */}
-                <div className="space-y-3">
-                    <div className="flex items-center justify-between">
-                        <h3 className="font-display text-lg uppercase tracking-wider text-primary">Playing</h3>
-                        <span
-                            className={cn(
-                                'rounded-full px-2.5 py-0.5 text-xs font-bold transition-colors',
-                                isFull ? 'bg-primary/15 text-primary' : 'bg-muted text-muted-foreground',
-                            )}
-                        >
-                            {selectedPlayers.length}/4
-                        </span>
-                    </div>
-                    <div className="flex flex-col gap-2">
-                        <AnimatePresence mode="popLayout">
-                            {inPlayers.map((player, index) => (
+                            {inPlayers.map((player) => (
                                 <motion.button
                                     key={player.id}
                                     layout
-                                    initial={{ opacity: 0, y: 12 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    exit={{ opacity: 0, scale: 0.95 }}
-                                    transition={{ duration: 0.3, delay: Math.min(index * 0.05, 0.5) }}
-                                    onClick={() => setSelectedPlayers((prev) => prev.filter((id) => id !== player.id))}
-                                    className="group flex items-center gap-3 rounded-xl border border-primary/20 bg-card p-3 text-left shadow-xs transition-all hover:border-destructive/30 hover:shadow-sm"
+                                    initial={{ scale: 0, opacity: 0 }}
+                                    animate={{ scale: 1, opacity: 1 }}
+                                    exit={{ scale: 0, opacity: 0 }}
+                                    transition={{ type: 'spring', stiffness: 500, damping: 20 }}
+                                    onClick={() =>
+                                        setSelectedPlayers((prev) =>
+                                            prev.filter((id) => id !== player.id),
+                                        )
+                                    }
+                                    className="group flex flex-col items-center gap-1"
                                 >
                                     <div className="relative">
-                                        <UserAvatar user={player} />
-                                        <div className="absolute inset-0 flex items-center justify-center rounded-full bg-destructive/0 transition-colors group-hover:bg-destructive/10">
-                                            <X className="size-4 text-destructive opacity-0 transition-opacity group-hover:opacity-100" />
+                                        <UserAvatar
+                                            user={player}
+                                            className="size-11 ring-2 ring-primary/30 transition-shadow group-hover:ring-destructive/40"
+                                        />
+                                        <div className="absolute inset-0 flex items-center justify-center rounded-full bg-destructive/0 transition-colors group-hover:bg-destructive/60">
+                                            <X className="size-4 text-white opacity-0 transition-opacity group-hover:opacity-100" />
                                         </div>
                                     </div>
-                                    <div className="min-w-0 flex-1">
-                                        <div className="truncate font-semibold">{player.name}</div>
-                                        <div className="text-xs text-muted-foreground">{player.mmr} MMR</div>
+                                    <div className="text-center">
+                                        <div className="max-w-16 truncate text-xs font-semibold">{player.name}</div>
+                                        <div className="text-[10px] text-muted-foreground">{player.mmr} MMR</div>
                                     </div>
                                 </motion.button>
                             ))}
@@ -366,15 +295,71 @@ const GameGenerator: FC<{
                         {Array.from({ length: Math.max(0, 4 - selectedPlayers.length) }).map((_, i) => (
                             <div
                                 key={`empty-${i}`}
-                                className="flex items-center gap-3 rounded-xl border border-dashed border-muted-foreground/15 p-3"
+                                className="flex flex-col items-center gap-1"
                             >
-                                <div className="flex size-10 items-center justify-center rounded-full border-2 border-dashed border-muted-foreground/20">
+                                <div
+                                    className={cn(
+                                        'flex size-11 items-center justify-center rounded-full border-2 border-dashed border-muted-foreground/20',
+                                        i === 0 && 'animate-pulse',
+                                    )}
+                                >
                                     <span className="text-xs text-muted-foreground">?</span>
                                 </div>
-                                <span className="text-sm text-muted-foreground/50">Select a player</span>
+                                <div className="text-center">
+                                    <div className="text-xs text-muted-foreground/40">&nbsp;</div>
+                                    <div className="text-[10px] text-muted-foreground/0">&nbsp;</div>
+                                </div>
                             </div>
                         ))}
                     </div>
+                </div>
+            </motion.div>
+
+            {/* Available Players */}
+            <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                    <h3 className="font-display text-lg uppercase tracking-wider text-muted-foreground">
+                        Available
+                    </h3>
+                    <span className="text-sm font-medium text-muted-foreground">{outPlayers.length}</span>
+                </div>
+                <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                    <AnimatePresence mode="popLayout">
+                        {outPlayers.map((player, index) => {
+                            const lbUser = leaderboard.find((u) => u.id === player.id);
+                            return (
+                                <motion.button
+                                    key={player.id}
+                                    layout
+                                    initial={{ opacity: 0, y: 12 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    exit={{ opacity: 0, scale: 0.95 }}
+                                    transition={{ duration: 0.3, delay: Math.min(index * 0.05, 0.5) }}
+                                    onClick={() => setSelectedPlayers((prev) => [...prev, player.id])}
+                                    disabled={isFull}
+                                    className="group flex items-center gap-3 rounded-xl border border-transparent bg-muted/50 p-3 text-left transition-all hover:border-primary/20 hover:bg-card hover:shadow-sm disabled:cursor-not-allowed disabled:opacity-40"
+                                >
+                                    <div className="relative">
+                                        <UserAvatar user={player} />
+                                        <div className="absolute inset-0 flex items-center justify-center rounded-full bg-primary/0 transition-colors group-hover:bg-primary/10">
+                                            <Plus className="size-4 text-primary opacity-0 transition-opacity group-hover:opacity-100" />
+                                        </div>
+                                    </div>
+                                    <div className="min-w-0 flex-1">
+                                        <div className="truncate font-semibold">{player.name}</div>
+                                        {lbUser && (
+                                            <div className="text-xs text-muted-foreground">{lbUser.mmr} MMR</div>
+                                        )}
+                                    </div>
+                                </motion.button>
+                            );
+                        })}
+                    </AnimatePresence>
+                    {outPlayers.length === 0 && (
+                        <div className="col-span-full rounded-xl border border-dashed border-muted-foreground/20 py-8 text-center text-sm text-muted-foreground">
+                            All players selected
+                        </div>
+                    )}
                 </div>
             </div>
         </div>
