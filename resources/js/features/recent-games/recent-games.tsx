@@ -1,4 +1,3 @@
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import {
     DropdownMenu,
@@ -10,11 +9,12 @@ import {
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
+import { UserAvatar } from '@/features/users/user-card';
 import { cn } from '@/lib/utils';
 import { Game, League, Team } from '@/types';
 import { Link, router } from '@inertiajs/react';
 import { format } from 'date-fns';
-import { EllipsisVertical, Search, Swords, Trash } from 'lucide-react';
+import { EllipsisVertical, Search, Swords, Trash, Trophy } from 'lucide-react';
 import { AnimatePresence, motion } from 'motion/react';
 import { FC, useState } from 'react';
 
@@ -70,59 +70,72 @@ export const RecentGames: FC<RecentGamesProps> = ({ league, canDeleteGames }) =>
                     <p className="text-sm text-muted-foreground">No games match your search</p>
                 </motion.div>
             ) : (
-                <ul className="flex w-fit flex-col items-center gap-4">
+                <div className="space-y-3">
                     <AnimatePresence mode="popLayout">
                         {filteredGames.map((game, index) => (
                             <GameRecord key={game.id} game={game} index={index} canDeleteGames={canDeleteGames} />
                         ))}
                     </AnimatePresence>
-                </ul>
+                </div>
             )}
         </>
     );
 };
 
 const GameRecord: FC<{ game: Game; index: number; canDeleteGames: boolean }> = ({ game, index, canDeleteGames }) => {
+    const scoreDiff = Math.abs(game.teams[0].score - game.teams[1].score);
+    const isBlowout = scoreDiff >= 10;
+
     return (
-        <motion.li
+        <motion.div
             layout
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95 }}
             transition={{ duration: 0.3, delay: Math.min(index * 0.05, 0.5) }}
-            className="py-4"
+            className="overflow-hidden rounded-xl border bg-card shadow-sm"
         >
-            <div className="mb-3 flex items-center justify-center gap-4 text-xs text-muted-foreground">
-                <time>{format(game.createdAt, 'd MMM yyyy')}</time>
-                <GameActions game={game} canDeleteGames={canDeleteGames} />
+            <div className="flex items-center justify-between border-b bg-muted/40 px-4 py-2">
+                <time className="text-xs font-medium text-foreground/60">{format(game.createdAt, 'd MMM yyyy')}</time>
+                <div className="flex items-center gap-2">
+                    {isBlowout && (
+                        <span className="inline-flex items-center gap-1 rounded-full bg-accent/15 px-2 py-0.5 text-[10px] font-bold tracking-wide text-accent uppercase">
+                            <Trophy className="size-3" />
+                            Blowout
+                        </span>
+                    )}
+                    <GameActions game={game} canDeleteGames={canDeleteGames} />
+                </div>
             </div>
 
-            <div className="grid grid-cols-[1fr_auto_auto_auto_1fr] items-center gap-2 sm:gap-3">
+            <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-3 px-4 py-4 sm:gap-5 sm:px-6">
                 <TeamSide team={game.teams[0]} align="right" />
 
-                <span
-                    className={cn(
-                        'font-display text-2xl leading-none tabular-nums sm:text-3xl',
-                        game.teams[0].won ? 'text-success' : 'text-destructive',
-                    )}
-                >
-                    {game.teams[0].score}
-                </span>
+                <div className="flex items-center gap-2 sm:gap-3">
+                    <span
+                        className={cn(
+                            'font-display text-3xl leading-none tabular-nums sm:text-4xl',
+                            game.teams[0].won ? 'text-success-foreground' : 'text-destructive-foreground/60',
+                        )}
+                    >
+                        {game.teams[0].score}
+                    </span>
 
-                <span className="text-xs font-semibold tracking-wider text-muted-foreground uppercase">vs</span>
+                    <span className="text-[10px] font-bold tracking-widest text-muted-foreground/50 uppercase">vs</span>
 
-                <span
-                    className={cn(
-                        'font-display text-2xl leading-none tabular-nums sm:text-3xl',
-                        game.teams[1].won ? 'text-success' : 'text-destructive',
-                    )}
-                >
-                    {game.teams[1].score}
-                </span>
+                    <span
+                        className={cn(
+                            'font-display text-3xl leading-none tabular-nums sm:text-4xl',
+                            game.teams[1].won ? 'text-success-foreground' : 'text-destructive-foreground/60',
+                        )}
+                    >
+                        {game.teams[1].score}
+                    </span>
+                </div>
 
                 <TeamSide team={game.teams[1]} align="left" />
             </div>
-        </motion.li>
+        </motion.div>
     );
 };
 
@@ -131,19 +144,23 @@ const TeamSide: FC<{ team: Team; align: 'left' | 'right' }> = ({ team, align }) 
 
     return (
         <div className={cn('flex min-w-0 flex-col gap-1.5', isRight ? 'items-end' : 'items-start')}>
-            <div className={cn('flex -space-x-2', isRight && 'flex-row-reverse space-x-reverse')}>
+            <div className={cn('flex -space-x-1.5', isRight && 'flex-row-reverse space-x-reverse')}>
                 {team.players.map((player) => (
-                    <Avatar key={player.id} className="size-7 ring-2 ring-card sm:size-8">
-                        <AvatarFallback className="bg-primary/15 text-xs font-semibold text-primary">
-                            {player.name
-                                .split(' ')
-                                .map((n) => n.charAt(0))
-                                .join('')}
-                        </AvatarFallback>
-                    </Avatar>
+                    <UserAvatar
+                        key={player.id}
+                        user={player}
+                        variant={team.won ? 'success' : 'muted'}
+                        className={cn('ring-2 sm:size-9', team.won ? 'ring-success/30' : 'ring-card')}
+                    />
                 ))}
             </div>
-            <p className={cn('max-w-full truncate text-xs text-muted-foreground', isRight && 'text-right')}>
+            <p
+                className={cn(
+                    'max-w-full truncate text-xs font-medium',
+                    team.won ? 'text-foreground' : 'text-muted-foreground',
+                    isRight && 'text-right',
+                )}
+            >
                 {team.players.map((p) => p.name.split(' ')[0]).join(' & ')}
             </p>
         </div>

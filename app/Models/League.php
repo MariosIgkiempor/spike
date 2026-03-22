@@ -207,7 +207,7 @@ class League extends Model
             ->get();
 
         // Combine stats, compute win_rate and attach MMR, then sort by MMR
-        $leaderboard = $users->map(function ($user) use ($ratings, $mmrHistory) {
+        $leaderboard = $users->map(function ($user) use ($ratings, $mmrHistory, $streaks) {
             $total = (int) $user->total_games;
             $wins = (int) $user->wins;
             $user->total_games = $total;
@@ -218,6 +218,7 @@ class League extends Model
             // Players who haven't played get 0 MMR, others get their calculated rating
             $user->mmr = round($ratings[$user->id] ?? 0);
             $user->mmr_history = $mmrHistory[$user->id] ?? [];
+            $user->current_streak = $streaks[$user->id] ?? 0;
 
             return $user;
         })

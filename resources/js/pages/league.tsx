@@ -1,5 +1,6 @@
 import { Button } from '@/components/ui/button';
-import { ChartContainer, ChartLegend, ChartLegendContent, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { FormError } from '@/components/ui/formError';
@@ -26,8 +27,8 @@ import { Head, router, useForm } from '@inertiajs/react';
 import { format, isWithinInterval, startOfWeek, subWeeks } from 'date-fns';
 import { Check, ChevronDown, HelpCircle, Plus, Scale, Shuffle, Users, X } from 'lucide-react';
 import { AnimatePresence, motion } from 'motion/react';
-import { Dispatch, FC, SetStateAction, useRef, useState } from 'react';
-import { Bar, BarChart, CartesianGrid, XAxis } from 'recharts';
+import { Dispatch, FC, SetStateAction, useMemo, useRef, useState } from 'react';
+import { Line, LineChart, XAxis } from 'recharts';
 import { toast } from 'sonner';
 
 const CopyLeagueJoinLink: FC<{ league: League }> = ({ league }) => {
@@ -239,7 +240,8 @@ const GameGenerator: FC<{
                                     <div className="relative">
                                         <UserAvatar
                                             user={player}
-                                            className="size-11 ring-2 ring-primary/30 transition-shadow group-hover:ring-destructive/40"
+                                            size="xl"
+                                            className="ring-2 ring-primary/30 transition-shadow group-hover:ring-destructive/40"
                                         />
                                         <div className="absolute inset-0 flex items-center justify-center rounded-full bg-destructive/0 transition-colors group-hover:bg-destructive/60">
                                             <X className="size-4 text-white opacity-0 transition-opacity group-hover:opacity-100" />
@@ -412,6 +414,67 @@ const LeaguePage: FC<LeaguePageProps> = ({
         ).length,
     }));
 
+    const closestRivalry = useMemo(() => {
+        let best: { playerA: LeaderboardUser; playerB: LeaderboardUser; wins: number; losses: number; balance: number } | null = null;
+        const seen = new Set<string>();
+        for (const aId of Object.keys(headToHead)) {
+            for (const bId of Object.keys(headToHead[Number(aId)] ?? {})) {
+                const key = [aId, bId].sort().join('-');
+                if (seen.has(key) || aId === bId) continue;
+                seen.add(key);
+                const record = headToHead[Number(aId)][Number(bId)];
+                const total = record.wins + record.losses;
+                if (total < 3) continue;
+                const balance = Math.min(record.wins, record.losses) / Math.max(record.wins, record.losses);
+                if (!best || balance > best.balance || (balance === best.balance && total > best.wins + best.losses)) {
+                    const playerA = leaderboard.find((u) => u.id === Number(aId));
+                    const playerB = leaderboard.find((u) => u.id === Number(bId));
+                    if (playerA && playerB) {
+                        best = { playerA, playerB, wins: record.wins, losses: record.losses, balance };
+                    }
+                }
+            }
+        }
+        return best;
+    }, [headToHead, leaderboard]);
+
+    const mostVolatilePlayer = useMemo(() => {
+        let best: { player: LeaderboardUser; avgSwing: number } | null = null;
+        for (const player of leaderboard) {
+            const history = player.mmr_history;
+            if (history.length < 5) continue;
+            const deltas = history.slice(1).map((h, i) => Math.abs(h.mmr - history[i].mmr));
+            const avg = deltas.reduce((a, b) => a + b, 0) / deltas.length;
+            if (!best || avg > best.avgSwing) {
+                best = { player, avgSwing: Math.round(avg) };
+            }
+        }
+        return best;
+    }, [leaderboard]);
+
+    const bestDuo = useMemo(() => {
+        let best: { playerA: LeaderboardUser; playerB: LeaderboardUser; games: number; wins: number; winRate: number } | null = null;
+        const seen = new Set<string>();
+        for (const aId of Object.keys(playerTeammateStats)) {
+            for (const bId of Object.keys(playerTeammateStats[Number(aId)] ?? {})) {
+                const key = [aId, bId].sort().join('-');
+                if (seen.has(key) || aId === bId) continue;
+                seen.add(key);
+                const record = playerTeammateStats[Number(aId)][Number(bId)];
+                if (record.games < 3) continue;
+                const winRate = record.wins / record.games;
+                if (!best || winRate > best.winRate || (winRate === best.winRate && record.games > best.games)) {
+                    const playerA = leaderboard.find((u) => u.id === Number(aId));
+                    const playerB = leaderboard.find((u) => u.id === Number(bId));
+                    if (playerA && playerB) {
+                        best = { playerA, playerB, games: record.games, wins: record.wins, winRate };
+                    }
+                }
+            }
+        }
+        return best;
+    }, [playerTeammateStats, leaderboard]);
+
     return (
         <Layout
             breadcrumbs={[
@@ -447,16 +510,15 @@ const LeaguePage: FC<LeaguePageProps> = ({
                         </div>
                     </TabsContent>
                     <TabsContent value={'stats'} className={'space-y-8'}>
-                        <div className={'grid gap-8 lg:grid-cols-3'}>
-                            <div>
-                                <Statistic label={'Total players'} value={league.players.length} />
-                            </div>
-                            <div>
-                                <Statistic label={'Total games'} value={league.games.length} />
+                        <div className={'grid grid-cols-2 gap-4 lg:grid-cols-4'}>
+                            <Statistic label={'Total players'} value={league.players.length} />
+                            <Statistic label={'Total games'} value={league.games.length} />
+                            <div className="col-span-2">
+                                <GamesTrendline gamesByWeek={gamesByWeek} />
                             </div>
                         </div>
                         {(stats.currentWinStreak || stats.currentLoseStreak) && (
-                            <div className={'grid gap-8 lg:grid-cols-2'}>
+                            <div className={'grid gap-4 lg:grid-cols-2'}>
                                 {stats.currentWinStreak && (
                                     <Statistic
                                         label={'🥇 Current Win Streak 🥇'}
@@ -474,9 +536,47 @@ const LeaguePage: FC<LeaguePageProps> = ({
                             </div>
                         )}
                         {stats.lastWeek !== null ? <LastWeekStats lastWeek={stats.lastWeek} /> : null}
-                        <PageSection title={'Games by week'} className={'lg:col-span-2'}>
-                            <GamesByWeek gamesByWeek={gamesByWeek} />
-                        </PageSection>
+                        {(closestRivalry || mostVolatilePlayer || bestDuo) && (
+                            <div className={'grid gap-4 lg:grid-cols-3'}>
+                                {closestRivalry && (
+                                    <Statistic
+                                        label={'Closest Rivalry'}
+                                        value={
+                                            <div className="flex items-center gap-3">
+                                                <UserAvatar user={closestRivalry.playerA} />
+                                                <span className="text-sm text-muted-foreground">vs</span>
+                                                <UserAvatar user={closestRivalry.playerB} />
+                                            </div>
+                                        }
+                                        extra={
+                                            <span>
+                                                {closestRivalry.playerA.name} {closestRivalry.wins}W - {closestRivalry.losses}L {closestRivalry.playerB.name}
+                                            </span>
+                                        }
+                                    />
+                                )}
+                                {mostVolatilePlayer && (
+                                    <Statistic
+                                        label={'Most Volatile'}
+                                        value={<UserCard user={mostVolatilePlayer.player} />}
+                                        extra={`avg swing ±${mostVolatilePlayer.avgSwing} MMR`}
+                                    />
+                                )}
+                                {bestDuo && (
+                                    <Statistic
+                                        label={'Best Duo'}
+                                        value={
+                                            <div className="flex items-center gap-3">
+                                                <UserAvatar user={bestDuo.playerA} />
+                                                <span className="text-sm text-muted-foreground">&</span>
+                                                <UserAvatar user={bestDuo.playerB} />
+                                            </div>
+                                        }
+                                        extra={`${bestDuo.wins}W from ${bestDuo.games} games (${Math.round(bestDuo.winRate * 100)}%)`}
+                                    />
+                                )}
+                            </div>
+                        )}
                         <PageSection
                             title={
                                 <div className="flex items-center gap-2">
@@ -592,31 +692,38 @@ const LastWeekStats: FC<{ lastWeek: NonNullable<LeaguePageProps['stats']['lastWe
     );
 };
 
-function GamesByWeek({ gamesByWeek }: { gamesByWeek: { week: string; count: number }[] }) {
+function GamesTrendline({ gamesByWeek }: { gamesByWeek: { week: string; count: number }[] }) {
     return (
-        <ChartContainer
-            config={{
-                count: {
-                    label: 'W/C',
-                    color: 'var(--chart-1)',
-                },
-            }}
-            className="max-h-[300px] min-h-[200px] w-full"
-        >
-            <BarChart accessibilityLayer data={gamesByWeek}>
-                <CartesianGrid vertical={false} />
-                <XAxis
-                    dataKey="week"
-                    tickLine={false}
-                    tickMargin={10}
-                    axisLine={false}
-                    // tickFormatter={(value) => value.slice(0, 3)}
-                />
-                <ChartTooltip content={<ChartTooltipContent />} />
-                <ChartLegend content={<ChartLegendContent payload={undefined} />} />
-                <Bar dataKey="count" fill="var(--color-count)" radius={4} />
-            </BarChart>
-        </ChartContainer>
+        <Card className="relative h-full justify-between gap-2">
+            <div className="h-1 rounded-t-xl bg-gradient-to-r from-primary to-accent" />
+            <CardHeader>
+                <CardTitle>Games / Week</CardTitle>
+            </CardHeader>
+            <CardContent className="pb-2">
+                <ChartContainer
+                    config={{
+                        count: {
+                            label: 'Games',
+                            color: 'var(--chart-1)',
+                        },
+                    }}
+                    className="h-[100px] w-full"
+                >
+                    <LineChart data={gamesByWeek} margin={{ top: 4, right: 4, bottom: 0, left: -20 }}>
+                        <XAxis dataKey="week" tickLine={false} axisLine={false} tick={{ fontSize: 10 }} tickMargin={4} />
+                        <ChartTooltip content={<ChartTooltipContent />} />
+                        <Line
+                            type="monotone"
+                            dataKey="count"
+                            stroke="var(--color-count)"
+                            strokeWidth={2}
+                            dot={false}
+                            activeDot={{ r: 3, strokeWidth: 0, fill: 'var(--color-count)' }}
+                        />
+                    </LineChart>
+                </ChartContainer>
+            </CardContent>
+        </Card>
     );
 }
 

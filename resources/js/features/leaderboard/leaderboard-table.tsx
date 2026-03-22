@@ -3,7 +3,7 @@ import { Badge } from '@/components/ui/badge';
 import { DataTable } from '@/components/ui/data-table';
 import { DataTableColumnHeader } from '@/components/ui/data-table-column-header';
 import { Input } from '@/components/ui/input';
-import { UserAvatar, UserCard } from '@/features/users/user-card';
+import { UserAvatar } from '@/features/users/user-card';
 import { cn } from '@/lib/utils';
 import { User } from '@/types';
 import {
@@ -30,6 +30,7 @@ export type LeaderboardUser = User & {
     score_diff: number;
     mmr: number;
     mmr_history: { game: number; mmr: number }[];
+    current_streak: number;
 };
 
 export type Leaderboard = LeaderboardUser[];
@@ -42,6 +43,12 @@ interface LeaderboardProps {
     headToHead?: HeadToHead;
     playerTeammateStats?: PlayerTeammateStats;
 }
+
+const podiumAccents: Record<number, string> = {
+    1: 'border-l-4 border-l-yellow-500/60 bg-yellow-500/[0.03]',
+    2: 'border-l-4 border-l-gray-400/60 bg-gray-400/[0.03]',
+    3: 'border-l-4 border-l-amber-700/60 bg-amber-700/[0.03]',
+};
 
 export const LeaderboardTable: FC<LeaderboardProps> = ({ leaderboard, headToHead, playerTeammateStats }) => {
     const [sorting, setSorting] = useState<SortingState>([]);
@@ -63,106 +70,106 @@ export const LeaderboardTable: FC<LeaderboardProps> = ({ leaderboard, headToHead
                 return <span className={`font-display text-lg ${medalColors[rank] ?? ''}`}>{rank}</span>;
             },
             enableSorting: true,
-            enableHiding: true,
+            enableHiding: false,
         },
         {
             accessorKey: 'name',
             header: ({ column }) => <DataTableColumnHeader column={column} title="Player" />,
-            cell: ({ row }) => <UserCard user={row.original} />,
+            cell: ({ row }) => {
+                const history = row.original.mmr_history;
+                const trending = history.length >= 2 && history[history.length - 1].mmr >= history[0].mmr;
+                return (
+                    <div>
+                        <div className="flex items-center gap-4">
+                            <UserAvatar user={row.original} />
+                            <div className="font-semibold">{row.original.name}</div>
+                        </div>
+                        {history.length >= 2 && (
+                            <div className="mt-1 h-5 w-20">
+                                <ResponsiveContainer width="100%" height="100%">
+                                    <LineChart data={history}>
+                                        <Line
+                                            type="monotone"
+                                            dataKey="mmr"
+                                            stroke={trending ? 'var(--success-foreground)' : 'var(--destructive-foreground)'}
+                                            strokeWidth={1.5}
+                                            dot={false}
+                                            isAnimationActive={false}
+                                        />
+                                    </LineChart>
+                                </ResponsiveContainer>
+                            </div>
+                        )}
+                    </div>
+                );
+            },
             enableSorting: true,
-            enableHiding: true,
-        },
-        {
-            accessorKey: 'win_rate',
-            header: ({ column }) => <DataTableColumnHeader column={column} title="Win Rate" />,
-            cell: ({ row }) => (
-                <span>
-                    <Badge variant={row.original.win_rate >= 0.5 ? 'success' : 'destructive'}>
-                        {Intl.NumberFormat('en-GB', { style: 'percent' }).format(row.original.win_rate)}
-                    </Badge>
-                </span>
-            ),
-            enableSorting: true,
-            enableHiding: true,
+            enableHiding: false,
         },
         {
             accessorKey: 'mmr',
             header: ({ column }) => <DataTableColumnHeader column={column} title="MMR" />,
             cell: ({ row }) => <span className="flex font-semibold tabular-nums">{row.original.mmr}</span>,
             enableSorting: true,
-            enableHiding: true,
+            enableHiding: false,
         },
         {
-            id: 'mmr_trend',
-            header: () => <span className="text-xs text-muted-foreground">Trend</span>,
+            accessorKey: 'current_streak',
+            header: ({ column }) => <DataTableColumnHeader column={column} title="Streak" />,
             cell: ({ row }) => {
-                const history = row.original.mmr_history;
-                if (history.length < 2) return null;
-                const trending = history[history.length - 1].mmr >= history[0].mmr;
+                const streak = row.original.current_streak;
+                if (streak === 0) return <span className="text-muted-foreground">—</span>;
+                const isWin = streak > 0;
                 return (
-                    <div className="h-8 w-24">
-                        <ResponsiveContainer width="100%" height="100%">
-                            <LineChart data={history}>
-                                <Line
-                                    type="monotone"
-                                    dataKey="mmr"
-                                    stroke={trending ? 'var(--success)' : 'var(--destructive)'}
-                                    strokeWidth={1.5}
-                                    dot={false}
-                                    isAnimationActive={false}
-                                />
-                            </LineChart>
-                        </ResponsiveContainer>
-                    </div>
+                    <span className={cn('font-semibold tabular-nums', isWin ? 'text-success-foreground' : 'text-destructive-foreground')}>
+                        {isWin ? `W${streak}` : `L${Math.abs(streak)}`}
+                    </span>
                 );
             },
-            enableSorting: false,
-            enableHiding: true,
-        },
-        {
-            accessorKey: 'total_games',
-            header: ({ column }) => <DataTableColumnHeader column={column} title="# Games" />,
-            cell: ({ row }) => <span className="">{row.original.total_games}</span>,
             enableSorting: true,
-            enableHiding: true,
+            enableHiding: false,
         },
         {
             accessorKey: 'wins',
             header: ({ column }) => <DataTableColumnHeader column={column} title="W/L" />,
             cell: ({ row }) => (
-                <div className="flex flex-wrap items-center gap-1">
-                    <span className="block text-center">
+                <div className="flex flex-wrap items-center gap-2">
+                    <span className="block text-center tabular-nums">
                         {row.original.wins}/{row.original.losses}
                     </span>
+                    <Badge variant={row.original.win_rate >= 0.5 ? 'success' : 'destructive'}>
+                        {Intl.NumberFormat('en-GB', { style: 'percent' }).format(row.original.win_rate)}
+                    </Badge>
                 </div>
             ),
             enableSorting: true,
-            enableHiding: true,
+            enableHiding: false,
         },
         {
             accessorKey: 'score_diff',
-            header: ({ column }) => <DataTableColumnHeader column={column} title="Score +-" />,
-            cell: ({ row }) => (
-                <span>
-                    <Badge variant={row.original.score_diff > 0 ? 'success' : row.original.score_diff < 0 ? 'destructive' : 'outline'}>
-                        {row.original.score_diff}
-                    </Badge>
-                </span>
-            ),
+            header: ({ column }) => <DataTableColumnHeader column={column} title="Avg +/-" />,
+            cell: ({ row }) => {
+                const avg = row.original.total_games > 0 ? row.original.score_diff / row.original.total_games : 0;
+                const rounded = Math.round(avg * 10) / 10;
+                const display = rounded > 0 ? `+${rounded}` : `${rounded}`;
+                return (
+                    <span>
+                        <Badge variant={rounded > 0 ? 'success' : rounded < 0 ? 'destructive' : 'outline'}>{display}</Badge>
+                    </span>
+                );
+            },
             enableSorting: true,
-            enableHiding: true,
+            enableHiding: false,
         },
     ];
 
     const columnNames: Record<string, string> = {
         rank: 'Rank',
         name: 'Player',
-        win_rate: 'Win Rate',
         mmr: 'MMR',
-        mmr_trend: 'Trend',
-        total_games: '# Games',
+        current_streak: 'Streak',
         wins: 'W/L',
-        score_diff: 'Score Diff',
+        score_diff: 'Avg +/-',
     };
 
     const table = useReactTable({
@@ -214,6 +221,7 @@ export const LeaderboardTable: FC<LeaderboardProps> = ({ leaderboard, headToHead
             <DataTable
                 table={table}
                 onRowClick={(row) => row.toggleExpanded()}
+                rowClassName={(row) => podiumAccents[row.original.rank] ?? ''}
                 renderSubComponent={({ row }) => (
                     <ExpandedPlayerStats
                         player={row.original}
@@ -271,7 +279,7 @@ const ExpandedPlayerStats: FC<{
                     <div className="space-y-1.5">
                         {opponents.map(({ opponent, wins, losses, winRate }) => (
                             <div key={opponent.id} className="flex items-center gap-2 text-sm">
-                                <UserAvatar user={opponent} className="size-6" />
+                                <UserAvatar user={opponent} size="xs" />
                                 <span className="min-w-0 flex-1 truncate">{opponent.name}</span>
                                 <span className="text-muted-foreground tabular-nums">
                                     {wins}W-{losses}L
@@ -293,7 +301,7 @@ const ExpandedPlayerStats: FC<{
                             const isWorst = index === teammates.length - 1 && games >= 3 && teammates.length > 1;
                             return (
                                 <div key={teammate.id} className="flex items-center gap-2 text-sm">
-                                    <UserAvatar user={teammate} className="size-6" />
+                                    <UserAvatar user={teammate} size="xs" />
                                     <span className={cn('min-w-0 flex-1 truncate', isBest && 'font-semibold')}>{teammate.name}</span>
                                     <span className="text-muted-foreground tabular-nums">
                                         {wins}W/{games}G

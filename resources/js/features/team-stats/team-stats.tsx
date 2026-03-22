@@ -1,7 +1,7 @@
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { UserAvatar } from '@/features/users/user-card';
 import { cn } from '@/lib/utils';
 import { User } from '@/types';
 import { Search, Users, X } from 'lucide-react';
@@ -160,7 +160,12 @@ const TeamStatsCard: FC<{ team: TeamStats; rank: number; index: number }> = ({ t
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95 }}
             transition={{ duration: 0.3, delay: Math.min(index * 0.05, 0.5) }}
-            className={cn('grid grid-cols-[1fr_1fr_1fr_6fr] items-center gap-4 py-4', rank <= 3 && 'border-primary/20')}
+            className={cn(
+                'grid grid-cols-[1fr_1fr_1fr_6fr] items-center gap-4 rounded-xl border bg-card px-4 py-4 shadow-2xs',
+                rank === 1 && 'border-l-4 border-l-yellow-500/60',
+                rank === 2 && 'border-l-4 border-l-gray-400/60',
+                rank === 3 && 'border-l-4 border-l-amber-700/60',
+            )}
         >
             <div>
                 <RankBadge rank={rank} />
@@ -169,17 +174,10 @@ const TeamStatsCard: FC<{ team: TeamStats; rank: number; index: number }> = ({ t
             <div className="flex flex-col gap-1">
                 <div className="flex -space-x-2">
                     {team.players.map((player) => (
-                        <Avatar key={player.id} className="size-7 ring-2 ring-card sm:size-8">
-                            <AvatarFallback className="bg-primary/15 text-xs font-semibold text-primary">
-                                {player.name
-                                    .split(' ')
-                                    .map((n) => n.charAt(0))
-                                    .join('')}
-                            </AvatarFallback>
-                        </Avatar>
+                        <UserAvatar key={player.id} user={player} size="sm" className="ring-2 ring-card sm:size-8" />
                     ))}
                 </div>
-                <p className="max-w-full truncate text-xs text-muted-foreground">{team.players.map((p) => p.name.split(' ')[0]).join(' & ')}</p>
+                <p className="max-w-full truncate text-xs font-medium text-foreground">{team.players.map((p) => p.name.split(' ')[0]).join(' & ')}</p>
             </div>
 
             <div className="flex flex-col gap-0.5">
@@ -193,10 +191,10 @@ const TeamStatsCard: FC<{ team: TeamStats; rank: number; index: number }> = ({ t
             </div>
 
             <div className="hidden flex-col gap-0.5 sm:flex">
-                <span className="text-xs text-muted-foreground">{Intl.NumberFormat('en-GB', { style: 'percent' }).format(winRate)}</span>
-                <div className="h-1.5 overflow-hidden rounded-full bg-muted">
+                <span className={cn('text-xs font-medium', winRate >= 0.5 ? 'text-success-foreground' : 'text-destructive-foreground')}>{Intl.NumberFormat('en-GB', { style: 'percent' }).format(winRate)}</span>
+                <div className="h-2.5 overflow-hidden rounded-full bg-muted">
                     <div
-                        className={cn('h-full rounded-full transition-all', winRate >= 0.5 ? 'bg-success' : 'bg-destructive')}
+                        className={cn('h-full rounded-full transition-all', winRate >= 0.5 ? 'bg-success-foreground' : 'bg-destructive-foreground')}
                         style={{ width: `${winRate * 100}%` }}
                     />
                 </div>
@@ -207,9 +205,9 @@ const TeamStatsCard: FC<{ team: TeamStats; rank: number; index: number }> = ({ t
 
 const RankBadge: FC<{ rank: number }> = ({ rank }) => {
     const medalStyles: Record<number, string> = {
-        1: 'bg-yellow-500/15 text-yellow-500 ring-yellow-500/30',
-        2: 'bg-gray-400/15 text-gray-400 ring-gray-400/30',
-        3: 'bg-amber-700/15 text-amber-700 ring-amber-700/30',
+        1: 'bg-yellow-500/25 text-yellow-600 ring-yellow-500/50 dark:text-yellow-400',
+        2: 'bg-gray-400/25 text-gray-500 ring-gray-400/50 dark:text-gray-300',
+        3: 'bg-amber-700/25 text-amber-800 ring-amber-700/50 dark:text-amber-500',
     };
 
     if (rank <= 3) {
@@ -218,5 +216,5 @@ const RankBadge: FC<{ rank: number }> = ({ rank }) => {
         );
     }
 
-    return <div className="flex size-9 items-center justify-center text-sm text-muted-foreground">{rank}</div>;
+    return <div className="flex size-9 items-center justify-center text-sm font-medium text-muted-foreground">{rank}</div>;
 };

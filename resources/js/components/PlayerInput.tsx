@@ -144,7 +144,7 @@ function PlayerList({
                                 }}
                                 className="flex items-center gap-2.5 py-2"
                             >
-                                <UserAvatar user={player} className="size-7" />
+                                <UserAvatar user={player} size="sm" />
                                 <span className="flex-1 truncate font-medium">{player.name}</span>
                                 {lb && (
                                     <span className="shrink-0 text-xs opacity-70">
