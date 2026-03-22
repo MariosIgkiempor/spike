@@ -9,7 +9,7 @@ import { League, User } from '@/types';
 import { router, useForm } from '@inertiajs/react';
 import { Calendar, Video } from 'lucide-react';
 import { motion } from 'motion/react';
-import { FC, FormEvent, ReactNode } from 'react';
+import { FC, FormEvent, ReactNode, useEffect, useRef } from 'react';
 import { toast } from 'sonner';
 import { route } from 'ziggy-js';
 
@@ -27,10 +27,12 @@ type NewGameFormProps = {
     league: League;
     teams: number[][];
     onTeamsChange: (teams: number[][]) => void;
-    animationKey?: number;
 };
 
-export const NewGameForm: FC<NewGameFormProps> = ({ league, teams, onTeamsChange, animationKey = 0 }) => {
+export const NewGameForm: FC<NewGameFormProps> = ({ league, teams, onTeamsChange }) => {
+    const isFirstRender = useRef(true);
+    useEffect(() => { isFirstRender.current = false; }, []);
+
     const { data, setData, post, transform, processing, errors, reset } = useForm<NewGameFormData>({
         league_id: league.id,
         team1_score: 21,
@@ -103,8 +105,9 @@ export const NewGameForm: FC<NewGameFormProps> = ({ league, teams, onTeamsChange
 
                             <div className="space-y-3">
                                 <PlayerRow
+                                    key={`player-0-${teams[0]?.[0] ?? 'empty'}`}
                                     player={getPlayer(teams[0]?.[0] ?? null)}
-                                    animationKey={animationKey}
+                                    shouldAnimate={!isFirstRender.current}
                                     staggerIndex={0}
                                     mirrored
                                 >
@@ -119,8 +122,9 @@ export const NewGameForm: FC<NewGameFormProps> = ({ league, teams, onTeamsChange
                                 </PlayerRow>
 
                                 <PlayerRow
+                                    key={`player-1-${teams[0]?.[1] ?? 'empty'}`}
                                     player={getPlayer(teams[0]?.[1] ?? null)}
-                                    animationKey={animationKey}
+                                    shouldAnimate={!isFirstRender.current}
                                     staggerIndex={1}
                                     mirrored
                                 >
@@ -176,8 +180,9 @@ export const NewGameForm: FC<NewGameFormProps> = ({ league, teams, onTeamsChange
 
                             <div className="space-y-3">
                                 <PlayerRow
+                                    key={`player-2-${teams[1]?.[0] ?? 'empty'}`}
                                     player={getPlayer(teams[1]?.[0] ?? null)}
-                                    animationKey={animationKey}
+                                    shouldAnimate={!isFirstRender.current}
                                     staggerIndex={2}
                                 >
                                     <PlayerInput
@@ -190,8 +195,9 @@ export const NewGameForm: FC<NewGameFormProps> = ({ league, teams, onTeamsChange
                                 </PlayerRow>
 
                                 <PlayerRow
+                                    key={`player-3-${teams[1]?.[1] ?? 'empty'}`}
                                     player={getPlayer(teams[1]?.[1] ?? null)}
-                                    animationKey={animationKey}
+                                    shouldAnimate={!isFirstRender.current}
                                     staggerIndex={3}
                                 >
                                     <PlayerInput
@@ -292,15 +298,14 @@ export const NewGameForm: FC<NewGameFormProps> = ({ league, teams, onTeamsChange
 
 const PlayerRow: FC<{
     player: User | null;
-    animationKey: number;
+    shouldAnimate: boolean;
     staggerIndex: number;
     mirrored?: boolean;
     children: ReactNode;
-}> = ({ player, animationKey, staggerIndex, mirrored, children }) => {
+}> = ({ player, shouldAnimate, staggerIndex, mirrored, children }) => {
     return (
         <motion.div
-            key={`player-${staggerIndex}-${animationKey}`}
-            initial={animationKey > 0 && player ? { opacity: 0, scale: 0.8, y: -10 } : false}
+            initial={shouldAnimate && player ? { opacity: 0, scale: 0.8, y: -10 } : false}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             transition={{
                 duration: 0.4,

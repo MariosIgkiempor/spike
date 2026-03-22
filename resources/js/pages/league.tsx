@@ -679,19 +679,17 @@ function NewGameSection({ league, leaderboard }: { league: League; leaderboard: 
     const [isGeneratorOpen, setIsGeneratorOpen] = useState(false);
     const [selectedPlayers, setSelectedPlayers] = useState<UserId[]>([]);
     const [generatedTeams, setGeneratedTeams] = useState<UserId[][]>([[], []]);
-    const [teamGenerationKey, setTeamGenerationKey] = useState(0);
     const formRef = useRef<HTMLDivElement>(null);
 
     const handleTeamsGenerated = (newTeams: UserId[][]) => {
         setGeneratedTeams(newTeams);
-        setTeamGenerationKey((prev) => prev + 1);
         formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     };
 
     return (
         <div className={'col-span-3 space-y-6'}>
             <div ref={formRef}>
-                <NewGameForm teams={generatedTeams ?? []} onTeamsChange={(newTeams) => handleTeamsGenerated(newTeams)} league={league} animationKey={teamGenerationKey} />
+                <NewGameForm teams={generatedTeams ?? []} onTeamsChange={handleTeamsGenerated} league={league} />
             </div>
 
             <Collapsible open={isGeneratorOpen} onOpenChange={setIsGeneratorOpen}>
