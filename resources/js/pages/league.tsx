@@ -1,26 +1,26 @@
 import { Button } from '@/components/ui/button';
 import { ChartContainer, ChartLegend, ChartLegendContent, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
-import { PageContainer } from '@/components/ui/pageContainer';
-import { PageSection } from '@/components/ui/pageSection';
-import { SectionHeading } from '@/components/ui/sectionHeading';
-import { Statistic } from '@/components/ui/statistic';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { FormError } from '@/components/ui/formError';
 import { FormField } from '@/components/ui/formField';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { PageContainer } from '@/components/ui/pageContainer';
+import { PageSection } from '@/components/ui/pageSection';
+import { SectionHeading } from '@/components/ui/sectionHeading';
+import { Select, SelectContent, SelectItem, SelectSeparator, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Statistic } from '@/components/ui/statistic';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { HeadToHead, Leaderboard, LeaderboardTable, LeaderboardUser, PlayerTeammateStats } from '@/features/leaderboard/leaderboard-table';
 import { NewGameForm } from '@/features/new-game/newGameForm';
 import { RecentGames } from '@/features/recent-games/recent-games';
 import { TeamStats } from '@/features/team-stats/team-stats';
 import { UserAvatar, UserCard } from '@/features/users/user-card';
 import Layout from '@/layouts/app-layout';
-import { Select, SelectContent, SelectItem, SelectSeparator, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { cn } from '@/lib/utils';
 import { generateFairTeamsFromPool, generateRandomTeamsFromPool } from '@/lib/team-generator';
+import { cn } from '@/lib/utils';
 import { Game, League, PageProps, Resource, Season, Team, User } from '@/types';
 import { Head, router, useForm } from '@inertiajs/react';
 import { format, isWithinInterval, startOfWeek, subWeeks } from 'date-fns';
@@ -70,7 +70,7 @@ const SeasonBadge: FC<{
         <div className="flex flex-wrap items-center gap-3">
             {currentSeason && (
                 <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-3 py-1 text-sm font-semibold text-primary">
-                    <span className="size-2 rounded-full bg-primary animate-pulse" />
+                    <span className="size-2 animate-pulse rounded-full bg-primary" />
                     {currentSeason.data.displayName}
                 </span>
             )}
@@ -149,17 +149,13 @@ const GameGenerator: FC<{
     onTeamsGenerated?: (teams: number[][]) => void;
 }> = ({ leaderboard, players, selectedPlayers, setSelectedPlayers, onTeamsGenerated }) => {
     const generateFairTeams = () => {
-        const selectedUsers = selectedPlayers
-            .map((id) => leaderboard.find((u) => u.id === id))
-            .filter((u): u is LeaderboardUser => !!u);
+        const selectedUsers = selectedPlayers.map((id) => leaderboard.find((u) => u.id === id)).filter((u): u is LeaderboardUser => !!u);
         const [teamA, teamB] = generateFairTeamsFromPool(selectedUsers);
         onTeamsGenerated?.([teamA, teamB]);
     };
 
     const generateRandomTeams = () => {
-        const selectedUsers = selectedPlayers
-            .map((id) => leaderboard.find((u) => u.id === id))
-            .filter((u): u is LeaderboardUser => !!u);
+        const selectedUsers = selectedPlayers.map((id) => leaderboard.find((u) => u.id === id)).filter((u): u is LeaderboardUser => !!u);
         const [teamA, teamB] = generateRandomTeamsFromPool(selectedUsers);
         onTeamsGenerated?.([teamA, teamB]);
     };
@@ -169,9 +165,7 @@ const GameGenerator: FC<{
     const outPlayers = players
         .filter((p) => !selectedPlayers.includes(p.id))
         .filter((p) => searchQuery.length === 0 || p.name.toLowerCase().includes(searchQuery.toLowerCase()));
-    const inPlayers = selectedPlayers
-        .map((id) => leaderboard.find((u) => u.id === id))
-        .filter((u): u is LeaderboardUser => !!u);
+    const inPlayers = selectedPlayers.map((id) => leaderboard.find((u) => u.id === id)).filter((u): u is LeaderboardUser => !!u);
     const isReady = selectedPlayers.length >= 4;
 
     return (
@@ -195,23 +189,20 @@ const GameGenerator: FC<{
                                     )}
                                 >
                                     <Users
-                                        className={cn(
-                                            'size-6 transition-colors duration-300',
-                                            isReady ? 'text-primary' : 'text-muted-foreground',
-                                        )}
+                                        className={cn('size-6 transition-colors duration-300', isReady ? 'text-primary' : 'text-muted-foreground')}
                                     />
                                 </div>
                                 {isReady && (
                                     <motion.div
                                         initial={{ scale: 0 }}
                                         animate={{ scale: 1 }}
-                                        className="absolute -right-1 -top-1 flex size-5 items-center justify-center rounded-full bg-primary text-primary-foreground"
+                                        className="absolute -top-1 -right-1 flex size-5 items-center justify-center rounded-full bg-primary text-primary-foreground"
                                     >
                                         <Check className="size-3" />
                                     </motion.div>
                                 )}
                             </div>
-                            <h3 className="font-display text-xl uppercase tracking-wider">
+                            <h3 className="font-display text-xl tracking-wider uppercase">
                                 {isReady
                                     ? selectedPlayers.length === 4
                                         ? 'Ready to Draft'
@@ -224,13 +215,7 @@ const GameGenerator: FC<{
                                 <Scale className="size-4" />
                                 Fair Teams
                             </Button>
-                            <Button
-                                onClick={generateRandomTeams}
-                                disabled={!isReady}
-                                variant="secondary"
-                                size="lg"
-                                className="gap-2"
-                            >
+                            <Button onClick={generateRandomTeams} disabled={!isReady} variant="secondary" size="lg" className="gap-2">
                                 <Shuffle className="size-4" />
                                 Random
                             </Button>
@@ -248,11 +233,7 @@ const GameGenerator: FC<{
                                     animate={{ scale: 1, opacity: 1 }}
                                     exit={{ scale: 0, opacity: 0 }}
                                     transition={{ type: 'spring', stiffness: 500, damping: 20 }}
-                                    onClick={() =>
-                                        setSelectedPlayers((prev) =>
-                                            prev.filter((id) => id !== player.id),
-                                        )
-                                    }
+                                    onClick={() => setSelectedPlayers((prev) => prev.filter((id) => id !== player.id))}
                                     className="group flex flex-col items-center gap-1"
                                 >
                                     <div className="relative">
@@ -272,10 +253,7 @@ const GameGenerator: FC<{
                             ))}
                         </AnimatePresence>
                         {Array.from({ length: Math.max(0, 4 - selectedPlayers.length) }).map((_, i) => (
-                            <div
-                                key={`empty-${i}`}
-                                className="flex flex-col items-center gap-1"
-                            >
+                            <div key={`empty-${i}`} className="flex flex-col items-center gap-1">
                                 <div
                                     className={cn(
                                         'flex size-11 items-center justify-center rounded-full border-2 border-dashed border-muted-foreground/20',
@@ -297,9 +275,7 @@ const GameGenerator: FC<{
             {/* Available Players */}
             <div className="space-y-3">
                 <div className="flex items-center gap-3">
-                    <h3 className="font-display text-lg uppercase tracking-wider text-muted-foreground">
-                        Available
-                    </h3>
+                    <h3 className="font-display text-lg tracking-wider text-muted-foreground uppercase">Available</h3>
                     <Input
                         type="search"
                         placeholder="Search..."
@@ -331,9 +307,7 @@ const GameGenerator: FC<{
                                     </div>
                                     <div className="min-w-0 flex-1">
                                         <div className="truncate font-semibold">{player.name}</div>
-                                        {lbUser && (
-                                            <div className="text-xs text-muted-foreground">{lbUser.mmr} MMR</div>
-                                        )}
+                                        {lbUser && <div className="text-xs text-muted-foreground">{lbUser.mmr} MMR</div>}
                                     </div>
                                 </motion.button>
                             );
@@ -400,7 +374,17 @@ function lastNWeeks(n: number) {
 
 const VALID_TABS = ['new-game', 'stats', 'history', 'teams'];
 
-const LeaguePage: FC<LeaguePageProps> = ({ league: { data: league }, currentSeason, selectedSeasonId, leaderboard, headToHead, playerTeammateStats, teamStats, stats, can }) => {
+const LeaguePage: FC<LeaguePageProps> = ({
+    league: { data: league },
+    currentSeason,
+    selectedSeasonId,
+    leaderboard,
+    headToHead,
+    playerTeammateStats,
+    teamStats,
+    stats,
+    can,
+}) => {
     const initialTab = (() => {
         const params = new URLSearchParams(window.location.search);
         const tab = params.get('tab');
@@ -443,11 +427,7 @@ const LeaguePage: FC<LeaguePageProps> = ({ league: { data: league }, currentSeas
                 <SectionHeading className={'flex w-full flex-col justify-between gap-2 md:flex-row'}>
                     {league.name}
                     <div className="flex items-center gap-3">
-                        <SeasonBadge
-                            league={league}
-                            currentSeason={currentSeason}
-                            canStartSeason={can.startSeason}
-                        />
+                        <SeasonBadge league={league} currentSeason={currentSeason} canStartSeason={can.startSeason} />
                         <CopyLeagueJoinLink league={league} />
                     </div>
                 </SectionHeading>
@@ -459,9 +439,7 @@ const LeaguePage: FC<LeaguePageProps> = ({ league: { data: league }, currentSeas
                             <TabsTrigger value="history">History</TabsTrigger>
                             <TabsTrigger value="teams">Teams</TabsTrigger>
                         </TabsList>
-                        {activeTab !== 'new-game' && (
-                            <SeasonSelector league={league} selectedSeasonId={selectedSeasonId} activeTab={activeTab} />
-                        )}
+                        {activeTab !== 'new-game' && <SeasonSelector league={league} selectedSeasonId={selectedSeasonId} activeTab={activeTab} />}
                     </div>
                     <TabsContent value={'new-game'} className={'space-y-8'}>
                         <div className={'grid gap-8 lg:grid-cols-3'}>
@@ -632,7 +610,7 @@ function GamesByWeek({ gamesByWeek }: { gamesByWeek: { week: string; count: numb
                     tickLine={false}
                     tickMargin={10}
                     axisLine={false}
-                // tickFormatter={(value) => value.slice(0, 3)}
+                    // tickFormatter={(value) => value.slice(0, 3)}
                 />
                 <ChartTooltip content={<ChartTooltipContent />} />
                 <ChartLegend content={<ChartLegendContent payload={undefined} />} />
@@ -642,7 +620,7 @@ function GamesByWeek({ gamesByWeek }: { gamesByWeek: { week: string; count: numb
     );
 }
 
-type UserId = User["id"]
+type UserId = User['id'];
 
 function NewGameSection({ league, leaderboard }: { league: League; leaderboard: Leaderboard }) {
     const [isGeneratorOpen, setIsGeneratorOpen] = useState(false);
@@ -658,7 +636,7 @@ function NewGameSection({ league, leaderboard }: { league: League; leaderboard: 
     return (
         <div className={'col-span-3 space-y-6'}>
             <div ref={formRef}>
-                <NewGameForm teams={generatedTeams ?? []} onTeamsChange={handleTeamsGenerated} league={league} />
+                <NewGameForm teams={generatedTeams ?? []} onTeamsChange={handleTeamsGenerated} league={league} leaderboard={leaderboard} />
             </div>
 
             <Collapsible open={isGeneratorOpen} onOpenChange={setIsGeneratorOpen}>
@@ -669,11 +647,13 @@ function NewGameSection({ league, leaderboard }: { league: League; leaderboard: 
                                 <Users className="size-5 text-primary" />
                             </div>
                             <div className="text-left">
-                                <h3 className="font-display text-lg uppercase tracking-wider">Generate Teams</h3>
+                                <h3 className="font-display text-lg tracking-wider uppercase">Generate Teams</h3>
                                 <p className="text-sm text-muted-foreground">Optional — split players into balanced teams</p>
                             </div>
                         </div>
-                        <ChevronDown className={cn('size-5 text-muted-foreground transition-transform duration-200', isGeneratorOpen && 'rotate-180')} />
+                        <ChevronDown
+                            className={cn('size-5 text-muted-foreground transition-transform duration-200', isGeneratorOpen && 'rotate-180')}
+                        />
                     </button>
                 </CollapsibleTrigger>
                 <CollapsibleContent>

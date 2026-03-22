@@ -14,7 +14,6 @@ import {
     getExpandedRowModel,
     getFilteredRowModel,
     getSortedRowModel,
-    Row,
     SortingState,
     useReactTable,
 } from '@tanstack/react-table';
@@ -268,21 +267,16 @@ const ExpandedPlayerStats: FC<{
         <div className="grid gap-6 px-6 py-4 sm:grid-cols-2">
             {opponents.length > 0 && (
                 <div>
-                    <h4 className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                        vs Opponents
-                    </h4>
+                    <h4 className="mb-2 text-xs font-semibold tracking-wider text-muted-foreground uppercase">vs Opponents</h4>
                     <div className="space-y-1.5">
-                        {opponents.map(({ opponent, wins, losses, total, winRate }) => (
+                        {opponents.map(({ opponent, wins, losses, winRate }) => (
                             <div key={opponent.id} className="flex items-center gap-2 text-sm">
                                 <UserAvatar user={opponent} className="size-6" />
                                 <span className="min-w-0 flex-1 truncate">{opponent.name}</span>
-                                <span className="tabular-nums text-muted-foreground">
+                                <span className="text-muted-foreground tabular-nums">
                                     {wins}W-{losses}L
                                 </span>
-                                <Badge
-                                    variant={winRate >= 0.5 ? 'success' : 'destructive'}
-                                    className="min-w-[3rem] justify-center"
-                                >
+                                <Badge variant={winRate >= 0.5 ? 'success' : 'destructive'} className="min-w-[3rem] justify-center">
                                     {Intl.NumberFormat('en-GB', { style: 'percent' }).format(winRate)}
                                 </Badge>
                             </div>
@@ -292,9 +286,7 @@ const ExpandedPlayerStats: FC<{
             )}
             {teammates.length > 0 && (
                 <div>
-                    <h4 className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                        with Teammates
-                    </h4>
+                    <h4 className="mb-2 text-xs font-semibold tracking-wider text-muted-foreground uppercase">with Teammates</h4>
                     <div className="space-y-1.5">
                         {teammates.map(({ teammate, games, wins, winRate }, index) => {
                             const isBest = index === 0 && games >= 3;
@@ -302,16 +294,11 @@ const ExpandedPlayerStats: FC<{
                             return (
                                 <div key={teammate.id} className="flex items-center gap-2 text-sm">
                                     <UserAvatar user={teammate} className="size-6" />
-                                    <span className={cn('min-w-0 flex-1 truncate', isBest && 'font-semibold')}>
-                                        {teammate.name}
-                                    </span>
-                                    <span className="tabular-nums text-muted-foreground">
+                                    <span className={cn('min-w-0 flex-1 truncate', isBest && 'font-semibold')}>{teammate.name}</span>
+                                    <span className="text-muted-foreground tabular-nums">
                                         {wins}W/{games}G
                                     </span>
-                                    <Badge
-                                        variant={winRate >= 0.5 ? 'success' : 'destructive'}
-                                        className="min-w-[3rem] justify-center"
-                                    >
+                                    <Badge variant={winRate >= 0.5 ? 'success' : 'destructive'} className="min-w-[3rem] justify-center">
                                         {Intl.NumberFormat('en-GB', { style: 'percent' }).format(winRate)}
                                     </Badge>
                                     {isBest && <span title="Best teammate">★</span>}

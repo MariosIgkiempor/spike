@@ -2,10 +2,10 @@ import { Button } from '@/components/ui/button';
 import { Drawer, DrawerContent, DrawerTrigger } from '@/components/ui/drawer';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { useMediaQuery } from '@/hooks/use-media-query';
+import { cn } from '@/lib/utils';
 import { User } from '@/types';
 import { FC, useState } from 'react';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from './ui/command';
-import { cn } from '@/lib/utils';
 
 interface PlayerInputProps {
     value: number | null;
@@ -27,7 +27,7 @@ export const PlayerInput: FC<PlayerInputProps> = ({ players, value, onChange, la
             <div className={'space-y-2'}>
                 <Popover open={open} onOpenChange={setOpen}>
                     <PopoverTrigger asChild>
-                        <Button variant="outline" className={cn("w-full justify-start", { "justify-end": mirrored })} disabled={disabled}>
+                        <Button variant="outline" className={cn('w-full justify-start', { 'justify-end': mirrored })} disabled={disabled}>
                             {value ? <>{players.find((p) => p.id === value)!.name}</> : <>{label}</>}
                         </Button>
                     </PopoverTrigger>
@@ -74,13 +74,7 @@ export const PlayerInput: FC<PlayerInputProps> = ({ players, value, onChange, la
     );
 };
 
-function PlayerList({
-    players,
-    setSelectedPlayer,
-}: {
-    players: User[];
-    setSelectedPlayer: (player: User | null) => void;
-}) {
+function PlayerList({ players, setSelectedPlayer }: { players: User[]; setSelectedPlayer: (player: User | null) => void }) {
     return (
         <Command>
             <CommandInput placeholder="Search players..." />

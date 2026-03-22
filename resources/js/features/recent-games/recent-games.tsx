@@ -10,7 +10,6 @@ import {
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
-import { PageSection } from '@/components/ui/pageSection';
 import { cn } from '@/lib/utils';
 import { Game, League, Team } from '@/types';
 import { Link, router } from '@inertiajs/react';
@@ -29,9 +28,7 @@ export const RecentGames: FC<RecentGamesProps> = ({ league, canDeleteGames }) =>
 
     const filteredGames = league.games.filter((game) => {
         if (searchQuery.length === 0) return true;
-        return game.teams.some((team) =>
-            team.players.some((player) => player.name.toLowerCase().includes(searchQuery.toLowerCase())),
-        );
+        return game.teams.some((team) => team.players.some((player) => player.name.toLowerCase().includes(searchQuery.toLowerCase())));
     });
 
     return (
@@ -56,7 +53,7 @@ export const RecentGames: FC<RecentGamesProps> = ({ league, canDeleteGames }) =>
                         <Swords className="size-8 text-muted-foreground" />
                     </div>
                     <div className="text-center">
-                        <h3 className="font-display text-lg uppercase tracking-wider">No games yet</h3>
+                        <h3 className="font-display text-lg tracking-wider uppercase">No games yet</h3>
                         <p className="mt-1 text-sm text-muted-foreground">Record your first match to get started</p>
                     </div>
                 </motion.div>
@@ -73,7 +70,7 @@ export const RecentGames: FC<RecentGamesProps> = ({ league, canDeleteGames }) =>
                     <p className="text-sm text-muted-foreground">No games match your search</p>
                 </motion.div>
             ) : (
-                <ul className="flex flex-col items-center w-fit gap-4">
+                <ul className="flex w-fit flex-col items-center gap-4">
                     <AnimatePresence mode="popLayout">
                         {filteredGames.map((game, index) => (
                             <GameRecord key={game.id} game={game} index={index} canDeleteGames={canDeleteGames} />
@@ -112,7 +109,7 @@ const GameRecord: FC<{ game: Game; index: number; canDeleteGames: boolean }> = (
                     {game.teams[0].score}
                 </span>
 
-                <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">vs</span>
+                <span className="text-xs font-semibold tracking-wider text-muted-foreground uppercase">vs</span>
 
                 <span
                     className={cn(

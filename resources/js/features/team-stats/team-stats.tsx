@@ -29,9 +29,7 @@ export const TeamStats: FC<TeamStatsProps> = ({ stats }) => {
         let result = stats;
 
         if (search.length > 0) {
-            result = result.filter((team) =>
-                team.players.some((p) => p.name.toLowerCase().includes(search.toLowerCase())),
-            );
+            result = result.filter((team) => team.players.some((p) => p.name.toLowerCase().includes(search.toLowerCase())));
         }
 
         if (sortKey) {
@@ -82,17 +80,14 @@ export const TeamStats: FC<TeamStatsProps> = ({ stats }) => {
                 />
                 <div className="flex items-center gap-2">
                     <span className="text-xs text-muted-foreground">Sort:</span>
-                    {([
-                        { key: 'wins', label: 'Wins' },
-                        { key: 'winRate', label: 'Win %' },
-                        { key: 'played', label: 'Played' },
-                    ] as const).map(({ key, label }) => (
-                        <Button
-                            key={key}
-                            variant={sortKey === key ? 'default' : 'outline'}
-                            size="sm"
-                            onClick={() => toggleSort(key)}
-                        >
+                    {(
+                        [
+                            { key: 'wins', label: 'Wins' },
+                            { key: 'winRate', label: 'Win %' },
+                            { key: 'played', label: 'Played' },
+                        ] as const
+                    ).map(({ key, label }) => (
+                        <Button key={key} variant={sortKey === key ? 'default' : 'outline'} size="sm" onClick={() => toggleSort(key)}>
                             {label}
                             {sortKey === key && <span className="ml-1">{sortDesc ? '↓' : '↑'}</span>}
                         </Button>
@@ -116,7 +111,7 @@ export const TeamStats: FC<TeamStatsProps> = ({ stats }) => {
                         <Users className="size-8 text-muted-foreground" />
                     </div>
                     <div className="text-center">
-                        <h3 className="font-display text-lg uppercase tracking-wider">No team stats yet</h3>
+                        <h3 className="font-display text-lg tracking-wider uppercase">No team stats yet</h3>
                         <p className="mt-1 text-sm text-muted-foreground">Play some games and team combinations will appear here</p>
                     </div>
                 </motion.div>
@@ -137,7 +132,10 @@ export const TeamStats: FC<TeamStatsProps> = ({ stats }) => {
                     <AnimatePresence mode="popLayout">
                         {filteredStats.map((team, index) => (
                             <TeamStatsCard
-                                key={team.players.map((p) => p.id).sort().join('-')}
+                                key={team.players
+                                    .map((p) => p.id)
+                                    .sort()
+                                    .join('-')}
                                 team={team}
                                 rank={index + 1}
                                 index={index}
@@ -162,10 +160,7 @@ const TeamStatsCard: FC<{ team: TeamStats; rank: number; index: number }> = ({ t
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95 }}
             transition={{ duration: 0.3, delay: Math.min(index * 0.05, 0.5) }}
-            className={cn(
-                'grid grid-cols-[1fr_1fr_1fr_6fr] items-center gap-4 py-4',
-                rank <= 3 && 'border-primary/20',
-            )}
+            className={cn('grid grid-cols-[1fr_1fr_1fr_6fr] items-center gap-4 py-4', rank <= 3 && 'border-primary/20')}
         >
             <div>
                 <RankBadge rank={rank} />
@@ -184,34 +179,24 @@ const TeamStatsCard: FC<{ team: TeamStats; rank: number; index: number }> = ({ t
                         </Avatar>
                     ))}
                 </div>
-                <p className="max-w-full truncate text-xs text-muted-foreground">
-                    {team.players.map((p) => p.name.split(' ')[0]).join(' & ')}
-                </p>
+                <p className="max-w-full truncate text-xs text-muted-foreground">{team.players.map((p) => p.name.split(' ')[0]).join(' & ')}</p>
             </div>
 
             <div className="flex flex-col gap-0.5">
                 <span className="font-display text-xl leading-none tabular-nums">
                     {team.won}/{losses}
                 </span>
-                <Badge
-                    variant={differential > 0 ? 'success' : differential < 0 ? 'destructive' : 'outline'}
-                    className="w-8"
-                >
+                <Badge variant={differential > 0 ? 'success' : differential < 0 ? 'destructive' : 'outline'} className="w-8">
                     {differential > 0 ? '+' : ''}
                     {differential}
                 </Badge>
             </div>
 
             <div className="hidden flex-col gap-0.5 sm:flex">
-                <span className="text-xs text-muted-foreground">
-                    {Intl.NumberFormat('en-GB', { style: 'percent' }).format(winRate)}
-                </span>
+                <span className="text-xs text-muted-foreground">{Intl.NumberFormat('en-GB', { style: 'percent' }).format(winRate)}</span>
                 <div className="h-1.5 overflow-hidden rounded-full bg-muted">
                     <div
-                        className={cn(
-                            'h-full rounded-full transition-all',
-                            winRate >= 0.5 ? 'bg-success' : 'bg-destructive',
-                        )}
+                        className={cn('h-full rounded-full transition-all', winRate >= 0.5 ? 'bg-success' : 'bg-destructive')}
                         style={{ width: `${winRate * 100}%` }}
                     />
                 </div>
@@ -229,14 +214,7 @@ const RankBadge: FC<{ rank: number }> = ({ rank }) => {
 
     if (rank <= 3) {
         return (
-            <div
-                className={cn(
-                    'flex size-9 items-center justify-center rounded-full font-display text-lg ring-1',
-                    medalStyles[rank],
-                )}
-            >
-                {rank}
-            </div>
+            <div className={cn('flex size-9 items-center justify-center rounded-full font-display text-lg ring-1', medalStyles[rank])}>{rank}</div>
         );
     }
 

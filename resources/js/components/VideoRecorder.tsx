@@ -21,24 +21,25 @@ export const VideoRecorder = ({ onVideoReady, onCancel }: VideoRecorderProps) =>
         video: {
             width: { min: 640, ideal: 1280 },
             height: { min: 480, ideal: 720 },
-            facingMode: 'environment'
+            facingMode: 'environment',
         },
         audio: true,
         askPermissionOnMount: true,
-        mediaRecorderOptions: MediaRecorder.isTypeSupported('video/mp4; codecs=h264') 
+        mediaRecorderOptions: MediaRecorder.isTypeSupported('video/mp4; codecs=h264')
             ? { mimeType: 'video/mp4; codecs=h264' }
-            : MediaRecorder.isTypeSupported('video/webm; codecs=vp9') 
-            ? { mimeType: 'video/webm; codecs=vp9' }
-            : { mimeType: 'video/webm' },
+            : MediaRecorder.isTypeSupported('video/webm; codecs=vp9')
+              ? { mimeType: 'video/webm; codecs=vp9' }
+              : { mimeType: 'video/webm' },
         onStop: (blobUrl, blob) => {
             console.log('Recording stopped:', { blobUrl, blob, size: blob?.size, type: blob?.type });
             setIsRecording(false);
-            
+
             if (intervalRef.current) {
                 clearInterval(intervalRef.current);
             }
-            
-            if (blob && blob.size > 1000) { // Ensure blob has meaningful content
+
+            if (blob && blob.size > 1000) {
+                // Ensure blob has meaningful content
                 setRecordedBlob(blob);
                 // Create a fresh URL for better playback compatibility
                 const videoUrl = URL.createObjectURL(blob);
@@ -78,7 +79,6 @@ export const VideoRecorder = ({ onVideoReady, onCancel }: VideoRecorderProps) =>
             console.log('Manually set video src:', video.src);
         }
     }, [customVideoUrl, mediaBlobUrl]);
-
 
     const handleStartRecording = () => {
         setIsRecording(true);
@@ -195,7 +195,7 @@ export const VideoRecorder = ({ onVideoReady, onCancel }: VideoRecorderProps) =>
                                 videoWidth: video.videoWidth,
                                 videoHeight: video.videoHeight,
                                 readyState: video.readyState,
-                                src: video.src
+                                src: video.src,
                             });
                         }}
                         onPlay={() => console.log('Video started playing')}

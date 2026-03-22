@@ -29,14 +29,21 @@ function combinations4(n: number): [number, number, number, number][] {
     return result;
 }
 
-function bestSplitMmrDiff(
-    p: [PlayerForGeneration, PlayerForGeneration, PlayerForGeneration, PlayerForGeneration],
-): SplitResult {
+function bestSplitMmrDiff(p: [PlayerForGeneration, PlayerForGeneration, PlayerForGeneration, PlayerForGeneration]): SplitResult {
     // The 3 unique ways to partition 4 players into 2v2
     const partitions: [[number, number], [number, number]][] = [
-        [[0, 1], [2, 3]],
-        [[0, 2], [1, 3]],
-        [[0, 3], [1, 2]],
+        [
+            [0, 1],
+            [2, 3],
+        ],
+        [
+            [0, 2],
+            [1, 3],
+        ],
+        [
+            [0, 3],
+            [1, 2],
+        ],
     ];
 
     let best: SplitResult | null = null;
@@ -80,8 +87,7 @@ export function generateFairTeamsFromPool(players: PlayerForGeneration[]): [numb
 
     const best = candidates.reduce((bestSoFar, candidate) => {
         const score = GAMES_WEIGHT * (candidate.totalGames / maxTotalGames) + MMR_WEIGHT * (candidate.split.diff / maxMmrDiff);
-        const bestScore =
-            GAMES_WEIGHT * (bestSoFar.totalGames / maxTotalGames) + MMR_WEIGHT * (bestSoFar.split.diff / maxMmrDiff);
+        const bestScore = GAMES_WEIGHT * (bestSoFar.totalGames / maxTotalGames) + MMR_WEIGHT * (bestSoFar.split.diff / maxMmrDiff);
         return score < bestScore ? candidate : bestSoFar;
     });
 
@@ -96,5 +102,8 @@ export function generateRandomTeamsFromPool(players: PlayerForGeneration[]): [nu
     const ids = players.map((p) => p.id);
     shuffleArray(ids);
 
-    return [[ids[0], ids[1]], [ids[2], ids[3]]];
+    return [
+        [ids[0], ids[1]],
+        [ids[2], ids[3]],
+    ];
 }
