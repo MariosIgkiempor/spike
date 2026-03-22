@@ -35,9 +35,7 @@ export const RecentGames: FC<RecentGamesProps> = ({ league, canDeleteGames }) =>
     });
 
     return (
-        <PageSection
-            title={'Recent Games'}
-        >
+        <>
             <div>
                 <Input
                     type="search"
@@ -50,7 +48,7 @@ export const RecentGames: FC<RecentGamesProps> = ({ league, canDeleteGames }) =>
             {league.games.length === 0 ? (
                 <div className="py-8 text-center text-muted-foreground">No games found.</div>
             ) : (
-                <ul className="flex flex-col gap-4">
+                <ul className="flex flex-col items-center w-fit gap-4">
                     <AnimatePresence mode="popLayout">
                         {filteredGames.map((game, index) => (
                             <GameRecord key={game.id} game={game} index={index} canDeleteGames={canDeleteGames} />
@@ -58,7 +56,7 @@ export const RecentGames: FC<RecentGamesProps> = ({ league, canDeleteGames }) =>
                     </AnimatePresence>
                 </ul>
             )}
-        </PageSection>
+        </>
     );
 };
 
@@ -70,7 +68,7 @@ const GameRecord: FC<{ game: Game; index: number; canDeleteGames: boolean }> = (
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95 }}
             transition={{ duration: 0.3, delay: Math.min(index * 0.05, 0.5) }}
-            className="bg-card py-4"
+            className="py-4"
         >
             <div className="mb-3 flex items-center justify-center gap-4 text-xs text-muted-foreground">
                 <time>{format(game.createdAt, 'd MMM yyyy')}</time>

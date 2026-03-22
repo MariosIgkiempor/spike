@@ -5,6 +5,7 @@ import { useMediaQuery } from '@/hooks/use-media-query';
 import { User } from '@/types';
 import { FC, useState } from 'react';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from './ui/command';
+import { cn } from '@/lib/utils';
 
 interface PlayerInputProps {
     value: number | null;
@@ -14,9 +15,10 @@ interface PlayerInputProps {
     disabled?: boolean;
     players: User[];
     keepOpen?: boolean;
+    mirrored?: boolean;
 }
 
-export const PlayerInput: FC<PlayerInputProps> = ({ players, value, onChange, label, error, disabled, keepOpen = false }) => {
+export const PlayerInput: FC<PlayerInputProps> = ({ players, value, onChange, label, error, disabled, keepOpen = false, mirrored = false }) => {
     const [open, setOpen] = useState(false);
     const isDesktop = useMediaQuery('(min-width: 768px)');
 
@@ -25,7 +27,7 @@ export const PlayerInput: FC<PlayerInputProps> = ({ players, value, onChange, la
             <div className={'space-y-2'}>
                 <Popover open={open} onOpenChange={setOpen}>
                     <PopoverTrigger asChild>
-                        <Button variant="outline" className="w-full justify-start" disabled={disabled}>
+                        <Button variant="outline" className={cn("w-full justify-start", { "justify-end": mirrored })} disabled={disabled}>
                             {value ? <>{players.find((p) => p.id === value)!.name}</> : <>{label}</>}
                         </Button>
                     </PopoverTrigger>

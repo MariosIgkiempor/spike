@@ -4,6 +4,7 @@ import { PageContainer } from '@/components/ui/pageContainer';
 import { PageSection } from '@/components/ui/pageSection';
 import { SectionHeading } from '@/components/ui/sectionHeading';
 import { Statistic } from '@/components/ui/statistic';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
@@ -11,7 +12,7 @@ import { FormError } from '@/components/ui/formError';
 import { FormField } from '@/components/ui/formField';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Leaderboard, LeaderboardTable, LeaderboardUser } from '@/features/leaderboard/leaderboard-table';
+import { HeadToHead, Leaderboard, LeaderboardTable, LeaderboardUser, PlayerTeammateStats } from '@/features/leaderboard/leaderboard-table';
 import { NewGameForm } from '@/features/new-game/newGameForm';
 import { RecentGames } from '@/features/recent-games/recent-games';
 import { TeamStats } from '@/features/team-stats/team-stats';
@@ -23,9 +24,9 @@ import { shuffleArray } from '@/lib/shuffle-array';
 import { Game, League, PageProps, Resource, Season, Team, User } from '@/types';
 import { Head, router, useForm } from '@inertiajs/react';
 import { format, isWithinInterval, startOfWeek, subWeeks } from 'date-fns';
-import { ArrowRight, Check, HelpCircle, Plus, Scale, Shuffle, Users, X } from 'lucide-react';
+import { Check, ChevronDown, HelpCircle, Plus, Scale, Shuffle, Users, X } from 'lucide-react';
 import { AnimatePresence, motion } from 'motion/react';
-import { Dispatch, FC, SetStateAction, useState } from 'react';
+import { Dispatch, FC, SetStateAction, useRef, useState } from 'react';
 import { Bar, BarChart, CartesianGrid, XAxis } from 'recharts';
 import { toast } from 'sonner';
 
@@ -145,11 +146,8 @@ const GameGenerator: FC<{
     players: User[];
     selectedPlayers: number[];
     setSelectedPlayers: Dispatch<SetStateAction<number[]>>;
-    generatedTeams: number[][];
-    teamGenerationKey: number;
     onTeamsGenerated?: (teams: number[][]) => void;
-    onSwitchToForm?: () => void;
-}> = ({ leaderboard, players, selectedPlayers, setSelectedPlayers, generatedTeams, teamGenerationKey, onTeamsGenerated, onSwitchToForm }) => {
+}> = ({ leaderboard, players, selectedPlayers, setSelectedPlayers, onTeamsGenerated }) => {
     const generateFairTeams = () => {
         // Map selected IDs to full user objects with MMR
         const selectedUsers = selectedPlayers.map((id) => leaderboard.find((u) => u.id === id)).filter((u): u is LeaderboardUser => !!u);
@@ -164,7 +162,7 @@ const GameGenerator: FC<{
         let sumB = 0;
 
         sorted.forEach((user) => {
-            if (sumA <= sumB) {
+            if (sumA < sumB || (sumA === sumB && teamA.length <= teamB.length)) {
                 teamA.push(user.id);
                 sumA += user.mmr;
             } else {
@@ -195,20 +193,11 @@ const GameGenerator: FC<{
         onTeamsGenerated?.(teams);
     };
 
-    const teamMMR = (team: number[]) => {
-        const players = team
-            .map((playerId) => leaderboard.find((u) => u.id === playerId))
-            .filter((u) => u !== undefined)
-            .map((u) => u.mmr);
-        return players.reduce((a, b) => a + b, 0);
-    };
-
     const outPlayers = players.filter((p) => !selectedPlayers.includes(p.id));
     const inPlayers = selectedPlayers
         .map((id) => leaderboard.find((u) => u.id === id))
         .filter((u): u is LeaderboardUser => !!u);
     const isFull = selectedPlayers.length >= 4;
-    const hasTeams = generatedTeams.length === 2 && generatedTeams[0].length > 0;
 
     return (
         <div className="space-y-6">
@@ -284,133 +273,6 @@ const GameGenerator: FC<{
                     </div>
                 </div>
             </motion.div>
-
-            {/* Generated Teams */}
-            <AnimatePresence>
-                {hasTeams && (
-                    <motion.div
-                        initial={{ opacity: 0, height: 0 }}
-                        animate={{ opacity: 1, height: 'auto' }}
-                        exit={{ opacity: 0, height: 0 }}
-                        transition={{ duration: 0.5, type: 'spring', bounce: 0.15 }}
-                        className="overflow-hidden"
-                    >
-                        <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-3 sm:gap-5">
-                            {/* Team A */}
-                            <motion.div
-                                key={`teamA-${teamGenerationKey}`}
-                                initial={{ opacity: 0, x: -30 }}
-                                animate={{ opacity: 1, x: 0 }}
-                                transition={{ duration: 0.5, delay: 0.1 }}
-                                className="overflow-hidden rounded-2xl border border-primary/25 bg-card shadow-sm"
-                            >
-                                <div className="h-1 bg-gradient-to-r from-primary to-primary/40" />
-                                <div className="p-4">
-                                    <div className="mb-3 flex items-center justify-between">
-                                        <h4 className="font-display text-lg uppercase tracking-wider text-primary">
-                                            Team A
-                                        </h4>
-                                        <span className="rounded-md bg-primary/10 px-2 py-0.5 text-xs font-bold text-primary">
-                                            {teamMMR(generatedTeams[0])} MMR
-                                        </span>
-                                    </div>
-                                    <div className="space-y-2">
-                                        {generatedTeams[0].map((id, i) => {
-                                            const user = leaderboard.find((u) => u.id === id)!;
-                                            return (
-                                                <motion.div
-                                                    key={`${id}-a-${teamGenerationKey}`}
-                                                    initial={{ opacity: 0, x: -15 }}
-                                                    animate={{ opacity: 1, x: 0 }}
-                                                    transition={{ duration: 0.3, delay: 0.3 + i * 0.1 }}
-                                                    className="flex items-center gap-3"
-                                                >
-                                                    <UserAvatar user={user} />
-                                                    <div>
-                                                        <div className="font-semibold leading-tight">{user.name}</div>
-                                                        <div className="text-xs text-muted-foreground">
-                                                            {user.mmr} MMR
-                                                        </div>
-                                                    </div>
-                                                </motion.div>
-                                            );
-                                        })}
-                                    </div>
-                                </div>
-                            </motion.div>
-
-                            {/* VS Badge */}
-                            <motion.div
-                                key={`vs-${teamGenerationKey}`}
-                                initial={{ opacity: 0, scale: 0 }}
-                                animate={{ opacity: 1, scale: 1 }}
-                                transition={{ duration: 0.4, delay: 0.2, type: 'spring', stiffness: 250 }}
-                            >
-                                <div className="flex size-14 items-center justify-center rounded-full bg-gradient-to-br from-secondary to-secondary/80 shadow-lg sm:size-16">
-                                    <span className="font-display text-2xl tracking-wider text-secondary-foreground sm:text-3xl">
-                                        VS
-                                    </span>
-                                </div>
-                            </motion.div>
-
-                            {/* Team B */}
-                            <motion.div
-                                key={`teamB-${teamGenerationKey}`}
-                                initial={{ opacity: 0, x: 30 }}
-                                animate={{ opacity: 1, x: 0 }}
-                                transition={{ duration: 0.5, delay: 0.1 }}
-                                className="overflow-hidden rounded-2xl border border-accent/25 bg-card shadow-sm"
-                            >
-                                <div className="h-1 bg-gradient-to-r from-accent/40 to-accent" />
-                                <div className="p-4">
-                                    <div className="mb-3 flex items-center justify-between">
-                                        <h4 className="font-display text-lg uppercase tracking-wider text-accent">
-                                            Team B
-                                        </h4>
-                                        <span className="rounded-md bg-accent/10 px-2 py-0.5 text-xs font-bold text-accent">
-                                            {teamMMR(generatedTeams[1])} MMR
-                                        </span>
-                                    </div>
-                                    <div className="space-y-2">
-                                        {generatedTeams[1].map((id, i) => {
-                                            const user = leaderboard.find((u) => u.id === id)!;
-                                            return (
-                                                <motion.div
-                                                    key={`${id}-b-${teamGenerationKey}`}
-                                                    initial={{ opacity: 0, x: 15 }}
-                                                    animate={{ opacity: 1, x: 0 }}
-                                                    transition={{ duration: 0.3, delay: 0.3 + i * 0.1 }}
-                                                    className="flex items-center gap-3"
-                                                >
-                                                    <UserAvatar user={user} />
-                                                    <div>
-                                                        <div className="font-semibold leading-tight">{user.name}</div>
-                                                        <div className="text-xs text-muted-foreground">
-                                                            {user.mmr} MMR
-                                                        </div>
-                                                    </div>
-                                                </motion.div>
-                                            );
-                                        })}
-                                    </div>
-                                </div>
-                            </motion.div>
-                        </div>
-
-                        <motion.div
-                            initial={{ opacity: 0, y: 10 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ duration: 0.4, delay: 0.7 }}
-                            className="mt-4 flex justify-center"
-                        >
-                            <Button onClick={onSwitchToForm} size="lg" className="gap-2">
-                                <ArrowRight className="size-4" />
-                                Record Score
-                            </Button>
-                        </motion.div>
-                    </motion.div>
-                )}
-            </AnimatePresence>
 
             {/* Player Selection Lists */}
             <div className="grid grid-cols-2 gap-5">
@@ -528,13 +390,15 @@ type LeaguePageProps = PageProps & {
     currentSeason: Resource<Season> | null;
     selectedSeasonId: string;
     leaderboard: Leaderboard;
+    headToHead: HeadToHead;
+    playerTeammateStats: PlayerTeammateStats;
     teamStats: TeamStats[];
     stats: {
-        biggestWinStreak: {
+        currentWinStreak: {
             user: Resource<User>;
             winStreak: number;
         } | null;
-        biggestLoseStreak: {
+        currentLoseStreak: {
             user: Resource<User>;
             loseStreak: number;
         } | null;
@@ -542,16 +406,16 @@ type LeaguePageProps = PageProps & {
             mvp: {
                 user: Resource<User>;
                 winRate: number;
-            };
+            } | null;
             biggestL: {
                 team: Resource<Team>;
                 game: Resource<Game>;
                 scoreDifference: number;
-            };
-            mostImproved?: {
+            } | null;
+            mostImproved: {
                 user: Resource<User>;
                 improvement: number;
-            };
+            } | null;
         } | null;
     };
 };
@@ -567,7 +431,7 @@ function lastNWeeks(n: number) {
 
 const VALID_TABS = ['new-game', 'stats', 'history', 'teams'];
 
-const LeaguePage: FC<LeaguePageProps> = ({ league: { data: league }, currentSeason, selectedSeasonId, leaderboard, teamStats, stats, can }) => {
+const LeaguePage: FC<LeaguePageProps> = ({ league: { data: league }, currentSeason, selectedSeasonId, leaderboard, headToHead, playerTeammateStats, teamStats, stats, can }) => {
     const initialTab = (() => {
         const params = new URLSearchParams(window.location.search);
         const tab = params.get('tab');
@@ -644,20 +508,20 @@ const LeaguePage: FC<LeaguePageProps> = ({ league: { data: league }, currentSeas
                                 <Statistic label={'Total games'} value={league.games.length} />
                             </div>
                         </div>
-                        {(stats.biggestWinStreak || stats.biggestLoseStreak) && (
+                        {(stats.currentWinStreak || stats.currentLoseStreak) && (
                             <div className={'grid gap-8 lg:grid-cols-2'}>
-                                {stats.biggestWinStreak && (
+                                {stats.currentWinStreak && (
                                     <Statistic
-                                        label={'🥇 Biggest Win Streak 🥇'}
-                                        value={<UserCard user={stats.biggestWinStreak.user.data} />}
-                                        extra={`${stats.biggestWinStreak.winStreak} games`}
+                                        label={'🥇 Current Win Streak 🥇'}
+                                        value={<UserCard user={stats.currentWinStreak.user.data} />}
+                                        extra={`${stats.currentWinStreak.winStreak} games`}
                                     />
                                 )}
-                                {stats.biggestLoseStreak && (
+                                {stats.currentLoseStreak && (
                                     <Statistic
-                                        label={'🫠 Biggest Lose Streak 🫠'}
-                                        value={<UserCard user={stats.biggestLoseStreak.user.data} />}
-                                        extra={`${stats.biggestLoseStreak.loseStreak} games`}
+                                        label={'🫠 Current Lose Streak 🫠'}
+                                        value={<UserCard user={stats.currentLoseStreak.user.data} />}
+                                        extra={`${stats.currentLoseStreak.loseStreak} games`}
                                     />
                                 )}
                             </div>
@@ -711,16 +575,14 @@ const LeaguePage: FC<LeaguePageProps> = ({ league: { data: league }, currentSeas
                                 </div>
                             }
                         >
-                            <LeaderboardTable leaderboard={leaderboard} />
+                            <LeaderboardTable leaderboard={leaderboard} headToHead={headToHead} playerTeammateStats={playerTeammateStats} />
                         </PageSection>
                     </TabsContent>
                     <TabsContent value={'history'}>
                         <RecentGames league={league} canDeleteGames={can.deleteGames} />
                     </TabsContent>
                     <TabsContent value={'teams'}>
-                        <PageSection title={'Team stats'}>
-                            <TeamStats stats={teamStats} />
-                        </PageSection>
+                        <TeamStats stats={teamStats} />
                     </TabsContent>
                 </Tabs>
             </PageContainer>
@@ -735,36 +597,40 @@ const LastWeekStats: FC<{ lastWeek: NonNullable<LeaguePageProps['stats']['lastWe
         <>
             <SectionHeading>Last week</SectionHeading>
             <div className={'grid gap-8 lg:row-span-2 lg:grid-cols-3'}>
-                <Statistic
-                    label={'🔥 MVP 🔥'}
-                    value={<UserCard user={lastWeek.mvp.user.data} />}
-                    extra={`${new Intl.NumberFormat('en-GB', {
-                        style: 'percent',
-                    }).format(lastWeek.mvp.winRate)} win rate last week`}
-                />
-                <Statistic
-                    label={'🤡 Biggest L 🤡'}
-                    value={
-                        <div>
-                            <UserCard user={lastWeek.biggestL.team.data.players[0]} />
-                            <UserCard user={lastWeek.biggestL.team.data.players[1]} />
-                        </div>
-                    }
-                    extra={(() => {
-                        const nonLosingTeams = lastWeek.biggestL.game.data.teams.filter((t) => t.id !== lastWeek.biggestL.team.data.id);
-
-                        const nonLosingPlayers = nonLosingTeams
-                            .flatMap((t) => t.players)
-                            .map((p) => p.name)
-                            .join(' & ');
-
-                        return (
+                {lastWeek.mvp && (
+                    <Statistic
+                        label={'🔥 MVP 🔥'}
+                        value={<UserCard user={lastWeek.mvp.user.data} />}
+                        extra={`${new Intl.NumberFormat('en-GB', {
+                            style: 'percent',
+                        }).format(lastWeek.mvp.winRate)} win rate last week`}
+                    />
+                )}
+                {lastWeek.biggestL && (
+                    <Statistic
+                        label={'🤡 Biggest L 🤡'}
+                        value={
                             <div>
-                                Lost {nonLosingTeams[0].score} - {lastWeek.biggestL.team.data.score} to {nonLosingPlayers}
+                                <UserCard user={lastWeek.biggestL.team.data.players[0]} />
+                                <UserCard user={lastWeek.biggestL.team.data.players[1]} />
                             </div>
-                        );
-                    })()}
-                />
+                        }
+                        extra={(() => {
+                            const nonLosingTeams = lastWeek.biggestL.game.data.teams.filter((t) => t.id !== lastWeek.biggestL.team.data.id);
+
+                            const nonLosingPlayers = nonLosingTeams
+                                .flatMap((t) => t.players)
+                                .map((p) => p.name)
+                                .join(' & ');
+
+                            return (
+                                <div>
+                                    Lost {nonLosingTeams[0].score} - {lastWeek.biggestL.team.data.score} to {nonLosingPlayers}
+                                </div>
+                            );
+                        })()}
+                    />
+                )}
                 {lastWeek.mostImproved && (
                     <Statistic
                         label={'📈 Most improved 📈'}
@@ -807,44 +673,54 @@ function GamesByWeek({ gamesByWeek }: { gamesByWeek: { week: string; count: numb
     );
 }
 
-function NewGameSection({ league, leaderboard }: { league: League; leaderboard: Leaderboard }) {
-    const [activeTab, setActiveTab] = useState('generator');
-    const [selectedPlayers, setSelectedPlayers] = useState<number[]>([]);
-    const [generatedTeams, setGeneratedTeams] = useState<number[][]>([[], []]);
-    const [teamGenerationKey, setTeamGenerationKey] = useState(0);
+type UserId = User["id"]
 
-    const handleTeamsGenerated = (newTeams: number[][]) => {
+function NewGameSection({ league, leaderboard }: { league: League; leaderboard: Leaderboard }) {
+    const [isGeneratorOpen, setIsGeneratorOpen] = useState(false);
+    const [selectedPlayers, setSelectedPlayers] = useState<UserId[]>([]);
+    const [generatedTeams, setGeneratedTeams] = useState<UserId[][]>([[], []]);
+    const [teamGenerationKey, setTeamGenerationKey] = useState(0);
+    const formRef = useRef<HTMLDivElement>(null);
+
+    const handleTeamsGenerated = (newTeams: UserId[][]) => {
         setGeneratedTeams(newTeams);
         setTeamGenerationKey((prev) => prev + 1);
-    };
-
-    const handleSwitchToForm = () => {
-        setActiveTab('form');
+        formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     };
 
     return (
-        <PageSection title={'New Game'} className={'col-span-3'}>
-            <Tabs value={activeTab} onValueChange={setActiveTab}>
-                <TabsList>
-                    <TabsTrigger value="generator">Pick Teams</TabsTrigger>
-                    <TabsTrigger value="form">Record Game</TabsTrigger>
-                </TabsList>
-                <TabsContent value="generator" className="mt-6">
-                    <GameGenerator
-                        leaderboard={leaderboard}
-                        players={league.players}
-                        selectedPlayers={selectedPlayers}
-                        setSelectedPlayers={setSelectedPlayers}
-                        generatedTeams={generatedTeams}
-                        teamGenerationKey={teamGenerationKey}
-                        onTeamsGenerated={handleTeamsGenerated}
-                        onSwitchToForm={handleSwitchToForm}
-                    />
-                </TabsContent>
-                <TabsContent value="form" className="mt-6">
-                    <NewGameForm teams={generatedTeams ?? []} onTeamsChange={(newTeams) => handleTeamsGenerated(newTeams)} league={league} />
-                </TabsContent>
-            </Tabs>
-        </PageSection>
+        <div className={'col-span-3 space-y-6'}>
+            <div ref={formRef}>
+                <NewGameForm teams={generatedTeams ?? []} onTeamsChange={(newTeams) => handleTeamsGenerated(newTeams)} league={league} animationKey={teamGenerationKey} />
+            </div>
+
+            <Collapsible open={isGeneratorOpen} onOpenChange={setIsGeneratorOpen}>
+                <CollapsibleTrigger asChild>
+                    <button className="flex w-full items-center justify-between rounded-xl border bg-card p-4 transition-colors hover:bg-muted/50">
+                        <div className="flex items-center gap-3">
+                            <div className="flex size-10 items-center justify-center rounded-lg bg-primary/10">
+                                <Users className="size-5 text-primary" />
+                            </div>
+                            <div className="text-left">
+                                <h3 className="font-display text-lg uppercase tracking-wider">Generate Teams</h3>
+                                <p className="text-sm text-muted-foreground">Optional — split players into balanced teams</p>
+                            </div>
+                        </div>
+                        <ChevronDown className={cn('size-5 text-muted-foreground transition-transform duration-200', isGeneratorOpen && 'rotate-180')} />
+                    </button>
+                </CollapsibleTrigger>
+                <CollapsibleContent>
+                    <div className="mt-4">
+                        <GameGenerator
+                            leaderboard={leaderboard}
+                            players={league.players}
+                            selectedPlayers={selectedPlayers}
+                            setSelectedPlayers={setSelectedPlayers}
+                            onTeamsGenerated={handleTeamsGenerated}
+                        />
+                    </div>
+                </CollapsibleContent>
+            </Collapsible>
+        </div>
     );
 }

@@ -158,30 +158,32 @@ class LeaguePageController extends Controller
             'selectedSeasonId' => $selectedSeasonId,
             'leaderboard' => fn () => $league->leaderboard($statsSeason),
             'teamStats' => fn () => $league->teamStats($statsSeason),
+            'headToHead' => fn () => $league->headToHead($statsSeason),
+            'playerTeammateStats' => fn () => $league->playerTeammateStats($statsSeason),
             'stats' => fn () => [
-                'biggestWinStreak' => $biggestWinStreak ? [
+                'currentWinStreak' => $biggestWinStreak ? [
                     ...$biggestWinStreak,
                     'user' => $biggestWinStreak['user']->toResource(),
                 ] : null,
-                'biggestLoseStreak' => $biggestLoseStreak ? [
+                'currentLoseStreak' => $biggestLoseStreak ? [
                     ...$biggestLoseStreak,
                     'user' => $biggestLoseStreak['user']->toResource(),
                 ] : null,
-                'lastWeek' => $lastWeeksGames->count() > 0 && $weekBeforeGames->count() > 0 && $mvp && $biggestL && $mostImproved
+                'lastWeek' => $lastWeeksGames->count() > 0
                     ? [
-                        'mvp' => [
+                        'mvp' => $mvp ? [
                             'user' => User::find($mvp['user_id'])->toResource(),
                             'winRate' => $mvp['win_rate'],
-                        ],
-                        'biggestL' => [
+                        ] : null,
+                        'biggestL' => $biggestL ? [
                             'team' => $biggestL['team']->toResource(),
                             'game' => $biggestL['game']->toResource(),
                             'scoreDifference' => $biggestL['score_difference'],
-                        ],
-                        'mostImproved' => [
+                        ] : null,
+                        'mostImproved' => ($weekBeforeGames->count() > 0 && $mostImproved) ? [
                             'user' => User::find($mostImproved['user_id'])->toResource(),
                             'improvement' => $mostImproved['improvement'],
-                        ],
+                        ] : null,
                     ]
                     : null,
             ],

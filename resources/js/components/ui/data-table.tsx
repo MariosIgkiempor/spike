@@ -1,12 +1,14 @@
 import * as React from 'react';
-import { flexRender, Table as TableInstance } from '@tanstack/react-table';
+import { flexRender, Row, Table as TableInstance } from '@tanstack/react-table';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from './table';
 
 interface DataTableProps<TData> {
     table: TableInstance<TData>;
+    renderSubComponent?: (props: { row: Row<TData> }) => React.ReactNode;
+    onRowClick?: (row: Row<TData>) => void;
 }
 
-export function DataTable<TData>({ table }: DataTableProps<TData>) {
+export function DataTable<TData>({ table, renderSubComponent, onRowClick }: DataTableProps<TData>) {
     return (
         <div className="">
             <Table>
@@ -26,13 +28,25 @@ export function DataTable<TData>({ table }: DataTableProps<TData>) {
                 <TableBody>
                     {table.getRowModel().rows?.length ? (
                         table.getRowModel().rows.map((row) => (
-                            <TableRow key={row.id}>
-                                {row.getVisibleCells().map((cell) => (
-                                    <TableCell key={cell.id}>
-                                        {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                                    </TableCell>
-                                ))}
-                            </TableRow>
+                            <React.Fragment key={row.id}>
+                                <TableRow
+                                    className={onRowClick ? 'cursor-pointer' : ''}
+                                    onClick={() => onRowClick?.(row)}
+                                >
+                                    {row.getVisibleCells().map((cell) => (
+                                        <TableCell key={cell.id}>
+                                            {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                                        </TableCell>
+                                    ))}
+                                </TableRow>
+                                {renderSubComponent && row.getIsExpanded() && (
+                                    <TableRow>
+                                        <TableCell colSpan={row.getVisibleCells().length} className="p-0">
+                                            {renderSubComponent({ row })}
+                                        </TableCell>
+                                    </TableRow>
+                                )}
+                            </React.Fragment>
                         ))
                     ) : (
                         <TableRow>

@@ -5,11 +5,11 @@ import { DatePicker } from '@/components/ui/date-picker';
 import { NumberInput } from '@/components/ui/number-input';
 import { UserAvatar } from '@/features/users/user-card';
 import { cn } from '@/lib/utils';
-import { League } from '@/types';
+import { League, User } from '@/types';
 import { router, useForm } from '@inertiajs/react';
 import { Calendar, Video } from 'lucide-react';
 import { motion } from 'motion/react';
-import { FC, FormEvent } from 'react';
+import { FC, FormEvent, ReactNode } from 'react';
 import { toast } from 'sonner';
 import { route } from 'ziggy-js';
 
@@ -27,9 +27,10 @@ type NewGameFormProps = {
     league: League;
     teams: number[][];
     onTeamsChange: (teams: number[][]) => void;
+    animationKey?: number;
 };
 
-export const NewGameForm: FC<NewGameFormProps> = ({ league, teams, onTeamsChange }) => {
+export const NewGameForm: FC<NewGameFormProps> = ({ league, teams, onTeamsChange, animationKey = 0 }) => {
     const { data, setData, post, transform, processing, errors, reset } = useForm<NewGameFormData>({
         league_id: league.id,
         team1_score: 21,
@@ -98,46 +99,40 @@ export const NewGameForm: FC<NewGameFormProps> = ({ league, teams, onTeamsChange
                     <Card className="border-primary/20">
                         <div className="h-1 bg-gradient-to-r from-primary to-primary/50" />
                         <CardContent className="space-y-4 pt-2">
-                            <h3 className="font-display text-xl uppercase tracking-wider text-primary">Team A</h3>
+                            <h3 className="text-right font-display text-xl uppercase tracking-wider text-primary">Team A</h3>
 
                             <div className="space-y-3">
-                                <div className="flex items-center gap-3">
-                                    {getPlayer(teams[0]?.[0] ?? null) ? (
-                                        <UserAvatar user={getPlayer(teams[0][0])!} />
-                                    ) : (
-                                        <div className="flex size-8 shrink-0 items-center justify-center rounded-full border-2 border-dashed border-muted-foreground/30">
-                                            <span className="text-xs text-muted-foreground">?</span>
-                                        </div>
-                                    )}
-                                    <div className="flex-1">
-                                        <PlayerInput
-                                            players={league.players}
-                                            value={teams[0]?.[0] ?? null}
-                                            onChange={(value) => handleTeamChange(0, 0, value)}
-                                            label="Player 1"
-                                            error={errors.team1}
-                                        />
-                                    </div>
-                                </div>
+                                <PlayerRow
+                                    player={getPlayer(teams[0]?.[0] ?? null)}
+                                    animationKey={animationKey}
+                                    staggerIndex={0}
+                                    mirrored
+                                >
+                                    <PlayerInput
+                                        players={league.players}
+                                        value={teams[0]?.[0] ?? null}
+                                        onChange={(value) => handleTeamChange(0, 0, value)}
+                                        label="Player 1"
+                                        error={errors.team1}
+                                        mirrored
+                                    />
+                                </PlayerRow>
 
-                                <div className="flex items-center gap-3">
-                                    {getPlayer(teams[0]?.[1] ?? null) ? (
-                                        <UserAvatar user={getPlayer(teams[0][1])!} />
-                                    ) : (
-                                        <div className="flex size-8 shrink-0 items-center justify-center rounded-full border-2 border-dashed border-muted-foreground/30">
-                                            <span className="text-xs text-muted-foreground">?</span>
-                                        </div>
-                                    )}
-                                    <div className="flex-1">
-                                        <PlayerInput
-                                            players={league.players}
-                                            value={teams[0]?.[1] ?? null}
-                                            onChange={(value) => handleTeamChange(0, 1, value)}
-                                            label="Player 2"
-                                            error={errors.team1}
-                                        />
-                                    </div>
-                                </div>
+                                <PlayerRow
+                                    player={getPlayer(teams[0]?.[1] ?? null)}
+                                    animationKey={animationKey}
+                                    staggerIndex={1}
+                                    mirrored
+                                >
+                                    <PlayerInput
+                                        players={league.players}
+                                        value={teams[0]?.[1] ?? null}
+                                        onChange={(value) => handleTeamChange(0, 1, value)}
+                                        label="Player 2"
+                                        error={errors.team1}
+                                        mirrored
+                                    />
+                                </PlayerRow>
                             </div>
 
                             <div className="flex flex-col items-center gap-2">
@@ -180,43 +175,33 @@ export const NewGameForm: FC<NewGameFormProps> = ({ league, teams, onTeamsChange
                             <h3 className="font-display text-xl uppercase tracking-wider text-accent">Team B</h3>
 
                             <div className="space-y-3">
-                                <div className="flex items-center gap-3">
-                                    {getPlayer(teams[1]?.[0] ?? null) ? (
-                                        <UserAvatar user={getPlayer(teams[1][0])!} />
-                                    ) : (
-                                        <div className="flex size-8 shrink-0 items-center justify-center rounded-full border-2 border-dashed border-muted-foreground/30">
-                                            <span className="text-xs text-muted-foreground">?</span>
-                                        </div>
-                                    )}
-                                    <div className="flex-1">
-                                        <PlayerInput
-                                            players={league.players}
-                                            value={teams[1]?.[0] ?? null}
-                                            onChange={(value) => handleTeamChange(1, 0, value)}
-                                            label="Player 1"
-                                            error={errors.team2}
-                                        />
-                                    </div>
-                                </div>
+                                <PlayerRow
+                                    player={getPlayer(teams[1]?.[0] ?? null)}
+                                    animationKey={animationKey}
+                                    staggerIndex={2}
+                                >
+                                    <PlayerInput
+                                        players={league.players}
+                                        value={teams[1]?.[0] ?? null}
+                                        onChange={(value) => handleTeamChange(1, 0, value)}
+                                        label="Player 1"
+                                        error={errors.team2}
+                                    />
+                                </PlayerRow>
 
-                                <div className="flex items-center gap-3">
-                                    {getPlayer(teams[1]?.[1] ?? null) ? (
-                                        <UserAvatar user={getPlayer(teams[1][1])!} />
-                                    ) : (
-                                        <div className="flex size-8 shrink-0 items-center justify-center rounded-full border-2 border-dashed border-muted-foreground/30">
-                                            <span className="text-xs text-muted-foreground">?</span>
-                                        </div>
-                                    )}
-                                    <div className="flex-1">
-                                        <PlayerInput
-                                            players={league.players}
-                                            value={teams[1]?.[1] ?? null}
-                                            onChange={(value) => handleTeamChange(1, 1, value)}
-                                            label="Player 2"
-                                            error={errors.team2}
-                                        />
-                                    </div>
-                                </div>
+                                <PlayerRow
+                                    player={getPlayer(teams[1]?.[1] ?? null)}
+                                    animationKey={animationKey}
+                                    staggerIndex={3}
+                                >
+                                    <PlayerInput
+                                        players={league.players}
+                                        value={teams[1]?.[1] ?? null}
+                                        onChange={(value) => handleTeamChange(1, 1, value)}
+                                        label="Player 2"
+                                        error={errors.team2}
+                                    />
+                                </PlayerRow>
                             </div>
 
                             <div className="flex flex-col items-center gap-2">
@@ -302,5 +287,33 @@ export const NewGameForm: FC<NewGameFormProps> = ({ league, teams, onTeamsChange
                 </Button>
             </motion.div>
         </form>
+    );
+};
+
+const PlayerRow: FC<{
+    player: User | null;
+    animationKey: number;
+    staggerIndex: number;
+    mirrored?: boolean;
+    children: ReactNode;
+}> = ({ player, animationKey, staggerIndex, mirrored, children }) => {
+    return (
+        <motion.div
+            key={`player-${staggerIndex}-${animationKey}`}
+            initial={animationKey > 0 && player ? { opacity: 0, scale: 0.8, y: -10 } : false}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            transition={{
+                duration: 0.4,
+                delay: player ? staggerIndex * 0.1 : 0,
+                type: 'spring',
+                stiffness: 300,
+                damping: 15,
+            }}
+        >
+            <div className={cn("flex gap-3 items-center", { "flex-row-reverse": mirrored })}>
+                <UserAvatar user={player} />
+                <div className="flex-grow flex-1">{children}</div>
+            </div>
+        </motion.div>
     );
 };

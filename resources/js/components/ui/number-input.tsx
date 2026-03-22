@@ -1,6 +1,12 @@
+import { Minus, Plus } from 'lucide-react';
 import { FC } from 'react';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
+import {
+    InputGroup,
+    InputGroupAddon,
+    InputGroupButton,
+    InputGroupInput,
+} from '@/components/ui/input-group';
+import { cn } from '@/lib/utils';
 
 interface NumberInputProps {
     value: number;
@@ -30,17 +36,8 @@ export const NumberInput: FC<NumberInputProps> = ({
     };
 
     return (
-        <div className={`flex items-center gap-2 ${className}`}>
-            <Button
-                type="button"
-                variant="outline"
-                size="icon"
-                onClick={decrement}
-                disabled={value <= min}
-            >
-                -
-            </Button>
-            <Input
+        <InputGroup className={cn('h-auto', className)}>
+            <InputGroupInput
                 type="number"
                 value={value}
                 onChange={(e) => {
@@ -51,17 +48,30 @@ export const NumberInput: FC<NumberInputProps> = ({
                 }}
                 min={min}
                 max={max}
-                className="text-center"
+                className="text-center [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
             />
-            <Button
-                type="button"
-                variant="outline"
-                size="icon"
-                onClick={increment}
-                disabled={value >= max}
-            >
-                +
-            </Button>
-        </div>
+            <InputGroupAddon align="inline-start">
+                <InputGroupButton
+                    variant="outline"
+                    size="icon-sm"
+                    onClick={decrement}
+                    disabled={value <= min}
+                    aria-label="Decrease"
+                >
+                    <Minus />
+                </InputGroupButton>
+            </InputGroupAddon>
+            <InputGroupAddon align="inline-end">
+                <InputGroupButton
+                    variant="outline"
+                    size="icon-sm"
+                    onClick={increment}
+                    disabled={value >= max}
+                    aria-label="Increase"
+                >
+                    <Plus />
+                </InputGroupButton>
+            </InputGroupAddon>
+        </InputGroup>
     );
-}; 
+};

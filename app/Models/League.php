@@ -44,10 +44,10 @@ class League extends Model
         $ratingDiff = abs($winnerAvg - $loserAvg);
 
         // Reduce K-factor for experienced players
-        if ($totalGames > 20) {
-            $baseK = 24;
-        } elseif ($totalGames > 50) {
+        if ($totalGames > 50) {
             $baseK = 16;
+        } elseif ($totalGames > 20) {
+            $baseK = 24;
         }
 
         // Increase K-factor for large rating differences
@@ -91,11 +91,12 @@ class League extends Model
         // Process games chronologically to update Elo
         $gameCount = 0;
         $streaks = []; // Track win/loss streaks for each player
+        $mmrHistory = []; // Track MMR progression per player
         $this->scopedGames($season)
             ->with(['teams.players'])
             ->orderBy('created_at')
             ->get()
-            ->each(function ($game) use (&$ratings, &$gameCount, &$streaks) {
+            ->each(function ($game) use (&$ratings, &$gameCount, &$streaks, &$mmrHistory) {
                 $gameCount++;
                 $teams = $game->teams;
                 if ($teams->count() < 2) {
@@ -150,6 +151,7 @@ class League extends Model
                     $finalDelta = $baseDelta * $streakMultiplier;
 
                     $ratings[$u->id] += $finalDelta;
+                    $mmrHistory[$u->id][] = ['game' => $gameCount, 'mmr' => round($ratings[$u->id])];
                 }
 
                 foreach ($loser->players as $u) {
@@ -170,6 +172,7 @@ class League extends Model
                     $finalDelta = $baseDelta * $streakMultiplier;
 
                     $ratings[$u->id] -= $finalDelta;
+                    $mmrHistory[$u->id][] = ['game' => $gameCount, 'mmr' => round($ratings[$u->id])];
                 }
             });
 
@@ -204,7 +207,7 @@ class League extends Model
             ->get();
 
         // Combine stats, compute win_rate and attach MMR, then sort by MMR
-        $leaderboard = $users->map(function ($user) use ($ratings) {
+        $leaderboard = $users->map(function ($user) use ($ratings, $mmrHistory) {
             $total = (int) $user->total_games;
             $wins = (int) $user->wins;
             $user->total_games = $total;
@@ -214,6 +217,7 @@ class League extends Model
             $user->win_rate = $total > 0 ? round($wins / $total, 2) : 0;
             // Players who haven't played get 0 MMR, others get their calculated rating
             $user->mmr = round($ratings[$user->id] ?? 0);
+            $user->mmr_history = $mmrHistory[$user->id] ?? [];
 
             return $user;
         })
@@ -294,6 +298,82 @@ class League extends Model
                 return $a['played'] <=> $b['played']; // Least games played first
             })
             ->values();
+    }
+
+    /**
+     * Get head-to-head win/loss records between all players.
+     *
+     * @return array<int, array<int, array{wins: int, losses: int}>>
+     */
+    public function headToHead(?Season $season = null): array
+    {
+        $h2h = [];
+        $games = $this->scopedGames($season)
+            ->with('teams.players')
+            ->get();
+
+        foreach ($games as $game) {
+            $teams = $game->teams;
+            if ($teams->count() < 2) {
+                continue;
+            }
+
+            $winner = $teams->firstWhere('pivot.won', true);
+            $loser = $teams->firstWhere('pivot.won', false);
+            if (! $winner || ! $loser) {
+                continue;
+            }
+
+            foreach ($winner->players as $wp) {
+                foreach ($loser->players as $lp) {
+                    $h2h[$wp->id][$lp->id]['wins'] = ($h2h[$wp->id][$lp->id]['wins'] ?? 0) + 1;
+                    $h2h[$wp->id][$lp->id]['losses'] = $h2h[$wp->id][$lp->id]['losses'] ?? 0;
+
+                    $h2h[$lp->id][$wp->id]['losses'] = ($h2h[$lp->id][$wp->id]['losses'] ?? 0) + 1;
+                    $h2h[$lp->id][$wp->id]['wins'] = $h2h[$lp->id][$wp->id]['wins'] ?? 0;
+                }
+            }
+        }
+
+        return $h2h;
+    }
+
+    /**
+     * Get win rates for each player paired with each teammate.
+     *
+     * @return array<int, array<int, array{games: int, wins: int}>>
+     */
+    public function playerTeammateStats(?Season $season = null): array
+    {
+        $stats = [];
+        $games = $this->scopedGames($season)
+            ->with('teams.players')
+            ->get();
+
+        foreach ($games as $game) {
+            foreach ($game->teams as $team) {
+                $players = $team->players;
+                $won = $team->pivot->won;
+
+                foreach ($players as $p1) {
+                    foreach ($players as $p2) {
+                        if ($p1->id === $p2->id) {
+                            continue;
+                        }
+
+                        if (! isset($stats[$p1->id][$p2->id])) {
+                            $stats[$p1->id][$p2->id] = ['games' => 0, 'wins' => 0];
+                        }
+                        $stats[$p1->id][$p2->id]['games']++;
+                        if ($won) {
+                            $stats[$p1->id][$p2->id]['wins']++;
+                        }
+                    }
+                }
+            }
+        }
+
+        return $stats;
     }
 
     /**
