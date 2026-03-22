@@ -4,7 +4,6 @@ import { Card, CardContent } from '@/components/ui/card';
 import { DatePicker } from '@/components/ui/date-picker';
 import { NumberInput } from '@/components/ui/number-input';
 import { LeaderboardUser } from '@/features/leaderboard/leaderboard-table';
-import { UserAvatar } from '@/features/users/user-card';
 import { cn } from '@/lib/utils';
 import { League, User } from '@/types';
 import { router, useForm } from '@inertiajs/react';
@@ -126,13 +125,12 @@ export const NewGameForm: FC<NewGameFormProps> = ({ league, leaderboard, teams, 
                                 <PlayerRow
                                     key={`player-0-${teams[0]?.[0] ?? 'empty'}`}
                                     player={getPlayer(teams[0]?.[0] ?? null)}
-                                    leaderboardUser={getLeaderboardUser(teams[0]?.[0] ?? null)}
                                     shouldAnimate={!isFirstRender.current}
                                     staggerIndex={0}
-                                    mirrored
                                 >
                                     <PlayerInput
                                         players={league.players}
+                                        leaderboard={leaderboard}
                                         value={teams[0]?.[0] ?? null}
                                         onChange={(value) => handleTeamChange(0, 0, value)}
                                         label="Player 1"
@@ -145,13 +143,12 @@ export const NewGameForm: FC<NewGameFormProps> = ({ league, leaderboard, teams, 
                                 <PlayerRow
                                     key={`player-1-${teams[0]?.[1] ?? 'empty'}`}
                                     player={getPlayer(teams[0]?.[1] ?? null)}
-                                    leaderboardUser={getLeaderboardUser(teams[0]?.[1] ?? null)}
                                     shouldAnimate={!isFirstRender.current}
                                     staggerIndex={1}
-                                    mirrored
                                 >
                                     <PlayerInput
                                         players={league.players}
+                                        leaderboard={leaderboard}
                                         value={teams[0]?.[1] ?? null}
                                         onChange={(value) => handleTeamChange(0, 1, value)}
                                         label="Player 2"
@@ -206,12 +203,12 @@ export const NewGameForm: FC<NewGameFormProps> = ({ league, leaderboard, teams, 
                                 <PlayerRow
                                     key={`player-2-${teams[1]?.[0] ?? 'empty'}`}
                                     player={getPlayer(teams[1]?.[0] ?? null)}
-                                    leaderboardUser={getLeaderboardUser(teams[1]?.[0] ?? null)}
                                     shouldAnimate={!isFirstRender.current}
                                     staggerIndex={2}
                                 >
                                     <PlayerInput
                                         players={league.players}
+                                        leaderboard={leaderboard}
                                         value={teams[1]?.[0] ?? null}
                                         onChange={(value) => handleTeamChange(1, 0, value)}
                                         label="Player 1"
@@ -223,12 +220,12 @@ export const NewGameForm: FC<NewGameFormProps> = ({ league, leaderboard, teams, 
                                 <PlayerRow
                                     key={`player-3-${teams[1]?.[1] ?? 'empty'}`}
                                     player={getPlayer(teams[1]?.[1] ?? null)}
-                                    leaderboardUser={getLeaderboardUser(teams[1]?.[1] ?? null)}
                                     shouldAnimate={!isFirstRender.current}
                                     staggerIndex={3}
                                 >
                                     <PlayerInput
                                         players={league.players}
+                                        leaderboard={leaderboard}
                                         value={teams[1]?.[1] ?? null}
                                         onChange={(value) => handleTeamChange(1, 1, value)}
                                         label="Player 2"
@@ -324,12 +321,10 @@ export const NewGameForm: FC<NewGameFormProps> = ({ league, leaderboard, teams, 
 
 const PlayerRow: FC<{
     player: User | null;
-    leaderboardUser?: LeaderboardUser | null;
     shouldAnimate: boolean;
     staggerIndex: number;
-    mirrored?: boolean;
     children: ReactNode;
-}> = ({ player, leaderboardUser, shouldAnimate, staggerIndex, mirrored, children }) => {
+}> = ({ player, shouldAnimate, staggerIndex, children }) => {
     return (
         <motion.div
             initial={shouldAnimate && player ? { opacity: 0, scale: 0.8, y: -10 } : false}
@@ -342,17 +337,7 @@ const PlayerRow: FC<{
                 damping: 15,
             }}
         >
-            <div className={cn('flex items-center gap-3', { 'flex-row-reverse': mirrored })}>
-                <UserAvatar user={player} />
-                <div className="flex-1 flex-grow">
-                    {children}
-                    {leaderboardUser && (
-                        <div className={cn('mt-1 text-xs text-muted-foreground', mirrored && 'text-right')}>
-                            {leaderboardUser.mmr} MMR &middot; {leaderboardUser.total_games} games
-                        </div>
-                    )}
-                </div>
-            </div>
+            {children}
         </motion.div>
     );
 };
