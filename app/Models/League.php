@@ -89,15 +89,14 @@ class League extends Model
         });
 
         // Process games chronologically to update Elo
-        $gameCount = 0;
+        $playerGameCounts = []; // Track per-player game counts for K-factor
         $streaks = []; // Track win/loss streaks for each player
         $mmrHistory = []; // Track MMR progression per player
         $this->scopedGames($season)
             ->with(['teams.players'])
             ->orderBy('created_at')
             ->get()
-            ->each(function ($game) use (&$ratings, &$gameCount, &$streaks, &$mmrHistory) {
-                $gameCount++;
+            ->each(function ($game) use (&$ratings, &$playerGameCounts, &$streaks, &$mmrHistory) {
                 $teams = $game->teams;
                 if ($teams->count() < 2) {
                     return;
@@ -108,15 +107,18 @@ class League extends Model
                     return;
                 }
 
-                // Compute average ratings (treat 0 MMR players as base rating for calculations)
-                $winnerAvg = $winner->players->avg(fn ($u) => $ratings[$u->id] ?: 1000);
-                $loserAvg = $loser->players->avg(fn ($u) => $ratings[$u->id] ?: 1000);
+                // Compute average ratings (treat unplayed players as base rating for calculations)
+                $winnerAvg = $winner->players->avg(fn ($u) => $ratings[$u->id] === 0 ? 1000 : $ratings[$u->id]);
+                $loserAvg = $loser->players->avg(fn ($u) => $ratings[$u->id] === 0 ? 1000 : $ratings[$u->id]);
 
                 // Calculate expected outcome
                 $expected = 1 / (1 + pow(10, ($loserAvg - $winnerAvg) / 400));
 
-                // Get dynamic K-factor
-                $K = $this->getKFactor($winnerAvg, $loserAvg, $gameCount);
+                // Increment per-player game counts
+                $allPlayers = $winner->players->merge($loser->players);
+                foreach ($allPlayers as $u) {
+                    $playerGameCounts[$u->id] = ($playerGameCounts[$u->id] ?? 0) + 1;
+                }
 
                 // Calculate score difference multiplier (0.5 to 1.0)
                 $winnerScore = $winner->pivot->score;
@@ -129,14 +131,15 @@ class League extends Model
                 $ratingDiff = $loserAvg - $winnerAvg;
                 $upsetBonus = $ratingDiff > 0 ? 1 + ($ratingDiff / 400) * 0.3 : 1;
 
-                // Calculate base delta
-                $baseDelta = $K * (1 - $expected) * $scoreMultiplier * $upsetBonus;
-
                 // Update each player's rating with streak bonuses
                 foreach ($winner->players as $u) {
                     if ($ratings[$u->id] === 0) {
                         $ratings[$u->id] = 1000; // Initialize new players at base rating
                     }
+
+                    // Get per-player K-factor based on their individual game count
+                    $K = $this->getKFactor($winnerAvg, $loserAvg, $playerGameCounts[$u->id]);
+                    $baseDelta = $K * (1 - $expected) * $scoreMultiplier * $upsetBonus;
 
                     // Initialize streak if not exists
                     if (! isset($streaks[$u->id])) {
@@ -151,13 +154,17 @@ class League extends Model
                     $finalDelta = $baseDelta * $streakMultiplier;
 
                     $ratings[$u->id] += $finalDelta;
-                    $mmrHistory[$u->id][] = ['game' => $gameCount, 'mmr' => round($ratings[$u->id])];
+                    $mmrHistory[$u->id][] = ['game' => $playerGameCounts[$u->id], 'mmr' => round($ratings[$u->id])];
                 }
 
                 foreach ($loser->players as $u) {
                     if ($ratings[$u->id] === 0) {
                         $ratings[$u->id] = 1000; // Initialize new players at base rating
                     }
+
+                    // Get per-player K-factor based on their individual game count
+                    $K = $this->getKFactor($winnerAvg, $loserAvg, $playerGameCounts[$u->id]);
+                    $baseDelta = $K * (1 - $expected) * $scoreMultiplier * $upsetBonus;
 
                     // Initialize streak if not exists
                     if (! isset($streaks[$u->id])) {
@@ -172,7 +179,7 @@ class League extends Model
                     $finalDelta = $baseDelta * $streakMultiplier;
 
                     $ratings[$u->id] -= $finalDelta;
-                    $mmrHistory[$u->id][] = ['game' => $gameCount, 'mmr' => round($ratings[$u->id])];
+                    $mmrHistory[$u->id][] = ['game' => $playerGameCounts[$u->id], 'mmr' => round($ratings[$u->id])];
                 }
             });
 
