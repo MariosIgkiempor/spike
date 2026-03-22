@@ -62,7 +62,7 @@ export const UserAvatar: FC<UserAvatarProps> = ({ user, size, variant, className
                     className,
                 )}
             >
-                <span className={cn('text-muted-foreground', fallbackVariants({ size, variant: 'muted' }))}>?</span>
+                <span className={cn('text-muted-foreground', fallbackVariants({ size, variant: 'muted' }), 'bg-transparent')}>?</span>
             </div>
         );
     }

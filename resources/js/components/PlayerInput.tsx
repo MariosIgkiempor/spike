@@ -76,7 +76,7 @@ export const PlayerInput: FC<PlayerInputProps> = ({
             aria-expanded={open}
             disabled={disabled}
             className={cn(
-                'flex h-auto w-full items-center rounded-md border border-input bg-background px-3 py-2 shadow-xs transition-colors hover:bg-accent/50',
+                'flex h-auto w-full items-center rounded-md border border-input bg-background px-3 py-2 shadow-xs transition-colors hover:bg-accent/50 [&:hover_[data-slot=avatar-fallback]]:bg-accent-foreground/15 [&:hover_[data-slot=avatar-fallback]]:text-accent-foreground',
                 'focus-visible:ring-ring/50 focus-visible:outline-none focus-visible:ring-[3px]',
                 'disabled:cursor-not-allowed disabled:opacity-50',
             )}
@@ -142,7 +142,7 @@ function PlayerList({
                                     const id = parseInt(value.split('-')[0]);
                                     setSelectedPlayer(players.find((p) => p.id === id) || null);
                                 }}
-                                className="flex items-center gap-2.5 py-2"
+                                className="flex items-center gap-2.5 py-2 data-[selected=true]:[&_[data-slot=avatar-fallback]]:bg-accent-foreground/15 data-[selected=true]:[&_[data-slot=avatar-fallback]]:text-accent-foreground"
                             >
                                 <UserAvatar user={player} size="sm" />
                                 <span className="flex-1 truncate font-medium">{player.name}</span>
