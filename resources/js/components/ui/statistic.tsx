@@ -9,7 +9,7 @@ export const Statistic: FC<{ label: string; value: ReactNode, extra?: ReactNode 
                 <CardTitle>{label}</CardTitle>
             </CardHeader>
             <CardContent>
-                <div className={'text-4xl font-display tracking-wide'}>{value}</div>
+                <div className={'text-4xl font-display tracking-wide min-w-0 overflow-hidden'}>{value}</div>
                 {extra ? <div className={'text-muted-foreground'}>{extra}</div> : null}
             </CardContent>
         </Card>

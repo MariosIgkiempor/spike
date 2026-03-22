@@ -3,9 +3,8 @@ import { PageContainer } from '@/components/ui/pageContainer';
 import { PageSection } from '@/components/ui/pageSection';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Statistic } from '@/components/ui/statistic';
-import { MyLeagues } from '@/features/leagues/my-leagues';
 import AppLayout from '@/layouts/app-layout';
-import { type BreadcrumbItem, League, PageProps, ResourceCollection } from '@/types';
+import { type BreadcrumbItem, PageProps } from '@/types';
 import { Deferred, Head, WhenVisible } from '@inertiajs/react';
 import { FC } from 'react';
 import { Bar, BarChart, CartesianGrid, XAxis } from 'recharts';
@@ -24,18 +23,16 @@ type GamesPerMonth = {
 };
 
 interface DashboardPageProps extends PageProps {
-    leagues: ResourceCollection<League>;
     gamesByMonth: GamesPerMonth[];
     totalGames: number;
     winRate: number;
 }
 
-export default function Dashboard({ leagues, gamesByMonth, totalGames, winRate }: DashboardPageProps) {
+export default function Dashboard({ gamesByMonth, totalGames, winRate }: DashboardPageProps) {
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Dashboard" />
             <PageContainer>
-                <MyLeagues leagues={leagues.data} />
                 <div className={'grid gap-6 md:grid-cols-2 lg:grid-cols-3'}>
                     <TotalGames totalGames={totalGames} />
                     <WinRate winRate={winRate} />

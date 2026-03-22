@@ -542,15 +542,15 @@ const LeaguePage: FC<LeaguePageProps> = ({
                                     <Statistic
                                         label={'Closest Rivalry'}
                                         value={
-                                            <div className="flex flex-col items-start gap-2 sm:flex-row sm:items-center sm:gap-3">
-                                                <div className="flex items-center gap-4">
-                                                    <div className="font-semibold">{closestRivalry.playerA.name}</div>
+                                            <div className="flex flex-wrap items-center gap-2">
+                                                <div className="flex min-w-0 items-center gap-2">
                                                     <UserAvatar user={closestRivalry.playerA} />
+                                                    <div className="truncate font-semibold">{closestRivalry.playerA.name}</div>
                                                 </div>
                                                 <span className="text-sm text-muted-foreground">vs</span>
-                                                <div className="flex items-center gap-4">
+                                                <div className="flex min-w-0 items-center gap-2">
                                                     <UserAvatar user={closestRivalry.playerB} />
-                                                    <div className="font-semibold">{closestRivalry.playerB.name}</div>
+                                                    <div className="truncate font-semibold">{closestRivalry.playerB.name}</div>
                                                 </div>
                                             </div>
                                         }
@@ -572,15 +572,15 @@ const LeaguePage: FC<LeaguePageProps> = ({
                                     <Statistic
                                         label={'Best Duo'}
                                         value={
-                                            <div className="flex flex-col items-start gap-2 sm:flex-row sm:items-center sm:gap-3">
-                                                <div className="flex items-center gap-4">
+                                            <div className="flex flex-wrap items-center gap-2">
+                                                <div className="flex min-w-0 items-center gap-2">
                                                     <UserAvatar user={bestDuo.playerA} />
-                                                    <div className="font-semibold">{bestDuo.playerA.name}</div>
+                                                    <div className="truncate font-semibold">{bestDuo.playerA.name}</div>
                                                 </div>
                                                 <span className="text-sm text-muted-foreground">&</span>
-                                                <div className="flex items-center gap-4">
+                                                <div className="flex min-w-0 items-center gap-2">
                                                     <UserAvatar user={bestDuo.playerB} />
-                                                    <div className="font-semibold">{bestDuo.playerB.name}</div>
+                                                    <div className="truncate font-semibold">{bestDuo.playerB.name}</div>
                                                 </div>
                                             </div>
                                         }
