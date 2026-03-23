@@ -36,6 +36,7 @@ export interface User {
     id: number;
     name: string;
     email: string;
+    avatar_url: string | null;
     email_verified_at: string;
     has_password: boolean;
 }

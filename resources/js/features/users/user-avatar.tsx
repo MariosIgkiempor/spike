@@ -1,4 +1,4 @@
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { cn } from '@/lib/utils';
 import { User } from '@/types';
 import { cva, type VariantProps } from 'class-variance-authority';
@@ -69,6 +69,7 @@ export const UserAvatar: FC<UserAvatarProps> = ({ user, size, variant, className
 
     return (
         <Avatar className={cn(avatarVariants({ size }), className)}>
+            {user.avatar_url && <AvatarImage src={user.avatar_url} alt={user.name} />}
             <AvatarFallback className={fallbackVariants({ variant, size })}>{getInitials(user.name)}</AvatarFallback>
         </Avatar>
     );

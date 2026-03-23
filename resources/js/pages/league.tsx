@@ -21,7 +21,7 @@ import { TeamStats } from '@/features/team-stats/team-stats';
 import { UserAvatar, UserCard } from '@/features/users/user-card';
 import Layout from '@/layouts/app-layout';
 import { generateFairTeamsFromPool, generateRandomTeamsFromPool } from '@/lib/team-generator';
-import { cn } from '@/lib/utils';
+import { cn, shortName } from '@/lib/utils';
 import { Game, League, PageProps, Resource, Season, Team, User } from '@/types';
 import { Head, router, useForm } from '@inertiajs/react';
 import { format, isWithinInterval, startOfWeek, subWeeks } from 'date-fns';
@@ -545,12 +545,12 @@ const LeaguePage: FC<LeaguePageProps> = ({
                                             <div className="flex flex-wrap items-center gap-2">
                                                 <div className="flex min-w-0 items-center gap-2">
                                                     <UserAvatar user={closestRivalry.playerA} />
-                                                    <div className="truncate font-semibold">{closestRivalry.playerA.name}</div>
+                                                    <div className="truncate font-semibold">{shortName(closestRivalry.playerA.name)}</div>
                                                 </div>
                                                 <span className="text-sm text-muted-foreground">vs</span>
                                                 <div className="flex min-w-0 items-center gap-2">
                                                     <UserAvatar user={closestRivalry.playerB} />
-                                                    <div className="truncate font-semibold">{closestRivalry.playerB.name}</div>
+                                                    <div className="truncate font-semibold">{shortName(closestRivalry.playerB.name)}</div>
                                                 </div>
                                             </div>
                                         }
@@ -575,12 +575,12 @@ const LeaguePage: FC<LeaguePageProps> = ({
                                             <div className="flex flex-wrap items-center gap-2">
                                                 <div className="flex min-w-0 items-center gap-2">
                                                     <UserAvatar user={bestDuo.playerA} />
-                                                    <div className="truncate font-semibold">{bestDuo.playerA.name}</div>
+                                                    <div className="truncate font-semibold">{shortName(bestDuo.playerA.name)}</div>
                                                 </div>
                                                 <span className="text-sm text-muted-foreground">&</span>
                                                 <div className="flex min-w-0 items-center gap-2">
                                                     <UserAvatar user={bestDuo.playerB} />
-                                                    <div className="truncate font-semibold">{bestDuo.playerB.name}</div>
+                                                    <div className="truncate font-semibold">{shortName(bestDuo.playerB.name)}</div>
                                                 </div>
                                             </div>
                                         }
@@ -679,7 +679,7 @@ const LastWeekStats: FC<{ lastWeek: NonNullable<LeaguePageProps['stats']['lastWe
 
                             const nonLosingPlayers = nonLosingTeams
                                 .flatMap((t) => t.players)
-                                .map((p) => p.name)
+                                .map((p) => shortName(p.name))
                                 .join(' & ');
 
                             return (
