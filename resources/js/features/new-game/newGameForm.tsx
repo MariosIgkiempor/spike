@@ -113,9 +113,9 @@ export const NewGameForm: FC<NewGameFormProps> = ({ league, leaderboard, teams, 
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
                 <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-[1fr_auto_1fr]">
                     {/* Team A */}
-                    <Card className="border-primary/20">
+                    <Card className="border-primary/20 pt-0">
                         <div className="h-1 bg-gradient-to-r from-primary to-primary/50" />
-                        <CardContent className="space-y-4 pt-2">
+                        <CardContent className="space-y-4 pt-4">
                             <div className="flex items-center justify-end gap-2">
                                 {teamAvgMMR(0) !== null && <span className="text-sm text-muted-foreground">Avg {teamAvgMMR(0)} MMR</span>}
                                 <h3 className="font-display text-xl tracking-wider text-primary uppercase">Team A</h3>
@@ -191,9 +191,9 @@ export const NewGameForm: FC<NewGameFormProps> = ({ league, leaderboard, teams, 
                     </motion.div>
 
                     {/* Team B */}
-                    <Card className="border-accent/20">
+                    <Card className="border-accent/20 pt-0">
                         <div className="h-1 bg-gradient-to-r from-accent/50 to-accent" />
-                        <CardContent className="space-y-4 pt-2">
+                        <CardContent className="space-y-4 pt-4">
                             <div className="flex items-center gap-2">
                                 <h3 className="font-display text-xl tracking-wider text-accent uppercase">Team B</h3>
                                 {teamAvgMMR(1) !== null && <span className="text-sm text-muted-foreground">Avg {teamAvgMMR(1)} MMR</span>}

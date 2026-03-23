@@ -218,8 +218,8 @@ export default function Welcome() {
                                         animate={{ y: [0, -8, 0] }}
                                         transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
                                     >
-                                        <Card className="relative w-[320px] gap-4 sm:w-[360px]">
-                                            <div className="h-1.5 rounded-t-xl bg-gradient-to-r from-primary via-secondary to-accent" />
+                                        <Card className="relative w-[320px] gap-4 pt-0 sm:w-[360px]">
+                                            <div className="h-1.5 bg-gradient-to-r from-primary via-secondary to-accent" />
                                             <CardHeader>
                                                 <div className="flex items-center justify-between">
                                                     <CardTitle className="font-display text-lg tracking-wider uppercase">
@@ -311,8 +311,8 @@ export default function Welcome() {
                                     viewport={{ once: true, margin: '-60px' }}
                                     transition={{ delay: i * 0.1, type: 'spring', stiffness: 80, damping: 20 }}
                                 >
-                                    <Card className="group h-full gap-4 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg">
-                                        <div className="h-1 rounded-t-xl bg-gradient-to-r from-primary to-accent" />
+                                    <Card className="group h-full gap-4 pt-0 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg">
+                                        <div className="h-1 bg-gradient-to-r from-primary to-accent" />
                                         <CardHeader>
                                             <div className="flex size-12 items-center justify-center rounded-xl bg-primary/10 text-primary transition-colors group-hover:bg-primary/20">
                                                 <feature.icon className="size-6" />
@@ -339,8 +339,8 @@ export default function Welcome() {
                             transition={{ duration: 0.5 }}
                             className="mx-auto max-w-3xl"
                         >
-                            <Card>
-                                <div className="h-1 rounded-t-xl bg-gradient-to-r from-primary to-accent" />
+                            <Card className="pt-0">
+                                <div className="h-1 bg-gradient-to-r from-primary to-accent" />
                                 <CardHeader>
                                     <CardTitle className="font-display text-xl tracking-wider uppercase">Leaderboard</CardTitle>
                                 </CardHeader>
@@ -406,8 +406,8 @@ export default function Welcome() {
                             viewport={{ once: true, margin: '-80px' }}
                             transition={{ duration: 0.5 }}
                         >
-                            <Card className="relative overflow-hidden text-center">
-                                <div className="h-1.5 rounded-t-xl bg-gradient-to-r from-primary via-secondary to-accent" />
+                            <Card className="relative overflow-hidden pt-0 text-center">
+                                <div className="h-1.5 bg-gradient-to-r from-primary via-secondary to-accent" />
                                 <CardContent className="py-12 md:py-16">
                                     <h2 className="font-display text-4xl tracking-wider uppercase md:text-5xl">Ready To Compete?</h2>
                                     <p className="mx-auto mt-4 max-w-md text-lg text-muted-foreground">

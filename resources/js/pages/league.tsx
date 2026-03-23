@@ -706,9 +706,9 @@ const LastWeekStats: FC<{ lastWeek: NonNullable<LeaguePageProps['stats']['lastWe
 
 function GamesTrendline({ gamesByWeek }: { gamesByWeek: { week: string; count: number }[] }) {
     return (
-        <Card className="relative h-full justify-between gap-2">
-            <div className="h-1 rounded-t-xl bg-gradient-to-r from-primary to-accent" />
-            <CardHeader>
+        <Card className="relative h-full justify-between gap-2 pt-0">
+            <div className="h-1 bg-gradient-to-r from-primary to-accent" />
+            <CardHeader className="pt-4">
                 <CardTitle>Games / Week</CardTitle>
             </CardHeader>
             <CardContent className="pb-2">
