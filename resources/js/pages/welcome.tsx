@@ -80,7 +80,7 @@ function AnimatedCounter({ value, duration = 1.5 }: { value: number; duration?: 
         if (isInView) {
             animate(count, value, { duration });
         }
-    }, [isInView, value]);
+    }, [isInView, value, count, duration]);
 
     useEffect(() => {
         return rounded.on('change', (v) => setDisplay(v));
