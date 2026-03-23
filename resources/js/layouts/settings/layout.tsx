@@ -17,11 +17,6 @@ const sidebarNavItems: NavItem[] = [
         href: '/settings/password',
         icon: undefined,
     },
-    {
-        title: 'Appearance',
-        href: '/settings/appearance',
-        icon: undefined,
-    },
 ];
 
 export default function SettingsLayout({ children }: PropsWithChildren) {
