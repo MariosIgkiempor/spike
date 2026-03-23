@@ -18,8 +18,8 @@ class LeaderboardController extends Controller
 
         if ($seasonParam === 'all') {
             $season = null;
-        } elseif ($seasonParam && is_numeric($seasonParam)) {
-            $season = $league->seasons()->find((int) $seasonParam) ?? $league->activeSeason;
+        } elseif ($seasonParam) {
+            $season = $league->seasons()->find($seasonParam) ?? $league->activeSeason;
         } else {
             $season = $league->activeSeason;
         }

@@ -145,9 +145,9 @@ const SeasonSelector: FC<{
 const GameGenerator: FC<{
     leaderboard: LeaderboardUser[];
     players: User[];
-    selectedPlayers: number[];
-    setSelectedPlayers: Dispatch<SetStateAction<number[]>>;
-    onTeamsGenerated?: (teams: number[][]) => void;
+    selectedPlayers: string[];
+    setSelectedPlayers: Dispatch<SetStateAction<string[]>>;
+    onTeamsGenerated?: (teams: string[][]) => void;
 }> = ({ leaderboard, players, selectedPlayers, setSelectedPlayers, onTeamsGenerated }) => {
     const generateFairTeams = () => {
         const selectedUsers = selectedPlayers.map((id) => leaderboard.find((u) => u.id === id)).filter((u): u is LeaderboardUser => !!u);

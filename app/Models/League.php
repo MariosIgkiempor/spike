@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Database\Factories\LeagueFactory;
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -16,7 +17,7 @@ use LaravelIdea\Helper\App\Models\_IH_Game_C;
 class League extends Model
 {
     /** @use HasFactory<LeagueFactory> */
-    use HasFactory;
+    use HasFactory, HasUuids;
 
     public function user(): BelongsTo
     {

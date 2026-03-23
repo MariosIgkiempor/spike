@@ -35,8 +35,8 @@ export type LeaderboardUser = User & {
 
 export type Leaderboard = LeaderboardUser[];
 
-export type HeadToHead = Record<number, Record<number, { wins: number; losses: number }>>;
-export type PlayerTeammateStats = Record<number, Record<number, { games: number; wins: number }>>;
+export type HeadToHead = Record<string, Record<string, { wins: number; losses: number }>>;
+export type PlayerTeammateStats = Record<string, Record<string, { games: number; wins: number }>>;
 
 interface LeaderboardProps {
     leaderboard: LeaderboardUser[];
@@ -247,7 +247,7 @@ const ExpandedPlayerStats: FC<{
     const opponents = h2hData
         ? Object.entries(h2hData)
               .map(([opponentId, record]) => {
-                  const opponent = leaderboard.find((u) => u.id === Number(opponentId));
+                  const opponent = leaderboard.find((u) => u.id === opponentId);
                   if (!opponent) return null;
                   const total = record.wins + record.losses;
                   return { ...record, opponent, total, winRate: total > 0 ? record.wins / total : 0 };
@@ -259,7 +259,7 @@ const ExpandedPlayerStats: FC<{
     const teammates = teammateData
         ? Object.entries(teammateData)
               .map(([teammateId, record]) => {
-                  const teammate = leaderboard.find((u) => u.id === Number(teammateId));
+                  const teammate = leaderboard.find((u) => u.id === teammateId);
                   if (!teammate) return null;
                   return { ...record, teammate, winRate: record.games > 0 ? record.wins / record.games : 0 };
               })

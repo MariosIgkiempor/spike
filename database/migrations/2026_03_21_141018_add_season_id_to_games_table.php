@@ -10,7 +10,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('games', function (Blueprint $table) {
-            $table->foreignId('season_id')->nullable()->after('league_id');
+            $table->foreignUuid('season_id')->nullable()->after('league_id');
         });
 
         // Backfill: create Season 1 for each league and assign existing games

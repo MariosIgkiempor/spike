@@ -6,19 +6,19 @@ import { Button } from './ui/button';
 import { Progress } from './ui/progress';
 
 interface VideoData {
-    id: number;
+    id: string;
     size: number;
     compressed?: boolean;
     compression_ratio?: number;
 }
 
 interface VideoUploadProps {
-    gameId: number;
+    gameId: string;
     onUploadComplete?: (videoData: VideoData) => void;
     onCancel?: () => void;
 }
 
-const uploadVideo = async (gameId: number, videoBlob: Blob) => {
+const uploadVideo = async (gameId: string, videoBlob: Blob) => {
     const formData = new FormData();
     formData.append('video', videoBlob, 'game-recording.webm');
 

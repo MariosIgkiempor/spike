@@ -9,14 +9,14 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('teams', function (Blueprint $table) {
-            $table->id();
+            $table->uuid('id')->primary();
             $table->timestamps();
         });
 
         Schema::create('game_team', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('game_id')->constrained('games');
-            $table->foreignId('team_id')->constrained('teams');
+            $table->foreignUuid('game_id')->constrained('games');
+            $table->foreignUuid('team_id')->constrained('teams');
             $table->integer('score');
             $table->boolean('won');
             $table->timestamps();
@@ -24,8 +24,8 @@ return new class extends Migration
 
         Schema::create('team_user', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->constrained('users');
-            $table->foreignId('team_id')->constrained('teams');
+            $table->foreignUuid('user_id')->constrained('users');
+            $table->foreignUuid('team_id')->constrained('teams');
             $table->timestamps();
         });
     }

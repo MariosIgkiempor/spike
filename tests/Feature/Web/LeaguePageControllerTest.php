@@ -47,7 +47,7 @@ test('index - selects a specific past season', function () {
 });
 
 test('index - falls back to active season for invalid season id', function () {
-    $response = $this->get(route('web.leagues.show', $this->league).'?season=99999');
+    $response = $this->get(route('web.leagues.show', $this->league).'?season='.fake()->uuid());
 
     $response->assertSuccessful();
     $response->assertInertia(fn ($page) => $page
@@ -81,7 +81,7 @@ test('index - defaults to all-time when no active season exists', function () {
 test('index - falls back to all-time for invalid season id when no active season', function () {
     $this->activeSeason->update(['is_active' => false, 'ended_at' => now()]);
 
-    $response = $this->get(route('web.leagues.show', $this->league).'?season=99999');
+    $response = $this->get(route('web.leagues.show', $this->league).'?season='.fake()->uuid());
 
     $response->assertSuccessful();
     $response->assertInertia(fn ($page) => $page

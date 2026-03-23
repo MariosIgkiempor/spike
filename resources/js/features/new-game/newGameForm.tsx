@@ -14,9 +14,9 @@ import { toast } from 'sonner';
 import { route } from 'ziggy-js';
 
 type NewGameFormData = {
-    league_id: number;
-    team1?: number[];
-    team2?: number[];
+    league_id: string;
+    team1?: string[];
+    team2?: string[];
     team1_score: number;
     team2_score: number;
     date: Date;
@@ -26,8 +26,8 @@ type NewGameFormData = {
 type NewGameFormProps = {
     league: League;
     leaderboard: LeaderboardUser[];
-    teams: number[][];
-    onTeamsChange: (teams: number[][]) => void;
+    teams: string[][];
+    onTeamsChange: (teams: string[][]) => void;
 };
 
 export const NewGameForm: FC<NewGameFormProps> = ({ league, leaderboard, teams, onTeamsChange }) => {
@@ -71,7 +71,7 @@ export const NewGameForm: FC<NewGameFormProps> = ({ league, leaderboard, teams, 
         });
     };
 
-    const handleTeamChange = (teamIndex: number, playerIndex: number, playerId: number | null) => {
+    const handleTeamChange = (teamIndex: number, playerIndex: number, playerId: string | null) => {
         const newTeams = teams.map((team) => [...team]);
 
         // Ensure the team array exists and has enough slots
@@ -92,14 +92,14 @@ export const NewGameForm: FC<NewGameFormProps> = ({ league, leaderboard, teams, 
         onTeamsChange(newTeams);
     };
 
-    const allSelectedPlayerIds = [teams[0]?.[0], teams[0]?.[1], teams[1]?.[0], teams[1]?.[1]].filter((id): id is number => id != null);
+    const allSelectedPlayerIds = [teams[0]?.[0], teams[0]?.[1], teams[1]?.[0], teams[1]?.[1]].filter((id): id is string => id != null);
 
     const disabledPlayerIdsFor = (teamIndex: number, playerIndex: number) =>
         allSelectedPlayerIds.filter((id) => id !== teams[teamIndex]?.[playerIndex]);
 
-    const getPlayer = (playerId: number | null) => (playerId ? (league.players.find((p) => p.id === playerId) ?? null) : null);
+    const getPlayer = (playerId: string | null) => (playerId ? (league.players.find((p) => p.id === playerId) ?? null) : null);
 
-    const getLeaderboardUser = (playerId: number | null) => (playerId ? (leaderboard.find((u) => u.id === playerId) ?? null) : null);
+    const getLeaderboardUser = (playerId: string | null) => (playerId ? (leaderboard.find((u) => u.id === playerId) ?? null) : null);
 
     const teamAvgMMR = (teamIndex: number) => {
         const players = (teams[teamIndex] ?? []).map((id) => getLeaderboardUser(id)).filter((u): u is LeaderboardUser => !!u);

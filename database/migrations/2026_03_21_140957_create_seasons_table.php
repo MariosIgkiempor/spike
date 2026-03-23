@@ -9,8 +9,8 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('seasons', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('league_id')->constrained('leagues')->cascadeOnDelete();
+            $table->uuid('id')->primary();
+            $table->foreignUuid('league_id')->constrained('leagues')->cascadeOnDelete();
             $table->unsignedInteger('number');
             $table->string('custom_name')->nullable();
             $table->boolean('is_active')->default(false);

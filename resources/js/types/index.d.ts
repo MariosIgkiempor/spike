@@ -27,13 +27,13 @@ export interface SharedData {
     auth: Auth;
     ziggy: Config & { location: string };
     sidebarOpen: boolean;
-    leagues: { id: number; name: string }[];
+    leagues: { id: string; name: string }[];
 
     [key: string]: unknown;
 }
 
 export interface User {
-    id: number;
+    id: string;
     name: string;
     email: string;
     avatar_url: string | null;
@@ -52,14 +52,14 @@ export interface PageProps {
 }
 
 export interface Team {
-    id: number;
+    id: string;
     players: User[];
     score: number;
     won: boolean;
 }
 
 export interface Game {
-    id: number;
+    id: string;
     teams: Team[];
     scores: number[];
     createdAt: string;
@@ -67,7 +67,7 @@ export interface Game {
 }
 
 export interface Season {
-    id: number;
+    id: string;
     number: number;
     customName: string | null;
     displayName: string;
@@ -77,7 +77,7 @@ export interface Season {
 }
 
 export interface League {
-    id: number;
+    id: string;
     name: string;
     games: Game[];
     players: User[];

@@ -22,8 +22,8 @@ class LeaguePageController extends Controller
         if ($seasonParam === 'all') {
             $statsSeason = null;
             $selectedSeasonId = 'all';
-        } elseif ($seasonParam && is_numeric($seasonParam)) {
-            $statsSeason = $league->seasons()->find((int) $seasonParam) ?? $activeSeason;
+        } elseif ($seasonParam) {
+            $statsSeason = $league->seasons()->find($seasonParam) ?? $activeSeason;
             $selectedSeasonId = $statsSeason ? (string) $statsSeason->id : 'all';
         } else {
             $statsSeason = $activeSeason;

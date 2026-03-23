@@ -1,7 +1,7 @@
 import { shuffleArray } from '@/lib/shuffle-array';
 
 export type PlayerForGeneration = {
-    id: number;
+    id: string;
     mmr: number;
     total_games: number;
 };
@@ -11,8 +11,8 @@ const MMR_WEIGHT = 0.6;
 
 type SplitResult = {
     diff: number;
-    teamA: [number, number];
-    teamB: [number, number];
+    teamA: [string, string];
+    teamB: [string, string];
 };
 
 function combinations4(n: number): [number, number, number, number][] {
@@ -63,7 +63,7 @@ function bestSplitMmrDiff(p: [PlayerForGeneration, PlayerForGeneration, PlayerFo
     return best!;
 }
 
-export function generateFairTeamsFromPool(players: PlayerForGeneration[]): [number[], number[]] {
+export function generateFairTeamsFromPool(players: PlayerForGeneration[]): [string[], string[]] {
     if (players.length < 4) {
         throw new Error('At least 4 players are required');
     }
@@ -94,7 +94,7 @@ export function generateFairTeamsFromPool(players: PlayerForGeneration[]): [numb
     return [best.split.teamA, best.split.teamB];
 }
 
-export function generateRandomTeamsFromPool(players: PlayerForGeneration[]): [number[], number[]] {
+export function generateRandomTeamsFromPool(players: PlayerForGeneration[]): [string[], string[]] {
     if (players.length < 4) {
         throw new Error('At least 4 players are required');
     }

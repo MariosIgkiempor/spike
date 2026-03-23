@@ -4,12 +4,12 @@ import { route } from 'ziggy-js';
 import { Button } from './ui/button';
 
 interface VideoPlayerProps {
-    gameId: number;
+    gameId: string;
     className?: string;
 }
 
 interface VideoData {
-    id: number;
+    id: string;
     url: string;
     thumbnail?: string;
     preview?: string;
@@ -18,7 +18,7 @@ interface VideoData {
     created_at: string;
 }
 
-const fetchGameVideo = async (gameId: number): Promise<VideoData> => {
+const fetchGameVideo = async (gameId: string): Promise<VideoData> => {
     const response = await fetch(route('api.games.video.show', { game: gameId }));
 
     if (!response.ok) {
@@ -32,7 +32,7 @@ const fetchGameVideo = async (gameId: number): Promise<VideoData> => {
     return data.video;
 };
 
-const deleteGameVideo = async (gameId: number) => {
+const deleteGameVideo = async (gameId: string) => {
     const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
 
     const response = await fetch(route('api.games.video.destroy', { game: gameId }), {

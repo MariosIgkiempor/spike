@@ -10,8 +10,8 @@ import { FC, useState } from 'react';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from './ui/command';
 
 interface PlayerInputProps {
-    value: number | null;
-    onChange: (value: number | null) => void;
+    value: string | null;
+    onChange: (value: string | null) => void;
     label: string;
     error?: string;
     disabled?: boolean;
@@ -19,7 +19,7 @@ interface PlayerInputProps {
     leaderboard?: LeaderboardUser[];
     keepOpen?: boolean;
     mirrored?: boolean;
-    disabledPlayerIds?: number[];
+    disabledPlayerIds?: string[];
 }
 
 const PlayerTrigger: FC<{ player: User | null; leaderboardUser: LeaderboardUser | null; label: string; mirrored: boolean }> = ({
@@ -122,7 +122,7 @@ function PlayerList({
 }: {
     players: User[];
     leaderboard?: LeaderboardUser[];
-    disabledPlayerIds?: number[];
+    disabledPlayerIds?: string[];
     setSelectedPlayer: (player: User | null) => void;
 }) {
     return (
@@ -136,10 +136,10 @@ function PlayerList({
                         return (
                             <CommandItem
                                 key={player.id}
-                                value={`${player.id}-${player.name}`}
+                                value={`${player.id}::${player.name}`}
                                 disabled={disabledPlayerIds.includes(player.id)}
                                 onSelect={(value) => {
-                                    const id = parseInt(value.split('-')[0]);
+                                    const id = value.split('::')[0];
                                     setSelectedPlayer(players.find((p) => p.id === id) || null);
                                 }}
                                 className="flex items-center gap-2.5 py-2 data-[selected=true]:[&_[data-slot=avatar-fallback]]:bg-accent-foreground/15 data-[selected=true]:[&_[data-slot=avatar-fallback]]:text-accent-foreground"
