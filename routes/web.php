@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\GameController;
 use App\Http\Controllers\Api\SeasonController;
+use App\Http\Controllers\GoogleAuthController;
 use App\Http\Controllers\LeaderboardController;
 use App\Http\Controllers\LeagueController;
 use App\Http\Controllers\LeaguePageController;
@@ -36,6 +37,12 @@ Route::get('/', function (Request $request) {
 
     return Inertia::render('welcome');
 })->name('home');
+
+// Route to redirect to Google's OAuth page
+Route::get('/auth/google/redirect', [GoogleAuthController::class, 'redirect'])->name('auth.google.redirect');
+
+// Route to handle the callback from Google
+Route::get('/auth/google/callback', [GoogleAuthController::class, 'callback'])->name('auth.google.callback');
 
 require __DIR__.'/settings.php';
 require __DIR__.'/auth.php';

@@ -4,6 +4,7 @@ namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Database\Factories\UserFactory;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -25,6 +26,7 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'avatar_url',
     ];
 
     /**
@@ -36,6 +38,23 @@ class User extends Authenticatable
         'password',
         'remember_token',
     ];
+
+    /**
+     * @var list<string>
+     */
+    protected $appends = [
+        'has_password',
+    ];
+
+    /**
+     * @return Attribute<bool, never>
+     */
+    protected function hasPassword(): Attribute
+    {
+        return Attribute::make(
+            get: fn (): bool => ! is_null($this->password),
+        );
+    }
 
     public function leagues(): BelongsToMany
     {

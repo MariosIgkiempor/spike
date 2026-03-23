@@ -14,7 +14,7 @@ const buttonVariants = cva(
                 destructive:
                     'bg-destructive text-destructive-foreground shadow-xs hover:bg-destructive/90 focus-visible:ring-destructive/20 dark:focus-visible:ring-destructive/40',
                 outline:
-                    'border border-input bg-background shadow-xs hover:bg-accent hover:text-accent-foreground',
+                    'border border-input bg-background shadow-xs hover:bg-accent/80 hover:text-accent-foreground',
                 secondary:
                     'bg-secondary text-secondary-foreground shadow-xs hover:bg-secondary/80',
                 ghost: 'hover:bg-accent hover:text-accent-foreground',
@@ -35,15 +35,15 @@ const buttonVariants = cva(
 );
 
 function Button({
-                    className,
-                    variant,
-                    size,
-                    asChild = false,
-                    ...props
-                }: React.ComponentProps<'button'> &
+    className,
+    variant,
+    size,
+    asChild = false,
+    ...props
+}: React.ComponentProps<'button'> &
     VariantProps<typeof buttonVariants> & {
-    asChild?: boolean
-}) {
+        asChild?: boolean
+    }) {
     const Comp = asChild ? Slot : 'button';
 
     return (
