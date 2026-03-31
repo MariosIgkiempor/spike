@@ -88,7 +88,7 @@ export const PlayerInput: FC<PlayerInputProps> = ({
     if (isDesktop) {
         return (
             <div className="space-y-2">
-                <Popover open={open} onOpenChange={setOpen}>
+                <Popover open={open} onOpenChange={setOpen} modal>
                     <PopoverTrigger asChild>{trigger}</PopoverTrigger>
                     <PopoverContent className="p-0" align="start" alignOffset={80}>
                         <PlayerList players={players} leaderboard={leaderboard} disabledPlayerIds={disabledPlayerIds} setSelectedPlayer={handleSelect} />
